@@ -34,6 +34,10 @@ extern "C" void app_main(void) {
     init_wifi();
     // // 6. Start Wi-Fi
     start_wifi();
+    // SNTP
+    init_sntp(CONFIG_NTP_SERVER);
+    start_sntp();
+
     // MQTT client connection
     init_hmqtt();
     start_hmqtt();

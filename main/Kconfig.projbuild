@@ -1,4 +1,4 @@
-menu "My Custom WiFi STA Configuration"
+menu "WiFi STA Configuration"
 
     config MY_WIFI_SSID
         string "WiFi SSID"
@@ -9,6 +9,8 @@ menu "My Custom WiFi STA Configuration"
         string "WiFi Password"
         help
             The password for the WiFi network.
+endmenu
+menu "Mqtt STA Configuration"
 
     config BROKER_URL
         string "Broker URL"
@@ -25,5 +27,13 @@ menu "My Custom WiFi STA Configuration"
     config BROKER_URL_FROM_STDIN
         bool
         default y if BROKER_URL = "FROM_STDIN"
+endmenu
 
+menu "SNTP configuration"
+
+    config NTP_SERVER
+        string "Host name"
+        default "pool.ntp.org"
+        help
+            "sNTP server"
 endmenu
