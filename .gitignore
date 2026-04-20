@@ -1,5 +1,4 @@
 build
 cmake-build-*
 /certs
-sdkconfig
 sdkconfig.old

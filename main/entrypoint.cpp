@@ -9,18 +9,22 @@
 #include "hmqtt.h"
 #include "hsntp.h"
 #include "driver/gpio.h"
+#include "time.h"
 
 static const char* TAG = "irrigate app";
 // static EventGroupHandle_t wifiEventGroup;
 #define GPIO_LED 15
 
 static void setLedState(int fliper) {
-    ESP_LOGI(TAG, "set %d", fliper);
+    // ESP_LOGI(TAG, "set %d", fliper);
     gpio_set_level((gpio_num_t)GPIO_LED, fliper);
 }
 
 void continue_after_time_sync_cb(struct timeval* tv) {
     ESP_LOGI(TAG, "Notification of a time synchronization event");
+    setenv("TZ", CONFIG_DEFAULT_LOCALE_TIME_ZONE, 1);
+    tzset();
+    ESP_LOGI(TAG,"set TimeZone to: %s",CONFIG_DEFAULT_LOCALE_TIME_ZONE);
     start_hmqtt();
 
 }
@@ -45,10 +49,7 @@ extern "C" void app_main(void) {
     init_sntp(CONFIG_NTP_SERVER, continue_after_time_sync_cb);
     init_hmqtt();
     start_sntp();
-
-    // MQTT client connection
-
-    // start_hmqtt();
+    //
 
     //
     ESP_LOGI(TAG, "working stage");

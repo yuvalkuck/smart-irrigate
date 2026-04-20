@@ -36,4 +36,11 @@ menu "SNTP configuration"
         default "pool.ntp.org"
         help
             "sNTP server"
+
+    config DEFAULT_LOCALE_TIME_ZONE
+        string "LOCALE TIME ZONE"
+        default "Asia/Jerusalem"
+        help
+            "LOCALE TIME ZONE"
+
 endmenu
