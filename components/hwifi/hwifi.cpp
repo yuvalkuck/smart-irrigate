@@ -1,0 +1,79 @@
+#include <stdio.h>
+#include "hwifi.h"
+#include "esp_log.h"
+#include "esp_event.h"
+#include "esp_netif.h"
+#include "esp_wifi.h"
+#include "mqtt_client.h"
+#include "sdkconfig.h"
+#include <algorithm>
+
+
+static EventGroupHandle_t wifiEventGroup;
+static const char* TAG = "hwifi:";
+static void wifiEventHandler(void* arg, esp_event_base_t event_base,
+                             int32_t event_id, void* event_data) {
+    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+        esp_wifi_connect(); // Start connection once driver is ready
+    }
+    else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+        esp_wifi_connect(); // Retry connection if dropped
+        ESP_LOGI(TAG, "Retrying connection to AP...");
+    }
+    else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+        ip_event_got_ip_t* event = (ip_event_got_ip_t*)event_data;
+        ESP_LOGI(TAG, "Connected! IP: " IPSTR, IP2STR(&event->ip_info.ip));
+        xEventGroupSetBits(wifiEventGroup, BIT0);
+    }
+}
+
+void init_wifi(void) {
+    // Network Interface & Event Loop Initialization
+    ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
+    ESP_ERROR_CHECK(esp_netif_init());
+
+    esp_netif_create_default_wifi_sta();
+
+    // Wi-Fi Driver Initialization
+    wifi_init_config_t wifiInitCfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&wifiInitCfg));
+
+    // event group must be decalre because use int the event handler
+    wifiEventGroup = xEventGroupCreate();
+    // Register Event Handlers
+
+    // MQTT_EVENT_ANY = -1
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, MQTT_EVENT_ANY, &wifiEventHandler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifiEventHandler, NULL, NULL));
+
+    // 5. Configure Station Mode
+#ifdef CONFIG_MY_WIFI_SSID
+#define WIFI_SSID CONFIG_MY_WIFI_SSID
+#else
+#define WIFI_SSID ""
+#endif
+#ifdef CONFIG_MY_WIFI_PASSWORD
+#define WIFI_PASS CONFIG_MY_WIFI_PASSWORD
+#else
+#define WIFI_PASS ""
+#endif
+    wifi_config_t wifi_config = {};
+    size_t ssid_len = std::min(sizeof(wifi_config.sta.ssid), strlen(WIFI_SSID));
+    memcpy(wifi_config.sta.ssid, WIFI_SSID, ssid_len);
+    size_t pass_len = std::min(sizeof(wifi_config.sta.password), strlen(WIFI_PASS));
+    memcpy(wifi_config.sta.password, WIFI_PASS, pass_len);
+
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
+}
+
+void start_wifi(void) {
+    // 6. Start Wi-Fi
+    ESP_ERROR_CHECK(esp_wifi_start());
+
+    // Wait until connection is established
+    xEventGroupWaitBits(wifiEventGroup, BIT0, pdFALSE, pdFALSE, portMAX_DELAY);
+    ESP_LOGI(TAG, "WiFi setup complete.");
+
+}
+

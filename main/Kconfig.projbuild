@@ -1,0 +1,29 @@
+menu "My Custom WiFi STA Configuration"
+
+    config MY_WIFI_SSID
+        string "WiFi SSID"
+        help
+            The SSID for the WiFi network the device will connect to.
+
+    config MY_WIFI_PASSWORD
+        string "WiFi Password"
+        help
+            The password for the WiFi network.
+
+    config BROKER_URL
+        string "Broker URL"
+        default "mqtts://127.0.0.1:8883"
+        help
+            URL of the broker to connect to
+
+    config BROKER_PORT
+        int
+        default 8883
+        help
+            broker port
+
+    config BROKER_URL_FROM_STDIN
+        bool
+        default y if BROKER_URL = "FROM_STDIN"
+
+endmenu
