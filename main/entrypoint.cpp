@@ -19,6 +19,13 @@ static void setLedState(int fliper) {
     gpio_set_level((gpio_num_t)GPIO_LED, fliper);
 }
 
+void continue_after_time_sync_cb(struct timeval* tv) {
+    ESP_LOGI(TAG, "Notification of a time synchronization event");
+    start_hmqtt();
+
+}
+
+
 extern "C" void app_main(void) {
     ESP_LOGI(TAG, "setting up");
 
@@ -35,12 +42,13 @@ extern "C" void app_main(void) {
     // // 6. Start Wi-Fi
     start_wifi();
     // SNTP
-    init_sntp(CONFIG_NTP_SERVER);
+    init_sntp(CONFIG_NTP_SERVER, continue_after_time_sync_cb);
+    init_hmqtt();
     start_sntp();
 
     // MQTT client connection
-    init_hmqtt();
-    start_hmqtt();
+
+    // start_hmqtt();
 
     //
     ESP_LOGI(TAG, "working stage");
