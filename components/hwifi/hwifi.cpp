@@ -11,6 +11,7 @@
 
 static EventGroupHandle_t wifiEventGroup;
 static const char* TAG = "hwifi:";
+
 static void wifiEventHandler(void* arg, esp_event_base_t event_base,
                              int32_t event_id, void* event_data) {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
@@ -74,6 +75,5 @@ void start_wifi(void) {
     // Wait until connection is established
     xEventGroupWaitBits(wifiEventGroup, BIT0, pdFALSE, pdFALSE, portMAX_DELAY);
     ESP_LOGI(TAG, "WiFi setup complete.");
-
 }
 

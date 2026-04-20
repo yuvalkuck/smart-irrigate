@@ -5,7 +5,7 @@
 
 static const char* TAG = "hmqtt:";
 extern const uint8_t client_cert_pem_start[] asm("_binary_client_pem_start");
-extern const uint8_t client_cert_pem_end[]   asm("_binary_client_pem_end");
+extern const uint8_t client_cert_pem_end[] asm("_binary_client_pem_end");
 
 static void log_error_if_nonzero(const char* message, int error_code) {
     if (error_code != 0) {
@@ -72,14 +72,13 @@ static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t 
 }
 
 
-
 void init_hmqtt(void) {
     ESP_LOGI(TAG, "MQTT client");
     ESP_LOGI(TAG, "free heap: %i", esp_get_free_heap_size());
     mqtt_cfg.broker.address.uri = CONFIG_BROKER_URL;
     mqtt_cfg.broker.address.port = CONFIG_BROKER_PORT;
-    mqtt_cfg.broker.verification.certificate = (const char *)client_cert_pem_start;
-    ESP_LOGI(TAG, "%s" , mqtt_cfg.broker.verification.certificate);
+    mqtt_cfg.broker.verification.certificate = (const char*)client_cert_pem_start;
+    ESP_LOGI(TAG, "%s", mqtt_cfg.broker.verification.certificate);
 #if CONFIG_BROKER_URL_FROM_STDIN
     char line[128];
 
@@ -108,9 +107,10 @@ void init_hmqtt(void) {
 #endif /* CONFIG_BROKER_URL_FROM_STDIN */
 
     client = esp_mqtt_client_init(&mqtt_cfg);
-    if ( client == NULL) {
+    if (client == NULL) {
         ESP_LOGE(TAG, "esp_mqtt_client_init failed");
-    } else {
+    }
+    else {
         /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
         esp_mqtt_client_register_event(client, MQTT_EVENT_ANY, mqttEventHandler, NULL);
     }

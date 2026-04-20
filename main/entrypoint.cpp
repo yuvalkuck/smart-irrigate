@@ -7,6 +7,7 @@
 #include "flash.h"
 #include "hwifi.h"
 #include "hmqtt.h"
+#include "hsntp.h"
 #include "driver/gpio.h"
 
 static const char* TAG = "irrigate app";
