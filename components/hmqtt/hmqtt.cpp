@@ -4,8 +4,9 @@
 #include "mqtt_client.h"
 
 static const char* TAG = "hmqtt:";
-extern const uint8_t client_cert_pem_start[] asm("_binary_client_pem_start");
-extern const uint8_t client_cert_pem_end[] asm("_binary_client_pem_end");
+extern const uint8_t ca_crt_start[] asm("_binary_ca_crt_start");
+extern const uint8_t client_crt_start[] asm("_binary_client_crt_start");
+extern const uint8_t client_key_start[] asm("_binary_client_key_start");
 
 static void log_error_if_nonzero(const char* message, int error_code) {
     if (error_code != 0) {
@@ -71,14 +72,15 @@ static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t 
     }
 }
 
-
 void init_hmqtt(void) {
     ESP_LOGI(TAG, "MQTT client");
-    ESP_LOGI(TAG, "free heap: %i", esp_get_free_heap_size());
-    mqtt_cfg.broker.address.uri = CONFIG_BROKER_URL;
+    ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
+    mqtt_cfg.broker.address.uri = static_cast<const char *>(CONFIG_BROKER_URL);
     mqtt_cfg.broker.address.port = CONFIG_BROKER_PORT;
-    mqtt_cfg.broker.verification.certificate = (const char*)client_cert_pem_start;
-    ESP_LOGI(TAG, "%s", mqtt_cfg.broker.verification.certificate);
+    mqtt_cfg.broker.verification.certificate = (const char *)ca_crt_start,
+    mqtt_cfg.credentials.authentication.certificate = (const char *)client_crt_start,
+    mqtt_cfg.credentials.authentication.key = (const char *)client_key_start,
+    // mqtt_cfg.broker.verification.skip_cert_common_name_check = true;
 #if CONFIG_BROKER_URL_FROM_STDIN
     char line[128];
 
@@ -107,7 +109,7 @@ void init_hmqtt(void) {
 #endif /* CONFIG_BROKER_URL_FROM_STDIN */
 
     client = esp_mqtt_client_init(&mqtt_cfg);
-    if (client == NULL) {
+    if (client == nullptr) {
         ESP_LOGE(TAG, "esp_mqtt_client_init failed");
     }
     else {
