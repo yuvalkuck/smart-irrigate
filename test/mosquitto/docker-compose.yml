@@ -1,0 +1,16 @@
+
+services:
+  mqtt:
+    image: eclipse-mosquitto:latest # Use the OpenSSL-specific tag
+    user: "1000:1000"
+    container_name: mqtt
+    restart: always
+    ports:
+      - "1883:1883"   # Standard MQTT port
+      - "9001:9001"   # WebSockets (optional)
+      - "8883:8883"   # MQTT over TLS/SSL port
+    volumes:
+      - ./config:/mosquitto/config
+      - ./data:/mosquitto/data
+      - ./log:/mosquitto/log
+      - ./config/certs:/mosquitto/config/certs # Mount your SSL certificates here
