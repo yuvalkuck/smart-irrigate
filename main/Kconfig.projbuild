@@ -27,6 +27,19 @@ menu "Mqtt STA Configuration"
     config BROKER_URL_FROM_STDIN
         bool
         default y if BROKER_URL = "FROM_STDIN"
+
+    config MQTT_CLIENT_USERNAME
+        string "Client username"
+        default "client"
+        help
+            mqtt server client username
+
+    config MQTT_CLIENT_PASSWORD
+        string "Client password"
+        default "client"
+        help
+            mqtt server client password
+
 endmenu
 
 menu "SNTP configuration"
