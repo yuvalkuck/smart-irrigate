@@ -1,2 +1,5 @@
-/creds
-password.txt
+/certs
+/certs/**
+/password.txt
+*.crt
+*.key
