@@ -9,6 +9,19 @@ menu "WiFi STA Configuration"
         string "WiFi Password"
         help
             The password for the WiFi network.
+
+    config MY_BT_PASSWORD
+        int
+        default 456789
+        help
+            ble configure static passkey;
+
+    config MY_BT_DEVICE_NAME
+        string "BLE device name"
+        default "irrigator"
+        help
+            BLE device name;
+
 endmenu
 menu "Mqtt STA Configuration"
 
