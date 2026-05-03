@@ -8,6 +8,7 @@
 #include "hwifi.h"
 #include "hmqtt.h"
 #include "hsntp.h"
+#include "blesrv.h"
 #include "driver/gpio.h"
 #include "time.h"
 
@@ -39,9 +40,11 @@ extern "C" void app_main(void) {
     //Initialize NVS
     esp_err_t ret  = init_flash();
     ESP_ERROR_CHECK(ret);
+    init_blesrv();
 
     ESP_LOGI(TAG, "start event loop default");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+    start_blesrv();
     init_wifi();
     // // 6. Start Wi-Fi
     start_wifi();

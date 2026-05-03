@@ -12,6 +12,7 @@ static const char* TAG = "BleSrv:";
 
 // 1. GAP Event Handler (Handles connections/advertising)
 static int ble_gap_event_cb(struct ble_gap_event *event, void *arg) {
+    ESP_LOGI(TAG, "ble_gap_event_cb");
     return 0;
 }
 
@@ -55,9 +56,11 @@ static void start_advertising(void) {
 }
 
 void on_sync_cb(void) {
+    ESP_LOGI(TAG, "on_sync_cb");
     start_advertising();
 }
 void host_task_cb(void *param) {
+    ESP_LOGI(TAG, "host_task_cb");
     nimble_port_run(); // This block keeps the stack running
 }
 
