@@ -45,6 +45,7 @@ extern "C" void app_main(void) {
     ESP_LOGI(TAG, "start event loop default");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     start_blesrv();
+/*
     init_wifi();
     // // 6. Start Wi-Fi
     start_wifi();
@@ -53,7 +54,7 @@ extern "C" void app_main(void) {
     init_hmqtt();
     start_sntp();
     //
-
+*/
     //
     ESP_LOGI(TAG, "working stage");
     //
@@ -64,7 +65,7 @@ extern "C" void app_main(void) {
             ledFlip = 1;
         }
         setLedState(ledFlip);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
     // if (CONFIG_LOG_MAXIMUM_LEVEL > CONFIG_LOG_DEFAULT_LEVEL) {
     //     /* If you only want to open more logs in the wifi module, you need to make the max level greater than the default level,

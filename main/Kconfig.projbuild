@@ -18,7 +18,7 @@ menu "WiFi STA Configuration"
 
     config MY_BT_DEVICE_NAME
         string "BLE device name"
-        default "irrigator"
+        default "Irrigator Main"
         help
             BLE device name;
 
