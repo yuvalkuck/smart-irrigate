@@ -7,7 +7,9 @@
 #include "host/ble_hs_adv.h"
 #include "services/gap/ble_svc_gap.h"
 #include "sdkconfig.h"
+#include <unordered_map>
 
+extern const char *events[];
 
 //#include "host/ble_sm.h"
 
@@ -52,7 +54,7 @@ bleprph_print_conn_desc(struct ble_gap_conn_desc* desc) {
 
 // 1. GAP Event Handler (Handles connections/advertising)
 static int ble_gap_event_cb(struct ble_gap_event* event, void* arg) {
-    ESP_LOGI(TAG, "ble_gap_event_cb");
+    ESP_LOGI(TAG, "ble_gap_event_cb, event: %d : %s", event->type, events[event->type]);
 #if NIMBLE_BLE_CONNECT
     struct ble_gap_conn_desc desc;
     int rc;
