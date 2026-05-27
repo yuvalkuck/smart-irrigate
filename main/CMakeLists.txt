@@ -1,5 +1,5 @@
 idf_component_register(SRCS "entrypoint.cpp"
-        REQUIRES flash hwifi hmqtt hsntp blesrv
+        REQUIRES flash hwifi hmqtt hsntp blesrv telemetry
         PRIV_REQUIRES log esp_event esp_driver_gpio mqtt
         INCLUDE_DIRS "."
 )
