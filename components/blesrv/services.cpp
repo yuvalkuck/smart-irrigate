@@ -2,14 +2,12 @@
 #include <host/ble_gatt.h>
 #include <host/ble_uuid.h>
 #include "inc/services.h"
-// NVS includes
-
 #include <string>
-
 #include "nvs.h"
-#include "nvs_flash.h"
 #include "sdkconfig.h"
 
+#define NVS_NAMESPACE "config"
+#define NVS_PARTIION_NAME "app"
 static const char* TAG = "BleHandler:";
 // Characteristic UUID for NVS Read (to get a list of key-value pairs).
 // Example Characteristic UUID: 00000002-8D6A-46F6-B20C-9A5163000000
@@ -90,7 +88,7 @@ static int nvs_read_access_cb(uint16_t conn_handle, uint16_t attr_handle,
 
         // Iterate through all NVS entries in all namespaces.
         // To iterate a specific namespace, replace the first NULL with the namespace name (e.g., "storage").
-        nvs_entry_find("nvs", nullptr, NVS_TYPE_ANY, &it);
+        nvs_entry_find(NVS_PARTIION_NAME, NVS_NAMESPACE, NVS_TYPE_ANY, &it);
         while (it != nullptr) {
             nvs_entry_info_t info;
             nvs_entry_info(it, &info); // Get info about the current entry (key, type, namespace)

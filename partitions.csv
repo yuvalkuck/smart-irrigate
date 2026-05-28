@@ -3,5 +3,4 @@
 nvs,data,nvs,0x9000,16K,
 phy_init,data,phy,0xf000,4K,
 factory,app,factory,0x10000,1500K,
-#storage,data,nvs,,64K,
-
+app,data,nvs,0x187000,64K,
