@@ -1,4 +1,4 @@
-idf_component_register(SRCS "blesrv.cpp" "debug_event_name.c"
-        PRIV_REQUIRES log bt
+idf_component_register(SRCS "blesrv.cpp" "debug_event_name.c" "services.cpp"
+        PRIV_REQUIRES log bt nvs_flash
                     INCLUDE_DIRS "include")
 target_compile_options(${COMPONENT_LIB} PRIVATE -std=gnu++20 -fno-exceptions -fno-rtti)
