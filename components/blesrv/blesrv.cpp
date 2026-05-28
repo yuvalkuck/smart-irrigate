@@ -8,6 +8,7 @@
 #include "services/gap/ble_svc_gap.h"
 #include "sdkconfig.h"
 #include <unordered_map>
+#include "inc/services.h"
 
 extern const char* events[];
 
@@ -20,6 +21,8 @@ static const char* TAG = "BleSrv:";
 static uint8_t own_addr_type = BLE_OWN_ADDR_RANDOM;
 #define BLE_GAP_APPEARANCE_GENERIC_TAG 0x0200
 #define BLE_GAP_LE_ROLE_PERIPHERAL 0x01
+// Characteristic UUID for NVS Read (to get a list of key-value pairs).
+// Example Characteristic UUID: 00000002-8D6A-46F6-B20C-9A5163000000
 
 static void
 print_addr(const void* addr) {
@@ -432,6 +435,11 @@ void init_blesrv(void) {
     ble_hs_cfg.reset_cb = on_reset_cb;
     ble_hs_cfg.gatts_register_cb = gatt_svr_register_cb;
     ble_hs_cfg.sm_sc = 0;
+    ret = init_gatt_services();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to init gatt_services %d ", ret);
+        return;
+    }
 
     //
     //
