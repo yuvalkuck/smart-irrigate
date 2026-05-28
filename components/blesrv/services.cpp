@@ -4,6 +4,8 @@
 #include "inc/services.h"
 // NVS includes
 
+#include <string>
+
 #include "nvs.h"
 #include "nvs_flash.h"
 #include "sdkconfig.h"
@@ -60,6 +62,7 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
 };
 
 int init_gatt_services() {
+    ESP_LOGI(TAG, "init_gatt_services");
     // Register the custom GATT services defined in gatt_svr_svcs
     int rc = ble_gatts_count_cfg(gatt_svr_svcs);
     if (rc != 0) {
@@ -74,10 +77,117 @@ int init_gatt_services() {
     }
     return 0;
 }
+
 //////////////////////////////////
 static int nvs_read_access_cb(uint16_t conn_handle, uint16_t attr_handle,
                               struct ble_gatt_access_ctxt* ctxt, void* arg) {
-    return 0;
+    ESP_LOGI(TAG, "NVS Read Access Callback. Op: %d", ctxt->op);
+
+    if (ctxt->op == BLE_GATT_ACCESS_OP_READ_CHR) {
+        nvs_iterator_t it;
+        esp_err_t err;
+        std::string nvs_data_str; // String to build the NVS key-value list
+
+        // Iterate through all NVS entries in all namespaces.
+        // To iterate a specific namespace, replace the first NULL with the namespace name (e.g., "storage").
+        nvs_entry_find("nvs", nullptr, NVS_TYPE_ANY, &it);
+        while (it != nullptr) {
+            nvs_entry_info_t info;
+            nvs_entry_info(it, &info); // Get info about the current entry (key, type, namespace)
+            nvs_entry_next(&it); // Move to the next entry
+
+            nvs_handle_t nvs_handle;
+            // Open NVS handle for the current entry's namespace in read-only mode
+            err = nvs_open(info.namespace_name, NVS_READONLY, &nvs_handle);
+            if (err != ESP_OK) {
+                ESP_LOGE(TAG, "Error (%s) opening NVS namespace %s", esp_err_to_name(err), info.namespace_name);
+                continue; // Skip to the next entry if namespace cannot be opened
+            }
+
+            // Append key to the string (format: "key:value;")
+            nvs_data_str += info.key;
+            nvs_data_str += ":";
+
+            // Attempt to read the value based on its type.
+            // This example only handles NVS_TYPE_STR and NVS_TYPE_U32.
+            // You would need to extend this for other NVS types (e.g., NVS_TYPE_I32, NVS_TYPE_BLOB, etc.).
+            if (info.type == NVS_TYPE_STR) {
+                size_t required_size;
+                err = nvs_get_str(nvs_handle, info.key, NULL, &required_size); // Get required size for the string
+                if (err == ESP_OK) {
+                    char* value_str = (char*)malloc(required_size);
+                    if (value_str) {
+                        err = nvs_get_str(nvs_handle, info.key, value_str, &required_size);
+                        if (err == ESP_OK) {
+                            nvs_data_str += value_str;
+                        }
+                        else {
+                            ESP_LOGE(TAG, "Error (%s) reading string NVS key %s", esp_err_to_name(err), info.key);
+                            nvs_data_str += "<str_read_error>";
+                        }
+                        free(value_str);
+                    }
+                    else {
+                        ESP_LOGE(TAG, "Failed to allocate memory for NVS string value");
+                        nvs_data_str += "<mem_alloc_error>";
+                    }
+                }
+                else {
+                    ESP_LOGE(TAG, "Error (%s) getting size for string NVS key %s", esp_err_to_name(err), info.key);
+                    nvs_data_str += "<str_size_error>";
+                }
+            }
+            else if (info.type == NVS_TYPE_U32) {
+                uint32_t value_u32;
+                err = nvs_get_u32(nvs_handle, info.key, &value_u32);
+                if (err == ESP_OK) {
+                    nvs_data_str += std::to_string(value_u32);
+                }
+                else {
+                    ESP_LOGE(TAG, "Error (%s) reading u32 NVS key %s", esp_err_to_name(err), info.key);
+                    nvs_data_str += "<u32_read_error>";
+                }
+            }
+            else {
+                // For unhandled types, just indicate the type
+                nvs_data_str += "<type:";
+                nvs_data_str += std::to_string(info.type);
+                nvs_data_str += ">";
+            }
+
+            nvs_data_str += ";"; // Separator for key-value pairs
+
+            nvs_close(nvs_handle); // Close the NVS handle for the current namespace
+        }
+
+        // IMPORTANT CONSIDERATION: Response Size Limitation
+        // The maximum length of a characteristic value is limited by the negotiated MTU.
+        // The default MTU is typically 23 bytes, meaning only 20 bytes of actual data
+        // can be sent in a single packet (23 - 3 bytes for ATT header).
+        // If the 'nvs_data_str' is longer than the MTU, it will be truncated,
+        // or the operation might fail.
+        //
+        // For a robust solution with potentially large NVS data, consider:
+        // 1. Increasing the MTU (if supported by both devices and configured in menuconfig).
+        // 2. Implementing a mechanism to send data in chunks (e.g., using notifications
+        //    or multiple read requests with an offset).
+        // 3. Providing a separate characteristic for "get NVS value by key" to retrieve
+        //    individual values rather than the entire list at once.
+        ESP_LOGW(TAG, "nvs_data_str len: %d", nvs_data_str.size());
+        if (nvs_data_str.length() > (BLE_ATT_MTU_DFLT - 3)) {
+            ESP_LOGW(TAG, "NVS data string (%zu bytes) is larger than default MTU (%d bytes). "
+                     "The response might be truncated. Consider increasing MTU or implementing chunking.",
+                     nvs_data_str.length(), BLE_ATT_MTU_DFLT - 3);
+        }
+
+        // Copy the NVS data string to the GATT response buffer (os_mbuf)
+        err = os_mbuf_append(ctxt->om, nvs_data_str.c_str(), nvs_data_str.length());
+        if (err != 0) {
+            ESP_LOGE(TAG, "Failed to append NVS data to mbuf; rc=%d", err);
+            return BLE_ATT_ERR_INSUFFICIENT_RES; // Indicate resource error
+        }
+    }
+    return 0; // Success
 }
 
 static int nvs_write_access_cb(uint16_t conn_handle, uint16_t attr_handle,
