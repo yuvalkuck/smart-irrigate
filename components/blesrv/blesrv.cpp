@@ -61,7 +61,6 @@ static int ble_gap_event_cb(struct ble_gap_event* event, void* arg) {
 
 
     switch (event->type) {
-#if NIMBLE_BLE_CONNECT
         case BLE_GAP_EVENT_CONNECT:
             /* A new connection was established or a connection attempt failed. */
             MODLOG_DFLT(INFO, "connection %s; status=%d ",
@@ -132,7 +131,7 @@ static int ble_gap_event_cb(struct ble_gap_event* event, void* arg) {
                 start_advertising();
             }
             break;
-
+#if 0
         case BLE_GAP_EVENT_CONN_UPDATE:
             /* The central has updated the connection parameters. */
             MODLOG_DFLT(INFO, "connection updated; status=%d ",
@@ -251,15 +250,6 @@ static int ble_gap_event_cb(struct ble_gap_event* event, void* arg) {
             }
         }
         break;
-            // case BLE_GAP_EVENT_AUTHORIZE:
-            //     MODLOG_DFLT(INFO, "authorize event: conn_handle=%d attr_handle=%d is_read=%d",
-            //                 event->authorize.conn_handle,
-            //                 event->authorize.attr_handle,
-            //                 event->authorize.is_read);
-            //
-            //     /* The default behaviour for the event is to reject authorize request */
-            //     event->authorize.out_response = BLE_GAP_AUTHORIZE_REJECT;
-            //     break;
 
             /*
         case BLE_GAP_EVENT_TRANSMIT_POWER:
@@ -274,49 +264,6 @@ static int ble_gap_event_cb(struct ble_gap_event* event, void* arg) {
                         event->transmit_power.delta);
             break;
 
-        case BLE_GAP_EVENT_PATHLOSS_THRESHOLD:
-            MODLOG_DFLT(INFO, "Pathloss threshold event : conn_handle=%d current path loss=%d "
-                        "zone_entered =%d",
-                        event->pathloss_threshold.conn_handle,
-                        event->pathloss_threshold.current_path_loss,
-                        event->pathloss_threshold.zone_entered);
-            break;
-
-
-            #if MYNEWT_VAL(BLE_EATT_CHAN_NUM) > 0
-                case BLE_GAP_EVENT_EATT:
-                    MODLOG_DFLT(INFO, "EATT %s : conn_handle=%d cid=%d",
-                                event->eatt.status ? "disconnected" : "connected",
-                                event->eatt.conn_handle,
-                                event->eatt.cid);
-                    if (event->eatt.status) {
-                        // Abort if disconnected #1#
-                        break;
-                    }
-                    cids[bearers] = event->eatt.cid;
-                    bearers += 1;
-                    if (bearers != MYNEWT_VAL(BLE_EATT_CHAN_NUM)) {
-                        // Wait until all EATT bearers are connected before proceeding #1#
-                        break;
-                    }
-                    // Set the default bearer to use for further procedures #1#
-                    rc = ble_att_set_default_bearer_using_cid(event->eatt.conn_handle, cids[0]);
-                    if (rc != 0) {
-                        MODLOG_DFLT(INFO, "Cannot set default EATT bearer, rc = %d\n", rc);
-                        return rc;
-                    }
-
-                    break;
-            #endif
-
-            #if MYNEWT_VAL(BLE_CONN_SUBRATING)
-                case BLE_GAP_EVENT_SUBRATE_CHANGE:
-                    MODLOG_DFLT(INFO, "Subrate change event : conn_handle=%d status=%d factor=%d",
-                                event->subrate_change.conn_handle,
-                                event->subrate_change.status,
-                                event->subrate_change.subrate_factor);
-                    break;
-            #endif
             */
 #endif
         default:
