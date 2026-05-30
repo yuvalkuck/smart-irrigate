@@ -11,9 +11,6 @@
 #include "inc/services.h"
 
 extern const char* events[];
-
-//#include "host/ble_sm.h"
-
 static const char* TAG = "BleSrv:";
 #define BLE_ATT_UUID_PRIMARY_SERVICE 0x2800
 #define GATT_SVR_SVC_ALERT_UUID               0x1811
@@ -23,7 +20,7 @@ static uint8_t own_addr_type = BLE_OWN_ADDR_RANDOM;
 #define BLE_GAP_LE_ROLE_PERIPHERAL 0x01
 // Characteristic UUID for NVS Read (to get a list of key-value pairs).
 // Example Characteristic UUID: 00000002-8D6A-46F6-B20C-9A5163000000
-
+static void start_advertising(void);
 static void
 print_addr(const void* addr) {
     const char* u8p = (const char*)addr;
@@ -79,11 +76,7 @@ static int ble_gap_event_cb(struct ble_gap_event* event, void* arg) {
 
             if (event->connect.status != 0) {
                 /* Connection failed; resume advertising. */
-                // #if CONFIG_EXAMPLE_EXTENDED_ADV
-                //             ext_bleprph_advertise();
-                // #else
-                //             bleprph_advertise();
-                // #endif
+                start_advertising();
             }
             break;
         case BLE_GAP_EVENT_LINK_ESTAB:
@@ -134,13 +127,10 @@ static int ble_gap_event_cb(struct ble_gap_event* event, void* arg) {
             MODLOG_DFLT(INFO, "disconnect; reason=%d ", event->disconnect.reason);
             bleprph_print_conn_desc(&event->disconnect.conn);
             MODLOG_DFLT(INFO, "\n");
-
-            /* Connection terminated; resume advertising. */
-            // #if CONFIG_EXAMPLE_EXTENDED_ADV
-            //         ext_bleprph_advertise();
-            // #else
-            //         bleprph_advertise();
-            // #endif
+            if (event->connect.status != 0) {
+                /* Connection failed; resume advertising. */
+                start_advertising();
+            }
             break;
 
         case BLE_GAP_EVENT_CONN_UPDATE:
@@ -156,11 +146,7 @@ static int ble_gap_event_cb(struct ble_gap_event* event, void* arg) {
         case BLE_GAP_EVENT_ADV_COMPLETE:
             MODLOG_DFLT(INFO, "advertise complete; reason=%d",
                         event->adv_complete.reason);
-            // #if CONFIG_EXAMPLE_EXTENDED_ADV
-            //         ext_bleprph_advertise();
-            // #else
-            //         bleprph_advertise();
-            // #endif
+            start_advertising();
             break;
 
         case BLE_GAP_EVENT_ENC_CHANGE:
@@ -438,33 +424,7 @@ void init_blesrv(void) {
     ret = init_gatt_services();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to init gatt_services %d ", ret);
-        return;
     }
-
-    //
-    //
-    // #ifdef CONFIG_EXAMPLE_BONDING
-    //     ble_hs_cfg.sm_bonding = 1;
-    //     /* Enable the appropriate bit masks to make sure the keys
-    //      * that are needed are exchanged
-    //      */
-    //     ble_hs_cfg.sm_our_key_dist |= BLE_SM_PAIR_KEY_DIST_ENC;
-    //     ble_hs_cfg.sm_their_key_dist |= BLE_SM_PAIR_KEY_DIST_ENC;
-    // #endif
-    // #ifdef CONFIG_EXAMPLE_MITM
-    //     ble_hs_cfg.sm_mitm = 1;
-    // #endif
-    // #ifdef CONFIG_EXAMPLE_USE_SC
-    //     ble_hs_cfg.sm_sc = 1;
-    // #else
-    //     ble_hs_cfg.sm_sc = 0;
-    // #endif
-    // #ifdef CONFIG_EXAMPLE_RESOLVE_PEER_ADDR
-    //     /* Stores the IRK */
-    //     ble_hs_cfg.sm_our_key_dist |= BLE_SM_PAIR_KEY_DIST_ID;
-    //     ble_hs_cfg.sm_their_key_dist |= BLE_SM_PAIR_KEY_DIST_ID;
-    // #endif
-    //     // ble_sm_configure_static_passkey(CONFIG_MY_BT_PASSWORD , true);
 }
 
 void start_blesrv(void) {
