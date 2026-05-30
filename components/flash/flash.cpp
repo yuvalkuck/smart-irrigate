@@ -56,15 +56,12 @@ esp_err_t init_flash(void) {
         return 0;
     }
     ESP_LOGI(TAG, "start init keys");
-
-    nvsCreateKeyStr("wifi_ssid", CONFIG_MY_WIFI_SSID);
-    nvsCreateKeyStr("wifi_password",CONFIG_MY_WIFI_PASSWORD);
-    nvsCreateKeyStr("bt_password");
+    nvsCreateKeyStr("wifi_ssid");
+    nvsCreateKeyStr("wifi_password");
     nvsCreateKeyStr("bt_device_name", CONFIG_MY_BT_DEVICE_NAME);
-    nvsCreateKeyStr("broker_url", CONFIG_BROKER_URL);
-    nvsCreateKeyInt("broker_port", CONFIG_BROKER_PORT);
-    nvsCreateKeyStr("mqtt_username", CONFIG_MQTT_CLIENT_USERNAME);
-    nvsCreateKeyStr("mqtt_password", CONFIG_MQTT_CLIENT_PASSWORD);
+    nvsCreateKeyStr("mqtt_url", CONFIG_BROKER_URL);
+    nvsCreateKeyStr("mqtt_uname"); // CONFIG_MQTT_CLIENT_USERNAME
+    nvsCreateKeyStr("mqtt_pword"); //CONFIG_MQTT_CLIENT_PASSWORD
     nvsCreateKeyStr("ntp_server",CONFIG_NTP_SERVER);
     nvsCreateKeyStr("locale_tz",CONFIG_DEFAULT_LOCALE_TIME_ZONE);
     ret = nvs_commit(hNVS);
