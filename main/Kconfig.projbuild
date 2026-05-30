@@ -10,12 +10,6 @@ menu "WiFi STA Configuration"
         help
             The password for the WiFi network.
 
-    config MY_BT_PASSWORD
-        int
-        default 456789
-        help
-            ble configure static passkey;
-
     config MY_BT_DEVICE_NAME
         string "BLE device name"
         default "Irrigator Main"
@@ -30,16 +24,6 @@ menu "Mqtt STA Configuration"
         default "mqtts://127.0.0.1:8883"
         help
             URL of the broker to connect to
-
-    config BROKER_PORT
-        int
-        default 8883
-        help
-            broker port
-
-    config BROKER_URL_FROM_STDIN
-        bool
-        default y if BROKER_URL = "FROM_STDIN"
 
     config MQTT_CLIENT_USERNAME
         string "Client username"

@@ -76,7 +76,7 @@ void init_hmqtt(void) {
     ESP_LOGI(TAG, "MQTT client");
     ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
     mqtt_cfg.broker.address.uri = static_cast<const char *>(CONFIG_BROKER_URL);
-    mqtt_cfg.broker.address.port = CONFIG_BROKER_PORT;
+    // mqtt_cfg.broker.address.port = CONFIG_BROKER_PORT;
 
     mqtt_cfg.broker.verification.certificate = (const char *)ca_crt_start,
     mqtt_cfg.credentials.username = CONFIG_MQTT_CLIENT_USERNAME;
@@ -84,6 +84,7 @@ void init_hmqtt(void) {
     mqtt_cfg.credentials.authentication.certificate = (const char *)client_crt_start,
     mqtt_cfg.credentials.authentication.key = (const char *)client_key_start,
     mqtt_cfg.broker.verification.skip_cert_common_name_check = true;
+/*
 #if CONFIG_BROKER_URL_FROM_STDIN
     char line[128];
 
@@ -109,7 +110,8 @@ void init_hmqtt(void) {
         ESP_LOGE(TAG, "Configuration mismatch: wrong broker url");
         abort();
     }
-#endif /* CONFIG_BROKER_URL_FROM_STDIN */
+#endif
+*/
 
     client = esp_mqtt_client_init(&mqtt_cfg);
     if (client == nullptr) {
