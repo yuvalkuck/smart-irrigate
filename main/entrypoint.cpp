@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <telemetry.h>
 
 #include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
@@ -40,12 +41,13 @@ extern "C" void app_main(void) {
     //Initialize NVS
     esp_err_t ret  = init_flash();
     ESP_ERROR_CHECK(ret);
-    init_blesrv();
+    //init_blesrv();
 
     ESP_LOGI(TAG, "start event loop default");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-    start_blesrv();
-/*
+    //start_blesrv();
+    init_telemetry();
+#if 0
     init_wifi();
     // // 6. Start Wi-Fi
     start_wifi();
@@ -54,7 +56,8 @@ extern "C" void app_main(void) {
     init_hmqtt();
     start_sntp();
     //
-*/
+#endif
+
     //
     ESP_LOGI(TAG, "working stage");
     //
