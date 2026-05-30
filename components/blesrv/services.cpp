@@ -6,8 +6,8 @@
 #include "nvs.h"
 #include "sdkconfig.h"
 
-#define NVS_NAMESPACE "config"
-#define NVS_PARTIION_NAME "app"
+#define NVS_NAMESPACE "."
+#define NVS_PARTITION_NAME "config"
 static const char* TAG = "BleHandler:";
 // Characteristic UUID for NVS Read (to get a list of key-value pairs).
 // Example Characteristic UUID: 00000002-8D6A-46F6-B20C-9A5163000000
@@ -88,15 +88,16 @@ static int nvs_read_access_cb(uint16_t conn_handle, uint16_t attr_handle,
 
         // Iterate through all NVS entries in all namespaces.
         // To iterate a specific namespace, replace the first NULL with the namespace name (e.g., "storage").
-        nvs_entry_find(NVS_PARTIION_NAME, NVS_NAMESPACE, NVS_TYPE_ANY, &it);
+        nvs_entry_find(NVS_PARTITION_NAME, NVS_NAMESPACE, NVS_TYPE_ANY, &it);
         while (it != nullptr) {
             nvs_entry_info_t info;
             nvs_entry_info(it, &info); // Get info about the current entry (key, type, namespace)
             nvs_entry_next(&it); // Move to the next entry
+            ESP_LOGI(TAG, "NVS Entry: %s, %s, %d", info.key, info.namespace_name, info.type);
 
             nvs_handle_t nvs_handle;
             // Open NVS handle for the current entry's namespace in read-only mode
-            err = nvs_open(info.namespace_name, NVS_READONLY, &nvs_handle);
+            err = nvs_open_from_partition(NVS_PARTITION_NAME, info.namespace_name, NVS_READONLY, &nvs_handle);
             if (err != ESP_OK) {
                 ESP_LOGE(TAG, "Error (%s) opening NVS namespace %s", esp_err_to_name(err), info.namespace_name);
                 continue; // Skip to the next entry if namespace cannot be opened

@@ -3,7 +3,7 @@
 #include "flash.h"
 #include "sdkconfig.h"
 
-#define NVS_NAMESPACE ""
+#define NVS_NAMESPACE "."
 #define NVS_PARTITION_NAME "config"
 
 static const char* TAG = "flash:";
