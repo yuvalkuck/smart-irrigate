@@ -9,18 +9,28 @@
 static const char* TAG = "flash:";
 static nvs_handle_t hNVS;
 // esp_err_t nvs_set_str(uint32_t handle, const char* key, int value, size_t* len);
-bool nvs_key_isempty(const uint32_t *handler, const char *name) {
-    char tmp[64] = {0};
+bool nvs_key_isempty(const uint32_t handler, const char *name) {
+    char tmp[128] = {0};
     size_t len = sizeof(tmp);
-    auto err = nvs_get_str(hNVS, name, tmp, &len);
-    ESP_LOGI(TAG, "%s:%s:%d", __func__, tmp,len);
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
-        return true;
+    auto err = nvs_get_str(handler, name, tmp, &len);
+    switch (err) {
+        case ESP_ERR_NVS_INVALID_HANDLE:
+            ESP_LOGE(TAG, "ESP_ERR_NVS_INVALID_HANDLE");
+            return true;
+        case ESP_ERR_NVS_NOT_FOUND:
+            ESP_LOGI(TAG, "ESP_ERR_NVS_NOT_FOUND");
+            return true;
+        case ESP_ERR_NVS_INVALID_LENGTH:
+            ESP_LOGE(TAG, "ESP_ERR_NVS_INVALID_LENGTH");
+            return false;
+        case ESP_OK:
+            if ( strlen(tmp) <1 ) {
+                return true;
+            }
+            break;
+        default:
+            ESP_LOGE(TAG, "Unhandled error: %d", err);
     }
-    if ( strlen(tmp) < 1) {
-        return true;
-    }
-
     return false;
 }
 static void nvsCreateKeyStr(const char* name, const char* defaule_value = "") {
@@ -66,6 +76,7 @@ esp_err_t init_flash(void) {
     }
     ESP_LOGI(TAG, "start init keys");
     nvs_purge_all(hNVS);
+    ret = nvs_commit(hNVS);
     nvsCreateKeyStr(CFG_NVS_KEY_WIFI_SSID, CONFIG_MY_WIFI_SSID);
     nvsCreateKeyStr(CFG_NVS_KEY_WIFI_PASSWORD, CONFIG_MY_WIFI_PASSWORD);
     nvsCreateKeyStr(CFG_NVS_KEY_BT_DEVICE_NAME, CONFIG_MY_BT_DEVICE_NAME);

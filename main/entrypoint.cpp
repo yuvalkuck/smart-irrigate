@@ -66,7 +66,7 @@ extern "C" void app_main(void) {
     if ( nvs_config(&hCfg) != ESP_OK) {
         return;
     }
-    if ( nvs_key_isempty(&hCfg, CFG_NVS_KEY_WIFI_SSID) ) {
+    if ( nvs_key_isempty(hCfg, CFG_NVS_KEY_WIFI_SSID) ) {
         ESP_LOGI(TAG, "Start BLE");
         init_blesrv();
         start_blesrv();
