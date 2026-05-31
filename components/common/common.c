@@ -1,0 +1,2 @@
+#include "esp_event.h"
+ESP_EVENT_DEFINE_BASE(COMMON_BASE_EVENTS);

@@ -1,0 +1,6 @@
+#include "esp_event.h"
+ESP_EVENT_DECLARE_BASE(COMMON_BASE_EVENTS);
+
+enum {
+    COMMON_EVENT_SENSOR_UPDATED
+};

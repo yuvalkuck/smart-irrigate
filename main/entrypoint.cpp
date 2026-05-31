@@ -12,9 +12,11 @@
 #include "blesrv.h"
 #include "driver/gpio.h"
 #include "time.h"
+#include "common_event.h"
+#include "bme680.h"
 
-static const char* TAG = "irrigate app";
-// static EventGroupHandle_t wifiEventGroup;
+static const char* TAG = "App:";
+extern bme680_values_float_t telemetryValues;
 #define GPIO_LED 15
 
 static void setLedState(int fliper) {
@@ -26,11 +28,22 @@ void continue_after_time_sync_cb(struct timeval* tv) {
     ESP_LOGI(TAG, "Notification of a time synchronization event");
     setenv("TZ", CONFIG_DEFAULT_LOCALE_TIME_ZONE, 1);
     tzset();
-    ESP_LOGI(TAG,"set TimeZone to: %s",CONFIG_DEFAULT_LOCALE_TIME_ZONE);
+    ESP_LOGI(TAG, "set TimeZone to: %s", CONFIG_DEFAULT_LOCALE_TIME_ZONE);
     start_hmqtt();
+}
+static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base, int32_t event_id, void* event_data) {
+    ESP_LOGV(TAG, "%s", __func__);
+    if (event_base == COMMON_BASE_EVENTS) {
+        switch (event_id) {
+            case COMMON_EVENT_SENSOR_UPDATED:
+                ESP_LOGI(TAG, "Catcher received: Sensor is ready!");
+                break;
+            default:
+                break;
+        }
+    }
 
 }
-
 
 extern "C" void app_main(void) {
     ESP_LOGI(TAG, "setting up");
@@ -39,14 +52,22 @@ extern "C" void app_main(void) {
     gpio_set_direction((gpio_num_t)GPIO_LED, GPIO_MODE_OUTPUT);
 
     //Initialize NVS
-    esp_err_t ret  = init_flash();
+    esp_err_t ret = init_flash();
     ESP_ERROR_CHECK(ret);
     //init_blesrv();
 
     ESP_LOGI(TAG, "start event loop default");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+    esp_event_handler_register(
+            COMMON_BASE_EVENTS,          // Event base
+            ESP_EVENT_ANY_ID,            // Event ID (or look for a specific one like CUSTOM_EVENT_SENSOR_READY)
+            &cbCommonEventHandler,   // The callback function pointer
+            NULL                         // Optional arguments passed to handler_args
+        );
+
     //start_blesrv();
     init_telemetry();
+    start_telemetry();
 #if 0
     init_wifi();
     // // 6. Start Wi-Fi
@@ -75,5 +96,4 @@ extern "C" void app_main(void) {
     //      * and call esp_log_level_set() before esp_wifi_init() to improve the log level of the wifi module. */
     //     esp_log_level_set("wifi", CONFIG_LOG_MAXIMUM_LEVEL);
     // }
-
 }

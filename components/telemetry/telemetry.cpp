@@ -3,6 +3,8 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "bme680.h"
+#include "common_event.h"
+#include "esp_event.h"
 
 
 // Define I2C pins for ESP32-C6
@@ -14,6 +16,7 @@
 #define BME680_I2C_ADDR BME680_I2C_ADDR_1
 static bme680_t sensor;
 static const char* TAG = "BME680:";
+bme680_values_float_t telemetryValues;
 
 void init_telemetry(void) {
     ESP_LOGI(TAG, "%s", __func__);
@@ -44,27 +47,23 @@ void init_telemetry(void) {
     // Set a context environment baseline temperature
     bme680_set_ambient_temperature(&sensor, 25);
 }
-
-void start_telemetry(void) {
-    bme680_values_float_t values;
-    uint32_t duration;
-
-    // Get time required for a reading cycle
-    bme680_get_measurement_duration(&sensor, &duration);
-
+#define TASK_DELAY 5000
+static void cbTelemetryTask(void *pDuration) {
+    uint32_t duration = (uint32_t)pDuration;
     while (1) {
         // Run forced evaluation pass
         if (bme680_force_measurement(&sensor) == ESP_OK) {
             // Block cleanly while hardware state machine executes the conversion
-            vTaskDelay(duration / portTICK_PERIOD_MS);
+            vTaskDelay(duration /* portTICK_PERIOD_MS*/);
 
-            // Fetch processed values
-            if (bme680_get_results_float(&sensor, &values) == ESP_OK) {
+            // Fetch processed telemetryValues
+            if (bme680_get_results_float(&sensor, &telemetryValues) == ESP_OK) {
                 // Print everything directly because the library ensures valid float parsing on ESP_OK
                 ESP_LOGI(TAG, "Temp: %.2f °C | Humidity: %.2f %% | Pressure: %.2f hPa",
-                         values.temperature, values.humidity, values.pressure);
+                         telemetryValues.temperature, telemetryValues.humidity, telemetryValues.pressure);
 
-                ESP_LOGI(TAG, "Gas Resistance: %.2f Ohm", values.gas_resistance);
+                ESP_LOGI(TAG, "Gas Resistance: %.2f Ohm", telemetryValues.gas_resistance);
+                esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_SENSOR_UPDATED, NULL, 0, portMAX_DELAY);
                 printf("----------------------------------------------------------------\n");
             }
             else {
@@ -74,7 +73,52 @@ void start_telemetry(void) {
         else {
             ESP_LOGE(TAG, "Could not force measurement command.");
         }
-
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(TASK_DELAY));
     }
 }
+void start_telemetry(void) {
+    uint32_t duration;
+
+    // Get time required for a reading cycle
+    bme680_get_measurement_duration(&sensor, &duration);
+    ESP_LOGI(TAG, "duration:%d",duration);
+
+    BaseType_t result = xTaskCreate(
+            cbTelemetryTask,        // Pointer to the task function
+            "TelemetryTask",       // Descriptive name (for debugging)
+            4096,               // Stack size in BYTES (Note: ESP-IDF uses bytes, not words)
+            &duration,  // Parameter passed into the task
+            5,                  // Task Priority (Higher number = higher priority)
+            NULL                // Task handle pointer (Optional, pass NULL if not needed)
+        );
+
+    if (result != pdPASS) {
+        ESP_LOGE(TAG, "Failed to create task due to insufficient memory!");
+    }
+}
+//     while (1) {
+//         // Run forced evaluation pass
+//         if (bme680_force_measurement(&sensor) == ESP_OK) {
+//             // Block cleanly while hardware state machine executes the conversion
+//             vTaskDelay(duration /* portTICK_PERIOD_MS*/);
+//
+//             // Fetch processed values
+//             if (bme680_get_results_float(&sensor, &values) == ESP_OK) {
+//                 // Print everything directly because the library ensures valid float parsing on ESP_OK
+//                 ESP_LOGI(TAG, "Temp: %.2f °C | Humidity: %.2f %% | Pressure: %.2f hPa",
+//                          values.temperature, values.humidity, values.pressure);
+//
+//                 ESP_LOGI(TAG, "Gas Resistance: %.2f Ohm", values.gas_resistance);
+//                 printf("----------------------------------------------------------------\n");
+//             }
+//             else {
+//                 ESP_LOGE(TAG, "Could not fetch registers from BME680.");
+//             }
+//         }
+//         else {
+//             ESP_LOGE(TAG, "Could not force measurement command.");
+//         }
+//
+//         vTaskDelay(pdMS_TO_TICKS(3000));
+//     }
+// }
