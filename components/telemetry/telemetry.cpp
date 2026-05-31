@@ -47,24 +47,21 @@ void init_telemetry(void) {
     // Set a context environment baseline temperature
     bme680_set_ambient_temperature(&sensor, 25);
 }
+
 #define TASK_DELAY 5000
-static void cbTelemetryTask(void *pDuration) {
-    uint32_t duration = (uint32_t)pDuration;
+
+[[noreturn]] static void cbTelemetryTask(void* ) {
+    uint32_t duration;
+    bme680_get_measurement_duration(&sensor, &duration);
+    ESP_LOGI(TAG, "duration:%d", duration);
     while (1) {
         // Run forced evaluation pass
         if (bme680_force_measurement(&sensor) == ESP_OK) {
             // Block cleanly while hardware state machine executes the conversion
             vTaskDelay(duration /* portTICK_PERIOD_MS*/);
-
             // Fetch processed telemetryValues
             if (bme680_get_results_float(&sensor, &telemetryValues) == ESP_OK) {
-                // Print everything directly because the library ensures valid float parsing on ESP_OK
-                ESP_LOGI(TAG, "Temp: %.2f °C | Humidity: %.2f %% | Pressure: %.2f hPa",
-                         telemetryValues.temperature, telemetryValues.humidity, telemetryValues.pressure);
-
-                ESP_LOGI(TAG, "Gas Resistance: %.2f Ohm", telemetryValues.gas_resistance);
                 esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_SENSOR_UPDATED, NULL, 0, portMAX_DELAY);
-                printf("----------------------------------------------------------------\n");
             }
             else {
                 ESP_LOGE(TAG, "Could not fetch registers from BME680.");
@@ -76,49 +73,19 @@ static void cbTelemetryTask(void *pDuration) {
         vTaskDelay(pdMS_TO_TICKS(TASK_DELAY));
     }
 }
+
 void start_telemetry(void) {
-    uint32_t duration;
-
-    // Get time required for a reading cycle
-    bme680_get_measurement_duration(&sensor, &duration);
-    ESP_LOGI(TAG, "duration:%d",duration);
-
+    ESP_LOGI(TAG, "%s", __func__);
     BaseType_t result = xTaskCreate(
-            cbTelemetryTask,        // Pointer to the task function
-            "TelemetryTask",       // Descriptive name (for debugging)
-            4096,               // Stack size in BYTES (Note: ESP-IDF uses bytes, not words)
-            &duration,  // Parameter passed into the task
-            5,                  // Task Priority (Higher number = higher priority)
-            NULL                // Task handle pointer (Optional, pass NULL if not needed)
-        );
+        cbTelemetryTask, // Pointer to the task function
+        "TelemetryTask", // Descriptive name (for debugging)
+        4096, // Stack size in BYTES (Note: ESP-IDF uses bytes, not words)
+        NULL, // Parameter passed into the task
+        5, // Task Priority (Higher number = higher priority)
+        NULL // Task handle pointer (Optional, pass NULL if not needed)
+    );
 
     if (result != pdPASS) {
         ESP_LOGE(TAG, "Failed to create task due to insufficient memory!");
     }
 }
-//     while (1) {
-//         // Run forced evaluation pass
-//         if (bme680_force_measurement(&sensor) == ESP_OK) {
-//             // Block cleanly while hardware state machine executes the conversion
-//             vTaskDelay(duration /* portTICK_PERIOD_MS*/);
-//
-//             // Fetch processed values
-//             if (bme680_get_results_float(&sensor, &values) == ESP_OK) {
-//                 // Print everything directly because the library ensures valid float parsing on ESP_OK
-//                 ESP_LOGI(TAG, "Temp: %.2f °C | Humidity: %.2f %% | Pressure: %.2f hPa",
-//                          values.temperature, values.humidity, values.pressure);
-//
-//                 ESP_LOGI(TAG, "Gas Resistance: %.2f Ohm", values.gas_resistance);
-//                 printf("----------------------------------------------------------------\n");
-//             }
-//             else {
-//                 ESP_LOGE(TAG, "Could not fetch registers from BME680.");
-//             }
-//         }
-//         else {
-//             ESP_LOGE(TAG, "Could not force measurement command.");
-//         }
-//
-//         vTaskDelay(pdMS_TO_TICKS(3000));
-//     }
-// }

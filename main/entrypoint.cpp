@@ -18,6 +18,7 @@
 static const char* TAG = "App:";
 extern bme680_values_float_t telemetryValues;
 #define GPIO_LED 15
+ESP_EVENT_DEFINE_BASE(COMMON_BASE_EVENTS);
 
 static void setLedState(int fliper) {
     // ESP_LOGI(TAG, "set %d", fliper);
@@ -36,7 +37,10 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
     if (event_base == COMMON_BASE_EVENTS) {
         switch (event_id) {
             case COMMON_EVENT_SENSOR_UPDATED:
-                ESP_LOGI(TAG, "Catcher received: Sensor is ready!");
+                ESP_LOGI(TAG, "Temp: %.2f °C | Humidity: %.2f %% | Pressure: %.2f hPa",
+                         telemetryValues.temperature, telemetryValues.humidity, telemetryValues.pressure);
+
+                ESP_LOGI(TAG, "Gas Resistance: %.2f Ohm", telemetryValues.gas_resistance);
                 break;
             default:
                 break;
