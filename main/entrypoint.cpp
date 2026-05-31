@@ -66,10 +66,12 @@ extern "C" void app_main(void) {
     if ( nvs_config(&hCfg) != ESP_OK) {
         return;
     }
-    if ( !nvs_key_exist(&hCfg, CFG_NVS_KEY_WIFI_SSID) ) {
+    if ( nvs_key_isempty(&hCfg, CFG_NVS_KEY_WIFI_SSID) ) {
+        ESP_LOGI(TAG, "Start BLE");
         init_blesrv();
         start_blesrv();
     } else {
+        ESP_LOGI(TAG, "Start Regular Load");
         esp_event_handler_register(
                 COMMON_BASE_EVENTS,          // Event base
                 ESP_EVENT_ANY_ID,            // Event ID (or look for a specific one like CUSTOM_EVENT_SENSOR_READY)

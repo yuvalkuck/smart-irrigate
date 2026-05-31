@@ -9,21 +9,26 @@
 static const char* TAG = "flash:";
 static nvs_handle_t hNVS;
 // esp_err_t nvs_set_str(uint32_t handle, const char* key, int value, size_t* len);
-bool nvs_key_exist(const uint32_t *handler, const char *name) {
-    size_t len = 0;
+bool nvs_key_isempty(const uint32_t *handler, const char *name) {
     char tmp[64] = {0};
+    size_t len = sizeof(tmp);
     auto err = nvs_get_str(hNVS, name, tmp, &len);
-    if ((err == ESP_ERR_NVS_NOT_FOUND) ||
-        (len < 1) ) {
-        return false;
+    ESP_LOGI(TAG, "%s:%s:%d", __func__, tmp,len);
+    if (err == ESP_ERR_NVS_NOT_FOUND) {
+        return true;
     }
-    return true;
+    if ( strlen(tmp) < 1) {
+        return true;
+    }
+
+    return false;
 }
 static void nvsCreateKeyStr(const char* name, const char* defaule_value = "") {
     ESP_LOGI(TAG, "%s:%s", __func__, name);
     esp_err_t err;
-    size_t len = 0;
-    char tmp[64] = {0};
+
+    char tmp[1] = {0};
+    size_t len = sizeof(tmp);
     // Step 1: Get the size of the stored string (includes null terminator)
     err = nvs_get_str(hNVS, name, tmp, &len);
     if (err == ESP_ERR_NVS_NOT_FOUND) {
@@ -60,6 +65,7 @@ esp_err_t init_flash(void) {
         return 0;
     }
     ESP_LOGI(TAG, "start init keys");
+    nvs_purge_all(hNVS);
     nvsCreateKeyStr(CFG_NVS_KEY_WIFI_SSID, CONFIG_MY_WIFI_SSID);
     nvsCreateKeyStr(CFG_NVS_KEY_WIFI_PASSWORD, CONFIG_MY_WIFI_PASSWORD);
     nvsCreateKeyStr(CFG_NVS_KEY_BT_DEVICE_NAME, CONFIG_MY_BT_DEVICE_NAME);

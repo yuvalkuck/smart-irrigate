@@ -12,4 +12,4 @@
 
 esp_err_t init_flash(void);
 esp_err_t nvs_config(uint32_t*);
-bool nvs_key_exist(const uint32_t *handler, const char *name);
+bool nvs_key_isempty(const uint32_t *handler, const char *name);
