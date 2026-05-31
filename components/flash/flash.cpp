@@ -8,8 +8,17 @@
 
 static const char* TAG = "flash:";
 static nvs_handle_t hNVS;
-esp_err_t nvs_set_str(uint32_t handle, const char* key, int value, size_t* len);
-
+// esp_err_t nvs_set_str(uint32_t handle, const char* key, int value, size_t* len);
+bool nvs_key_exist(const uint32_t *handler, const char *name) {
+    size_t len = 0;
+    char tmp[64] = {0};
+    auto err = nvs_get_str(hNVS, name, tmp, &len);
+    if ((err == ESP_ERR_NVS_NOT_FOUND) ||
+        (len < 1) ) {
+        return false;
+    }
+    return true;
+}
 static void nvsCreateKeyStr(const char* name, const char* defaule_value = "") {
     ESP_LOGI(TAG, "%s:%s", __func__, name);
     esp_err_t err;
@@ -21,20 +30,6 @@ static void nvsCreateKeyStr(const char* name, const char* defaule_value = "") {
         err = nvs_set_str(hNVS, name, defaule_value);
         if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
             ESP_LOGE(TAG, "failed to create: %s", defaule_value);
-        }
-    }
-}
-
-static void nvsCreateKeyInt(const char* name, long defaule_value = 0) {
-    ESP_LOGI(TAG, "%s:%s", __func__, name);
-    esp_err_t err;
-    int32_t value;
-    // Step 1: Get the size of the stored string (includes null terminator)
-    err = nvs_get_i32(hNVS, name, &value);
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
-        err = nvs_set_i32(hNVS, name, defaule_value);
-        if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-            ESP_LOGE(TAG, "failed to create: %d", defaule_value);
         }
     }
 }
@@ -65,14 +60,14 @@ esp_err_t init_flash(void) {
         return 0;
     }
     ESP_LOGI(TAG, "start init keys");
-    nvsCreateKeyStr("wifi_ssid");
-    nvsCreateKeyStr("wifi_password");
-    nvsCreateKeyStr("bt_device_name", CONFIG_MY_BT_DEVICE_NAME);
-    nvsCreateKeyStr("mqtt_url", CONFIG_BROKER_URL);
-    nvsCreateKeyStr("mqtt_uname"); // CONFIG_MQTT_CLIENT_USERNAME
-    nvsCreateKeyStr("mqtt_pword"); //CONFIG_MQTT_CLIENT_PASSWORD
-    nvsCreateKeyStr("ntp_server",CONFIG_NTP_SERVER);
-    nvsCreateKeyStr("locale_tz",CONFIG_DEFAULT_LOCALE_TIME_ZONE);
+    nvsCreateKeyStr(CFG_NVS_KEY_WIFI_SSID, CONFIG_MY_WIFI_SSID);
+    nvsCreateKeyStr(CFG_NVS_KEY_WIFI_PASSWORD, CONFIG_MY_WIFI_PASSWORD);
+    nvsCreateKeyStr(CFG_NVS_KEY_BT_DEVICE_NAME, CONFIG_MY_BT_DEVICE_NAME);
+    nvsCreateKeyStr(CFG_NVS_KEY_MQTT_URL, CONFIG_BROKER_URL);
+    nvsCreateKeyStr(CFG_NVS_KEY_MQTT_USERNAME); // CONFIG_MQTT_CLIENT_USERNAME
+    nvsCreateKeyStr(CFG_NVS_KEY_MQTT_PASSWORD); //CONFIG_MQTT_CLIENT_PASSWORD
+    nvsCreateKeyStr(CFG_NVS_KEY_NTP_SERVER,CONFIG_NTP_SERVER);
+    nvsCreateKeyStr(CFG_NVS_KEY_LOCALE_TZ,CONFIG_DEFAULT_LOCALE_TIME_ZONE);
     ret = nvs_commit(hNVS);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "failed (%d) nvs_commit", ret);

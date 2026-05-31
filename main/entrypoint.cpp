@@ -14,6 +14,7 @@
 #include "time.h"
 #include "common_event.h"
 #include "bme680.h"
+#include "../../../esp/esp-idf/components/nvs_flash/include/nvs.h"
 
 static const char* TAG = "App:";
 extern bme680_values_float_t telemetryValues;
@@ -58,31 +59,35 @@ extern "C" void app_main(void) {
     //Initialize NVS
     esp_err_t ret = init_flash();
     ESP_ERROR_CHECK(ret);
-    //init_blesrv();
-
     ESP_LOGI(TAG, "start event loop default");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-    esp_event_handler_register(
-            COMMON_BASE_EVENTS,          // Event base
-            ESP_EVENT_ANY_ID,            // Event ID (or look for a specific one like CUSTOM_EVENT_SENSOR_READY)
-            &cbCommonEventHandler,   // The callback function pointer
-            NULL                         // Optional arguments passed to handler_args
-        );
+    // test if we have wifi config
+    u_int32_t hCfg;
+    if ( nvs_config(&hCfg) != ESP_OK) {
+        return;
+    }
+    if ( !nvs_key_exist(&hCfg, CFG_NVS_KEY_WIFI_SSID) ) {
+        init_blesrv();
+        start_blesrv();
+    } else {
+        esp_event_handler_register(
+                COMMON_BASE_EVENTS,          // Event base
+                ESP_EVENT_ANY_ID,            // Event ID (or look for a specific one like CUSTOM_EVENT_SENSOR_READY)
+                &cbCommonEventHandler,   // The callback function pointer
+                NULL                         // Optional arguments passed to handler_args
+            );
+        init_telemetry();
 
-    //start_blesrv();
-    init_telemetry();
-    start_telemetry();
-#if 0
-    init_wifi();
-    // // 6. Start Wi-Fi
-    start_wifi();
-    // SNTP
-    init_sntp(CONFIG_NTP_SERVER, continue_after_time_sync_cb);
-    init_hmqtt();
-    start_sntp();
-    //
-#endif
-
+        init_wifi();
+        // // 6. Start Wi-Fi
+        start_wifi();
+        // SNTP
+        init_sntp(CONFIG_NTP_SERVER, continue_after_time_sync_cb);
+        init_hmqtt();
+        start_sntp();
+        start_telemetry();
+    }
+    nvs_close(hCfg);
     //
     ESP_LOGI(TAG, "working stage");
     //
