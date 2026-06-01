@@ -7,6 +7,8 @@
 #include "mqtt_client.h"
 #include "sdkconfig.h"
 #include <algorithm>
+#include "flash.h"
+
 
 
 static EventGroupHandle_t wifiEventGroup;
@@ -48,22 +50,10 @@ void init_wifi(void) {
     ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifiEventHandler, NULL, NULL));
 
     // 5. Configure Station Mode
-#ifdef CONFIG_MY_WIFI_SSID
-#define WIFI_SSID CONFIG_MY_WIFI_SSID
-#else
-#define WIFI_SSID ""
-#endif
-#ifdef CONFIG_MY_WIFI_PASSWORD
-#define WIFI_PASS CONFIG_MY_WIFI_PASSWORD
-#else
-#define WIFI_PASS ""
-#endif
+    NvsConfig hCfg;
     wifi_config_t wifi_config = {};
-    size_t ssid_len = std::min(sizeof(wifi_config.sta.ssid), strlen(WIFI_SSID));
-    memcpy(wifi_config.sta.ssid, WIFI_SSID, ssid_len);
-    size_t pass_len = std::min(sizeof(wifi_config.sta.password), strlen(WIFI_PASS));
-    memcpy(wifi_config.sta.password, WIFI_PASS, pass_len);
-
+    hCfg.getStr( CFG_NVS_KEY_WIFI_SSID, wifi_config.sta.ssid, sizeof(wifi_config.sta.ssid));
+    hCfg.getStr( CFG_NVS_KEY_WIFI_PASSWORD, wifi_config.sta.password, sizeof(wifi_config.sta.password));
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
 }

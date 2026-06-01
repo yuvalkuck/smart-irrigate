@@ -1,5 +1,6 @@
 #include "esp_err.h"
 
+
 #define CFG_NVS_KEY_WIFI_SSID       "wifi_ssid"
 #define CFG_NVS_KEY_WIFI_PASSWORD   "wifi_password"
 #define CFG_NVS_KEY_BT_DEVICE_NAME  "device_name"
@@ -11,5 +12,29 @@
 
 
 esp_err_t init_flash(void);
-esp_err_t nvs_config(uint32_t*);
-bool nvs_key_isempty(const uint32_t handler, const char *name);
+/* use C++ for handler container */
+class NvsConfig {
+
+    uint32_t handler_ = 0;
+public:
+    operator bool() const {
+        return handler_ != 0;
+    }
+    operator uint32_t() const {
+        return handler_;
+    }
+    NvsConfig();
+    ~NvsConfig();
+    NvsConfig(const NvsConfig&) = delete;
+    NvsConfig& operator=(const NvsConfig&) = delete;
+    NvsConfig(NvsConfig&&) = delete;
+    NvsConfig& operator=(NvsConfig&&) = delete;
+    bool getStr(const char *key, char *value, size_t len);
+    bool getStr(const char *key, uint8_t *value, size_t len) {
+        return getStr(key, (char *)value, len);
+    }
+    bool isStrEmpty(const char *key) const;
+};
+
+
+

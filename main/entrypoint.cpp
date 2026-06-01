@@ -62,34 +62,35 @@ extern "C" void app_main(void) {
     ESP_LOGI(TAG, "start event loop default");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     // test if we have wifi config
-    u_int32_t hCfg;
-    if ( nvs_config(&hCfg) != ESP_OK) {
-        return;
-    }
-    if ( nvs_key_isempty(hCfg, CFG_NVS_KEY_WIFI_SSID) ) {
-        ESP_LOGI(TAG, "Start BLE");
-        init_blesrv();
-        start_blesrv();
-    } else {
-        ESP_LOGI(TAG, "Start Regular Load");
-        esp_event_handler_register(
-                COMMON_BASE_EVENTS,          // Event base
-                ESP_EVENT_ANY_ID,            // Event ID (or look for a specific one like CUSTOM_EVENT_SENSOR_READY)
-                &cbCommonEventHandler,   // The callback function pointer
-                NULL                         // Optional arguments passed to handler_args
-            );
-        init_telemetry();
+    { // block to release hCfg when not use anymore
+        NvsConfig hCfg;
+        if ( !hCfg ) {
+            return;
+        }
+        if ( hCfg.isStrEmpty(CFG_NVS_KEY_WIFI_SSID) ) {
+            ESP_LOGI(TAG, "Start BLE");
+            init_blesrv();
+            start_blesrv();
+        } else {
+            ESP_LOGI(TAG, "Start Regular Load");
+            esp_event_handler_register(
+                    COMMON_BASE_EVENTS,          // Event base
+                    ESP_EVENT_ANY_ID,            // Event ID (or look for a specific one like CUSTOM_EVENT_SENSOR_READY)
+                    &cbCommonEventHandler,   // The callback function pointer
+                    NULL                         // Optional arguments passed to handler_args
+                );
+            init_telemetry();
 
-        init_wifi();
-        // // 6. Start Wi-Fi
-        start_wifi();
-        // SNTP
-        init_sntp(CONFIG_NTP_SERVER, continue_after_time_sync_cb);
-        init_hmqtt();
-        start_sntp();
-        start_telemetry();
+            init_wifi();
+            // // 6. Start Wi-Fi
+            start_wifi();
+            // SNTP
+            init_sntp(CONFIG_NTP_SERVER, continue_after_time_sync_cb);
+            init_hmqtt();
+            start_sntp();
+            start_telemetry();
+        }
     }
-    nvs_close(hCfg);
     //
     ESP_LOGI(TAG, "working stage");
     //
