@@ -46,10 +46,12 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
                 telemetryValues.pressure,
                 telemetryValues.gas_resistance);
                 mqtt_publish("home/telemetry", payload);
+                /*
                 ESP_LOGI(TAG, "Temp: %.2f °C | Humidity: %.2f %% | Pressure: %.2f hPa",
                          telemetryValues.temperature, telemetryValues.humidity, telemetryValues.pressure);
 
                 ESP_LOGI(TAG, "Gas Resistance: %.2f Ohm", telemetryValues.gas_resistance);
+                */
                 break;
             default:
                 break;
