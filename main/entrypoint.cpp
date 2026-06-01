@@ -37,9 +37,15 @@ void continue_after_time_sync_cb(struct timeval* tv) {
 
 static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base, int32_t event_id, void* event_data) {
     ESP_LOGV(TAG, "%s", __func__);
+    char payload[64];
     if (event_base == COMMON_BASE_EVENTS) {
         switch (event_id) {
             case COMMON_EVENT_SENSOR_UPDATED:
+                sprintf(payload, "%.2f|%.2f|%.2f|%.2f",telemetryValues.temperature,
+                telemetryValues.humidity,
+                telemetryValues.pressure,
+                telemetryValues.gas_resistance);
+                mqtt_publish("home/telemetry", payload);
                 ESP_LOGI(TAG, "Temp: %.2f °C | Humidity: %.2f %% | Pressure: %.2f hPa",
                          telemetryValues.temperature, telemetryValues.humidity, telemetryValues.pressure);
 
@@ -66,6 +72,8 @@ static void init_gpio() {
 }
 extern "C" void app_main(void) {
     ESP_LOGI(TAG, "setting up");
+    ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
+
     init_gpio();
     //Initialize NVS
     bool initRegular = (gpio_get_level(GPIO_FORCE_BLE) == 0 ? false : true);
@@ -88,6 +96,7 @@ extern "C" void app_main(void) {
             init_blesrv();
             start_blesrv();
             initRegular = false;
+            ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
         }
         else {
             ESP_LOGI(TAG, "Start Regular Load");

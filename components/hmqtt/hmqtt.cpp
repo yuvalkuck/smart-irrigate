@@ -73,8 +73,7 @@ static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t 
 }
 
 void init_hmqtt(void) {
-    ESP_LOGI(TAG, "MQTT client");
-    ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
+    ESP_LOGI(TAG, "%s", __func__);
     mqtt_cfg.broker.address.uri = static_cast<const char *>(CONFIG_BROKER_URL);
     // mqtt_cfg.broker.address.port = CONFIG_BROKER_PORT;
 
@@ -124,5 +123,10 @@ void init_hmqtt(void) {
 }
 
 void start_hmqtt(void) {
+    ESP_LOGI(TAG, "%s", __func__);
     esp_mqtt_client_start(client);
+}
+int mqtt_publish(const char *topic,const char *payload) {
+    ESP_LOGI(TAG, "%s:[%s]->[%s]", __func__, topic,payload);
+    return esp_mqtt_client_publish(client, topic, payload, strlen(payload), 1, 0);
 }
