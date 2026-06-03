@@ -14,7 +14,6 @@
 #include "time.h"
 #include "common_event.h"
 #include "bme680.h"
-#include "../../../esp/esp-idf/components/nvs_flash/include/nvs.h"
 
 static const char* TAG = "App:";
 extern bme680_values_float_t telemetryValues;
