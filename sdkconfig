@@ -1009,25 +1009,11 @@ CONFIG_PARTITION_TABLE_MD5=y
 #
 # WiFi STA Configuration
 #
-CONFIG_MY_WIFI_SSID="***REMOVED***"
-CONFIG_MY_WIFI_PASSWORD="***REMOVED***"
-CONFIG_MY_BT_DEVICE_NAME="Irrigator Main"
+# default:
+CONFIG_DEVICE_MAX_VALVES=6
+# default:
+CONFIG_DEVICE_MAX_VALVES_CONFIG=4
 # end of WiFi STA Configuration
-
-#
-# Mqtt STA Configuration
-#
-CONFIG_BROKER_URL="mqtts://127.0.0.1:8883"
-CONFIG_MQTT_CLIENT_USERNAME="client"
-CONFIG_MQTT_CLIENT_PASSWORD="client"
-# end of Mqtt STA Configuration
-
-#
-# SNTP configuration
-#
-CONFIG_NTP_SERVER="pool.ntp.org"
-CONFIG_DEFAULT_LOCALE_TIME_ZONE="Asia/Jerusalem"
-# end of SNTP configuration
 
 #
 # Compiler options

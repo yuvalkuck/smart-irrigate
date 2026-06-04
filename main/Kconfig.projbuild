@@ -1,56 +1,15 @@
 menu "WiFi STA Configuration"
 
-    config MY_WIFI_SSID
-        string "WiFi SSID"
+    config DEVICE_MAX_VALVES
+        int "WiFi SSID"
+        default 6
         help
             The SSID for the WiFi network the device will connect to.
 
-    config MY_WIFI_PASSWORD
-        string "WiFi Password"
+    config DEVICE_MAX_VALVES_CONFIG
+        int "WiFi SSID"
+        default 4
         help
-            The password for the WiFi network.
-
-    config MY_BT_DEVICE_NAME
-        string "BLE device name"
-        default "Irrigator Main"
-        help
-            BLE device name;
-
-endmenu
-menu "Mqtt STA Configuration"
-
-    config BROKER_URL
-        string "Broker URL"
-        default "mqtts://127.0.0.1:8883"
-        help
-            URL of the broker to connect to
-
-    config MQTT_CLIENT_USERNAME
-        string "Client username"
-        default "client"
-        help
-            mqtt server client username
-
-    config MQTT_CLIENT_PASSWORD
-        string "Client password"
-        default "client"
-        help
-            mqtt server client password
-
-endmenu
-
-menu "SNTP configuration"
-
-    config NTP_SERVER
-        string "Host name"
-        default "pool.ntp.org"
-        help
-            "sNTP server"
-
-    config DEFAULT_LOCALE_TIME_ZONE
-        string "LOCALE TIME ZONE"
-        default "Asia/Jerusalem"
-        help
-            "LOCALE TIME ZONE"
+            The SSID for the WiFi network the device will connect to.
 
 endmenu
