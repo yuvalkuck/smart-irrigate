@@ -5,6 +5,7 @@
 
 #include "sdkconfig.h"
 #include "nvs_flash.h"
+#include "default_initiate.h"
 
 #define NVS_NAMESPACE "."
 #define NVS_PARTITION_NAME "config"
@@ -100,14 +101,14 @@ esp_err_t init_flash(void) {
     }
     ESP_LOGI(TAG, "start init keys");
     ret = nvs_commit(hNVS);
-    nvsCreateKeyStr(CFG_NVS_KEY_WIFI_SSID, CONFIG_MY_WIFI_SSID);
-    nvsCreateKeyStr(CFG_NVS_KEY_WIFI_PASSWORD, CONFIG_MY_WIFI_PASSWORD);
-    nvsCreateKeyStr(CFG_NVS_KEY_BT_DEVICE_NAME, CONFIG_MY_BT_DEVICE_NAME);
-    nvsCreateKeyStr(CFG_NVS_KEY_MQTT_URL, CONFIG_BROKER_URL);
-    nvsCreateKeyStr(CFG_NVS_KEY_MQTT_USERNAME); // CONFIG_MQTT_CLIENT_USERNAME
-    nvsCreateKeyStr(CFG_NVS_KEY_MQTT_PASSWORD); //CONFIG_MQTT_CLIENT_PASSWORD
-    nvsCreateKeyStr(CFG_NVS_KEY_NTP_SERVER,CONFIG_NTP_SERVER);
-    nvsCreateKeyStr(CFG_NVS_KEY_LOCALE_TZ,CONFIG_DEFAULT_LOCALE_TIME_ZONE);
+    nvsCreateKeyStr(CFG_NVS_KEY_WIFI_SSID, INITIATE_WIFI_SSID);
+    nvsCreateKeyStr(CFG_NVS_KEY_WIFI_PASSWORD, INITIATE_WIFI_PASSWORD);
+    nvsCreateKeyStr(CFG_NVS_KEY_BT_DEVICE_NAME, INITIATE_BT_DEVICE_NAME);
+    nvsCreateKeyStr(CFG_NVS_KEY_MQTT_URL, INITIATE_BROKER_URL);
+    nvsCreateKeyStr(CFG_NVS_KEY_MQTT_USERNAME, INITIATE_MQTT_CLIENT_USERNAME);
+    nvsCreateKeyStr(CFG_NVS_KEY_MQTT_PASSWORD, INITIATE_MQTT_CLIENT_PASSWORD);
+    nvsCreateKeyStr(CFG_NVS_KEY_NTP_SERVER,INITIATE_NTP_SERVER);
+    nvsCreateKeyStr(CFG_NVS_KEY_LOCALE_TZ,INITIATE_DEFAULT_LOCALE_TIME_ZONE);
     ret = nvs_commit(hNVS);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "failed (%d) nvs_commit", ret);
