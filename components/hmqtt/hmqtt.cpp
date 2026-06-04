@@ -25,8 +25,10 @@ static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t 
     switch ((esp_mqtt_event_id_t)event_id) {
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
+        /*
         msg_id = esp_mqtt_client_publish(client, "/client/upstream", "{}", 0, 1, 0);
         ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+        */
 
         msg_id = esp_mqtt_client_subscribe(client, "/client/configuration", 0);
         ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);

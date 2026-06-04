@@ -44,7 +44,7 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
                 telemetryValues.humidity,
                 telemetryValues.pressure,
                 telemetryValues.gas_resistance);
-                mqtt_publish("home/telemetry", payload);
+                mqtt_publish("/client/telemetry", payload);
                 break;
             default:
                 break;
