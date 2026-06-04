@@ -40,17 +40,11 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
     if (event_base == COMMON_BASE_EVENTS) {
         switch (event_id) {
             case COMMON_EVENT_SENSOR_UPDATED:
-                sprintf(payload, "%.2f|%.2f|%.2f|%.2f",telemetryValues.temperature,
+                snprintf(payload, sizeof(payload), "%.2f|%.2f|%.2f|%.2f", telemetryValues.temperature,
                 telemetryValues.humidity,
                 telemetryValues.pressure,
                 telemetryValues.gas_resistance);
                 mqtt_publish("home/telemetry", payload);
-                /*
-                ESP_LOGI(TAG, "Temp: %.2f °C | Humidity: %.2f %% | Pressure: %.2f hPa",
-                         telemetryValues.temperature, telemetryValues.humidity, telemetryValues.pressure);
-
-                ESP_LOGI(TAG, "Gas Resistance: %.2f Ohm", telemetryValues.gas_resistance);
-                */
                 break;
             default:
                 break;
@@ -69,7 +63,7 @@ static void init_gpio() {
         .intr_type = GPIO_INTR_DISABLE
     };
     gpio_config(&io_conf);
-    vTaskDelay(pdMS_TO_TICKS(50)); // create small delay
+    vTaskDelay(pdMS_TO_TICKS(50));
 }
 extern "C" void app_main(void) {
     ESP_LOGI(TAG, "setting up");
@@ -101,11 +95,12 @@ extern "C" void app_main(void) {
         }
         else {
             ESP_LOGI(TAG, "Start Regular Load");
-            esp_event_handler_register(
-                COMMON_BASE_EVENTS, // Event base
-                ESP_EVENT_ANY_ID, // Event ID (or look for a specific one like CUSTOM_EVENT_SENSOR_READY)
-                &cbCommonEventHandler, // The callback function pointer
-                NULL // Optional arguments passed to handler_args
+            esp_event_handler_instance_register(
+                COMMON_BASE_EVENTS,
+                ESP_EVENT_ANY_ID,
+                &cbCommonEventHandler,
+                NULL,
+                NULL
             );
             init_telemetry();
 
@@ -119,9 +114,7 @@ extern "C" void app_main(void) {
             start_telemetry();
         }
     }
-    //
     ESP_LOGI(TAG, "working stage");
-    //
     auto ticker = (initRegular ? 2000 : 250);
     int ledFlip = 1;
     for (;;) {
@@ -132,9 +125,4 @@ extern "C" void app_main(void) {
         setLedState(ledFlip);
         vTaskDelay(ticker / portTICK_PERIOD_MS);
     }
-    // if (CONFIG_LOG_MAXIMUM_LEVEL > CONFIG_LOG_DEFAULT_LEVEL) {
-    //     /* If you only want to open more logs in the wifi module, you need to make the max level greater than the default level,
-    //      * and call esp_log_level_set() before esp_wifi_init() to improve the log level of the wifi module. */
-    //     esp_log_level_set("wifi", CONFIG_LOG_MAXIMUM_LEVEL);
-    // }
 }

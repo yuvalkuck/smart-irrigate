@@ -1,5 +1,10 @@
-#include "esp_err.h"
+#ifndef FLASH_H
+#define FLASH_H
 
+#include "esp_err.h"
+#if !defined(nvs_handle_t)
+typedef uint32_t nvs_handle_t;
+#endif
 
 #define CFG_NVS_KEY_WIFI_SSID       "wifi_ssid"
 #define CFG_NVS_KEY_WIFI_PASSWORD   "wifi_password"
@@ -10,17 +15,15 @@
 #define CFG_NVS_KEY_NTP_SERVER      "ntp_server"
 #define CFG_NVS_KEY_LOCALE_TZ       "locale_tz"
 
-
 esp_err_t init_flash(void);
 /* use C++ for handler container */
 class NvsConfig {
-
-    uint32_t handler_ = 0;
+    nvs_handle_t handler_ = 0;
 public:
     operator bool() const {
         return handler_ != 0;
     }
-    operator uint32_t() const {
+    operator nvs_handle_t() const {
         return handler_;
     }
     NvsConfig();
@@ -35,6 +38,8 @@ public:
     }
     bool isStrEmpty(const char *key) const;
 };
+
+#endif
 
 
 

@@ -112,7 +112,7 @@ static int nvs_read_access_cb(uint16_t conn_handle, uint16_t attr_handle,
             // You would need to extend this for other NVS types (e.g., NVS_TYPE_I32, NVS_TYPE_BLOB, etc.).
             if (info.type == NVS_TYPE_STR) {
                 size_t required_size;
-                err = nvs_get_str(nvs_handle, info.key, NULL, &required_size); // Get required size for the string
+                err = nvs_get_str(nvs_handle, info.key, NULL, &required_size);
                 if (err == ESP_OK) {
                     char* value_str = (char*)malloc(required_size);
                     if (value_str) {

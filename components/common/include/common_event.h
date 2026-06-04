@@ -1,6 +1,12 @@
+#ifndef COMMON_EVENT_H
+#define COMMON_EVENT_H
+
 #include "esp_event.h"
+
 ESP_EVENT_DECLARE_BASE(COMMON_BASE_EVENTS);
 
 enum {
     COMMON_EVENT_SENSOR_UPDATED
 };
+
+#endif

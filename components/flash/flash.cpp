@@ -38,7 +38,7 @@ bool NvsConfig::isStrEmpty(const char* key) const {
 
 }
 
-static void nvsCreateKeyStr(const char* name, const char* defaule_value = "") {
+static void nvsCreateKeyStr(const char* name, const char* default_value = "") {
     ESP_LOGI(TAG, "%s:%s", __func__, name);
     esp_err_t err;
 
@@ -47,9 +47,9 @@ static void nvsCreateKeyStr(const char* name, const char* defaule_value = "") {
     // Step 1: Get the size of the stored string (includes null terminator)
     err = nvs_get_str(hNVS, name, tmp, &len);
     if (err == ESP_ERR_NVS_NOT_FOUND) {
-        err = nvs_set_str(hNVS, name, defaule_value);
+        err = nvs_set_str(hNVS, name, default_value);
         if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-            ESP_LOGE(TAG, "failed to create: %s", defaule_value);
+            ESP_LOGE(TAG, "failed to create: %s", default_value);
         }
     }
 }
@@ -78,23 +78,15 @@ bool NvsConfig::getStr(const char* key, char* value, size_t len) {
     }
     memcpy(value, buffer, std::min(len, cpylen));
     return true;
-
 }
-
-// bool nvs_get_value_str(const nvs_handle_t handler, const char *key, char *value, size_t len,const char *defval) {
-//     nvs_get_str(handler, key, value, &len);
-//     if ( defval)
-//     size_t trglen = std::min(
-// }
-// size_t ssid_len = std::min(sizeof(wifi_config.sta.ssid), strlen(WIFI_SSID));
-// memcpy(wifi_config.sta.ssid, WIFI_SSID, ssid_len);
 
 esp_err_t init_flash(void) {
     ESP_LOGI(TAG, "nvs flash init");
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
-        nvs_flash_init();
+        ret = nvs_flash_init();
+        ESP_ERROR_CHECK(ret);
     }
     ret = nvs_flash_init_partition(NVS_PARTITION_NAME);
     if (ret != ESP_OK) {
@@ -107,7 +99,6 @@ esp_err_t init_flash(void) {
         return 0;
     }
     ESP_LOGI(TAG, "start init keys");
-    nvs_purge_all(hNVS);
     ret = nvs_commit(hNVS);
     nvsCreateKeyStr(CFG_NVS_KEY_WIFI_SSID, CONFIG_MY_WIFI_SSID);
     nvsCreateKeyStr(CFG_NVS_KEY_WIFI_PASSWORD, CONFIG_MY_WIFI_PASSWORD);

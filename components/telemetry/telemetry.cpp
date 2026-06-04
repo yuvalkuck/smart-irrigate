@@ -30,7 +30,7 @@ void init_telemetry(void) {
     // Perform validation and initialization of chip parameters
     if (bme680_init_sensor(&sensor) != ESP_OK) {
         ESP_LOGE(TAG, "Sensor initialization failed! Check wiring on SDA(19) and SCL(20).");
-        vTaskDelete(NULL);
+        return;
     }
 
     // Configure oversampling profiles
@@ -55,11 +55,8 @@ void init_telemetry(void) {
     bme680_get_measurement_duration(&sensor, &duration);
     ESP_LOGI(TAG, "duration:%d", duration);
     while (1) {
-        // Run forced evaluation pass
         if (bme680_force_measurement(&sensor) == ESP_OK) {
-            // Block cleanly while hardware state machine executes the conversion
-            vTaskDelay(duration /* portTICK_PERIOD_MS*/);
-            // Fetch processed telemetryValues
+            vTaskDelay(duration);
             if (bme680_get_results_float(&sensor, &telemetryValues) == ESP_OK) {
                 esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_SENSOR_UPDATED, NULL, 0, portMAX_DELAY);
             }
@@ -77,12 +74,12 @@ void init_telemetry(void) {
 void start_telemetry(void) {
     ESP_LOGI(TAG, "%s", __func__);
     BaseType_t result = xTaskCreate(
-        cbTelemetryTask, // Pointer to the task function
-        "TelemetryTask", // Descriptive name (for debugging)
-        4096, // Stack size in BYTES (Note: ESP-IDF uses bytes, not words)
-        NULL, // Parameter passed into the task
-        5, // Task Priority (Higher number = higher priority)
-        NULL // Task handle pointer (Optional, pass NULL if not needed)
+        cbTelemetryTask,
+        "TelemetryTask",
+        4096,
+        NULL,
+        5,
+        NULL
     );
 
     if (result != pdPASS) {
