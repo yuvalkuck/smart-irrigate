@@ -30,12 +30,13 @@ void continue_after_time_sync_cb(struct timeval* tv) {
     ESP_LOGI(TAG, "Notification of a time synchronization event");
     NvsConfig hCfg;
     char buff[128] = {0};
-    if ( hCfg.getStr(CFG_NVS_KEY_LOCALE_TZ, buff, sizeof(buff)) ) {
+    if (hCfg.getStr(CFG_NVS_KEY_LOCALE_TZ, buff, sizeof(buff))) {
         setenv("TZ", buff, 1);
         tzset();
         ESP_LOGI(TAG, "set TimeZone to: %s", buff);
         start_hmqtt();
-    } else {
+    }
+    else {
         ESP_LOGE(TAG, "failed to set timezone from fkasg");
     }
 }
@@ -47,9 +48,9 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
         switch (event_id) {
             case COMMON_EVENT_SENSOR_UPDATED:
                 snprintf(payload, sizeof(payload), "%.2f|%.2f|%.2f|%.2f", telemetryValues.temperature,
-                telemetryValues.humidity,
-                telemetryValues.pressure,
-                telemetryValues.gas_resistance);
+                         telemetryValues.humidity,
+                         telemetryValues.pressure,
+                         telemetryValues.gas_resistance);
                 mqtt_publish("/client/telemetry", payload);
                 break;
             default:
@@ -57,6 +58,7 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
         }
     }
 }
+
 static void init_gpio() {
     gpio_reset_pin((gpio_num_t)GPIO_LED);
     gpio_set_direction((gpio_num_t)GPIO_LED, GPIO_MODE_OUTPUT);
@@ -71,6 +73,7 @@ static void init_gpio() {
     gpio_config(&io_conf);
     vTaskDelay(pdMS_TO_TICKS(50));
 }
+
 extern "C" void app_main(void) {
     ESP_LOGI(TAG, "setting up");
     ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
@@ -90,6 +93,7 @@ extern "C" void app_main(void) {
 
         NvsConfig hCfg;
         if (!hCfg) {
+            ESP_LOGE(TAG, "failed to init config flash");
             return;
         }
         if (!initRegular || hCfg.isStrEmpty(CFG_NVS_KEY_WIFI_SSID)) {
@@ -115,9 +119,10 @@ extern "C" void app_main(void) {
             start_wifi();
             // SNTP
             char buff[128] = {0};
-            if ( hCfg.getStr(CFG_NVS_KEY_NTP_SERVER, buff, sizeof(buff)) ) {
+            if (hCfg.getStr(CFG_NVS_KEY_NTP_SERVER, buff, sizeof(buff))) {
                 init_sntp(buff, continue_after_time_sync_cb);
-            } else {
+            }
+            else {
                 ESP_LOGE(TAG, "failed to get NTP server url from flash");
             }
             // MQTT
