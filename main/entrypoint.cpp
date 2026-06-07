@@ -28,10 +28,16 @@ static void setLedState(int fliper) {
 
 void continue_after_time_sync_cb(struct timeval* tv) {
     ESP_LOGI(TAG, "Notification of a time synchronization event");
-    setenv("TZ", CONFIG_DEFAULT_LOCALE_TIME_ZONE, 1);
-    tzset();
-    ESP_LOGI(TAG, "set TimeZone to: %s", CONFIG_DEFAULT_LOCALE_TIME_ZONE);
-    start_hmqtt();
+    NvsConfig hCfg;
+    char buff[128] = {0};
+    if ( hCfg.getStr(CFG_NVS_KEY_LOCALE_TZ, buff, sizeof(buff)) ) {
+        setenv("TZ", buff, 1);
+        tzset();
+        ESP_LOGI(TAG, "set TimeZone to: %s", buff);
+        start_hmqtt();
+    } else {
+        ESP_LOGE(TAG, "failed to set timezone from fkasg");
+    }
 }
 
 static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base, int32_t event_id, void* event_data) {
@@ -108,7 +114,13 @@ extern "C" void app_main(void) {
             // // 6. Start Wi-Fi
             start_wifi();
             // SNTP
-            init_sntp(CONFIG_NTP_SERVER, continue_after_time_sync_cb);
+            char buff[128] = {0};
+            if ( hCfg.getStr(CFG_NVS_KEY_NTP_SERVER, buff, sizeof(buff)) ) {
+                init_sntp(buff, continue_after_time_sync_cb);
+            } else {
+                ESP_LOGE(TAG, "failed to get NTP server url from flash");
+            }
+            // MQTT
             init_hmqtt();
             start_sntp();
             start_telemetry();

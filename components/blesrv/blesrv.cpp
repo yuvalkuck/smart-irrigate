@@ -8,6 +8,8 @@
 #include "services/gap/ble_svc_gap.h"
 #include "sdkconfig.h"
 #include <unordered_map>
+
+#include "../flash/include/flash.h"
 #include "inc/services.h"
 
 extern const char* events[];
@@ -277,7 +279,13 @@ static int ble_gap_event_cb(struct ble_gap_event* event, void* arg) {
 static void start_advertising(void) {
     /* Local variables */
     int rc = 0;
-    const char* name = CONFIG_MY_BT_DEVICE_NAME;
+    NvsConfig hCfg;
+    char buff[64] = {0};
+    if ( !hCfg.getStr(CFG_NVS_KEY_BT_DEVICE_NAME, buff, sizeof(buff)) ) {
+        ESP_LOGE(TAG, "Failed to get BT device name");
+        return;
+    }
+
     struct ble_gap_adv_params adv_params = {};
     struct ble_hs_adv_fields adv_fields = {};
     ESP_LOGI(TAG, ">>>>>>> start advertising");
@@ -285,8 +293,8 @@ static void start_advertising(void) {
     adv_fields.flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP;
 
     /* Set device name */
-    adv_fields.name = (uint8_t*)name;
-    adv_fields.name_len = strlen(name);
+    adv_fields.name = (uint8_t*)buff;
+    adv_fields.name_len = strlen(buff);
     adv_fields.name_is_complete = 1;
 
     //CONFIG_MY_BT_DEVICE_UUID
@@ -328,9 +336,15 @@ static void on_sync_cb(void) {
         MODLOG_DFLT(ERROR, "error determining address type; rc=%d\n", rc);
         return;
     }
+    NvsConfig hCfg;
+    char buff[64] = {0};
+    if ( !hCfg.getStr(CFG_NVS_KEY_BT_DEVICE_NAME, buff, sizeof(buff)) ) {
+        ESP_LOGE(TAG, "Failed to get BT device name");
+        return;
+    }
 
     // Set your device name
-    ble_svc_gap_device_name_set(CONFIG_MY_BT_DEVICE_NAME);
+    ble_svc_gap_device_name_set(buff);
 
     /* Printing ADDR */
     uint8_t addr_val[6] = {0};

@@ -1,15 +1,14 @@
-menu "WiFi STA Configuration"
-
+menu "Device Limit Configuration"
     config DEVICE_MAX_VALVES
-        int "WiFi SSID"
+        int "Maximum Number of Valves"
         default 6
         help
-            The SSID for the WiFi network the device will connect to.
+            The maximum number of valves the device can control.
 
-    config DEVICE_MAX_VALVES_CONFIG
-        int "WiFi SSID"
+    config DEVICE_MAX_VALVE_CONFIG
+        int "Maximum single valve setups"
         default 4
         help
-            The SSID for the WiFi network the device will connect to.
+            The maximum number of setups a valve can handle.
 
 endmenu

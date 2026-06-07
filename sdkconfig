@@ -1007,13 +1007,13 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# WiFi STA Configuration
+# Device Limit Configuration
 #
 # default:
 CONFIG_DEVICE_MAX_VALVES=6
 # default:
-CONFIG_DEVICE_MAX_VALVES_CONFIG=4
-# end of WiFi STA Configuration
+CONFIG_DEVICE_MAX_VALVE_CONFIG=4
+# end of Device Limit Configuration
 
 #
 # Compiler options

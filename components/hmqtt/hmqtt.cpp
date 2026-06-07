@@ -2,6 +2,7 @@
 #include "hmqtt.h"
 #include "esp_log.h"
 #include "mqtt_client.h"
+#include "flash.h"
 
 static const char* TAG = "hmqtt:";
 extern const uint8_t ca_crt_start[] asm("_binary_ca_crt_start");
@@ -68,15 +69,32 @@ static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t 
 
 void init_hmqtt(void) {
     ESP_LOGI(TAG, "%s", __func__);
-    mqtt_cfg.broker.address.uri = static_cast<const char *>(CONFIG_BROKER_URL);
-
+    NvsConfig hCfg;
+    char url[256] = {0};
+    if ( hCfg.getStr(CFG_NVS_KEY_MQTT_URL, url, sizeof(url)) ) {
+        mqtt_cfg.broker.address.uri = url;
+    }else {
+        ESP_LOGE(TAG, "Failed to get MQTT URL");
+        return;
+    }
+    char uname[64] = {0};
+    if ( hCfg.getStr(CFG_NVS_KEY_MQTT_USERNAME, uname, sizeof(uname)) ) {
+        mqtt_cfg.credentials.username = uname;
+    } else {
+        ESP_LOGE(TAG, "Failed to get MQTT Username");
+        return;
+    }
+    char pword[128] = {0};
+    if ( hCfg.getStr(CFG_NVS_KEY_MQTT_PASSWORD, pword, sizeof(pword)) ) {
+        mqtt_cfg.credentials.authentication.password = pword;
+    } else {
+        ESP_LOGE(TAG, "Failed to get MQTT Username");
+        return;
+    }
     mqtt_cfg.broker.verification.certificate = (const char *)ca_crt_start,
-    mqtt_cfg.credentials.username = CONFIG_MQTT_CLIENT_USERNAME;
-    mqtt_cfg.credentials.authentication.password = CONFIG_MQTT_CLIENT_PASSWORD;
     mqtt_cfg.credentials.authentication.certificate = (const char *)client_crt_start,
     mqtt_cfg.credentials.authentication.key = (const char *)client_key_start,
     mqtt_cfg.broker.verification.skip_cert_common_name_check = true;
-
     client = esp_mqtt_client_init(&mqtt_cfg);
     if (client == nullptr) {
         ESP_LOGE(TAG, "esp_mqtt_client_init failed");
