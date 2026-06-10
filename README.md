@@ -32,12 +32,16 @@ average per minutes (X = 5, 10, 15, 30, 60, 90, 120)
    - full configuration
    - start/stop valvule, optional alt duration
 # Configuration - plan
+---
+ == THIS REPEAT IS A MESS ==
+---
+
 ## Next Repeat
-   - Every x days,weeks 
-     - 01:0123456 - days - char bitwised
-     - 02:48 - max weeks 
-   - Every x minutes (x = 5,10,15,30,60)
-     - 03:1440 - max minutes 
+   - Every x specicif days,weeks,  
+     - 01:0123456 - week days - char bitwise
+     - 02:48 - max weeks (1-52)
+   - Every x counter minutes (x = 5,10,15,30,60)
+     - 03:1440 - max minutes (1-1440)
      - 04: reserved 
    - Environment Conditions {next version}
      - start T > xT (temperature)
@@ -48,12 +52,13 @@ average per minutes (X = 5, 10, 15, 30, 60, 90, 120)
      - avoid P < xP (barometric pressure)
    
 ## Task in a day 
-   - start time in minutes
-   - duration in minutes max 120 
+   - start time in minutes (1-1440)
+   - duration in minutes max (1-120)
+   - Next Repeat
 ## Valve
    - id
    - vector<Task>
-   - Next Repeat
+   
 
 # Format Layout
 ## Commands
@@ -71,7 +76,7 @@ format is binary there for all structures are ajusted by fixed size
    
 ### Configuration
 ```
-   revision [0001], command [99] ,today index [0001], timestamp 1781100200 \n
+   revision [0001], command [99] ,today index [001], timestamp 1781100200 \n
    valve: [Task] \t [Task] \n
    valve: [Task] \t [Task] \n
    ```
