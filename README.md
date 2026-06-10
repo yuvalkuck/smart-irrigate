@@ -99,9 +99,9 @@ if valve is not use it number will exist but with \n
    revision [0001] command 04 valve [01]
 ### Release Valve
    revision [0001] command 05 valve [01]      
-### Get Active Status
+### Get Active Status include hold valve
    revision [0001] command 06
-### Get Next Task to Run
+### Get Next Task to Run 
    revision [0001] command 07
 ### Restart
    revision [0001] command 11   
