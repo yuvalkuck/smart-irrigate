@@ -32,6 +32,7 @@ public:
     NvsConfig& operator=(const NvsConfig&) = delete;
     NvsConfig(NvsConfig&&) = delete;
     NvsConfig& operator=(NvsConfig&&) = delete;
+    bool setStr(const char *key, const char *value, size_t len);
     bool getStr(const char *key, char *value, size_t len);
     bool getStr(const char *key, uint8_t *value, size_t len) {
         return getStr(key, (char *)value, len);

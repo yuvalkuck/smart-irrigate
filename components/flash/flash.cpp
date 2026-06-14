@@ -81,6 +81,13 @@ bool NvsConfig::getStr(const char* key, char* value, size_t len) {
     return true;
 }
 
+bool NvsConfig::setStr(const char *key, const char *value, size_t len) {
+    if (nvs_set_blob(handler_, key, value, len) != ESP_OK) {
+        return false;
+    }
+    return true;
+}
+
 esp_err_t init_flash(void) {
     ESP_LOGI(TAG, "nvs flash init");
     esp_err_t ret = nvs_flash_init();
