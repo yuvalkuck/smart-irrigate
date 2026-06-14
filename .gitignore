@@ -1,3 +1,14 @@
 build
 cmake-build-*
 sdkconfig.old
+/esp-idf
+/esp-idf/**
+/gdbinit
+/gdbinit/**
+/config
+/config/**
+/bootloader**
+/managed_components
+/managed_components/**
+/toolchain
+/toolchain/**
