@@ -4,6 +4,7 @@
 #include "mqtt_client.h"
 #include "hmqtt.h"
 #include "flash.h"
+#include "protocol.h"
 
 static const char* TAG = "hmqtt:";
 extern const uint8_t ca_crt_start[] asm("_binary_ca_crt_start");
