@@ -7,8 +7,8 @@
 #include "nvs_flash.h"
 #include "default_initiate.h"
 
-#define NVS_NAMESPACE "."
-#define NVS_PARTITION_NAME "setup"
+#define PARTITION_SETUP_NAMESPACE "."
+#define PARTITION_SETUP_NAME "setup"
 
 static const char* TAG = "flash:";
 static nvs_handle_t hNVS;
@@ -36,7 +36,6 @@ bool NvsConfig::isStrEmpty(const char* key) const {
             ESP_LOGE(TAG, "Unhandled error: %d", err);
     }
     return false;
-
 }
 
 static void nvsCreateKeyStr(const char* name, const char* default_value = "") {
@@ -56,9 +55,9 @@ static void nvsCreateKeyStr(const char* name, const char* default_value = "") {
 }
 
 static esp_err_t nvs_config(nvs_handle_t* handler) {
-    esp_err_t ret = nvs_open_from_partition(NVS_PARTITION_NAME,NVS_NAMESPACE, NVS_READWRITE, handler);
+    esp_err_t ret = nvs_open_from_partition(PARTITION_SETUP_NAME,PARTITION_SETUP_NAMESPACE, NVS_READWRITE, handler);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, NVS_PARTITION_NAME, NVS_NAMESPACE);
+        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, PARTITION_SETUP_NAME, PARTITION_SETUP_NAMESPACE);
     }
     return ret;
 }
@@ -81,7 +80,7 @@ bool NvsConfig::getStr(const char* key, char* value, size_t len) {
     return true;
 }
 
-bool NvsConfig::setStr(const char *key, const char *value, size_t len) {
+bool NvsConfig::setStr(const char* key, const char* value, size_t len) {
     if (nvs_set_blob(handler_, key, value, len) != ESP_OK) {
         return false;
     }
@@ -96,14 +95,14 @@ esp_err_t init_flash(void) {
         ret = nvs_flash_init();
         ESP_ERROR_CHECK(ret);
     }
-    ret = nvs_flash_init_partition(NVS_PARTITION_NAME);
+    ret = nvs_flash_init_partition(PARTITION_SETUP_NAME);
     if (ret != ESP_OK) {
-        ESP_ERROR_CHECK(nvs_flash_erase_partition(NVS_PARTITION_NAME));
-        nvs_flash_init_partition(NVS_PARTITION_NAME);
+        ESP_ERROR_CHECK(nvs_flash_erase_partition(PARTITION_SETUP_NAME));
+        nvs_flash_init_partition(PARTITION_SETUP_NAME);
     }
     ret = nvs_config(&hNVS);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, NVS_PARTITION_NAME, NVS_NAMESPACE);
+        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, PARTITION_SETUP_NAME, PARTITION_SETUP_NAMESPACE);
         return 0;
     }
     ESP_LOGI(TAG, "start init keys");

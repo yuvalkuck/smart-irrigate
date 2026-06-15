@@ -2,7 +2,8 @@
 #define PROTOCOL_H
 #include "configuration.h"
 #include <optional>
-#include <memory>
+#include <vector>
 std::optional<ConfigurationContainer> getConfiguration();
+bool setConfiguration(const std::vector<uint8_t> *);
 
 #endif

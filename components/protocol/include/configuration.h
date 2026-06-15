@@ -15,9 +15,10 @@ extern "C" {
 */
 #define ProgramTyNormal 0x01
 #define ProgramTyEmergency = 0x02
+
 typedef struct {
-    uint8_t hours;      // 0-23
-    uint8_t minutes;    // 0-59
+    uint8_t hours; // 0-23
+    uint8_t minutes; // 0-59
     uint16_t duration;
 } Task;
 
@@ -27,25 +28,26 @@ typedef struct {
     uint16_t padding;
     Task tasks[];
 } Program;
-    // program len = sizeof(Program) + noTasks * sizeof(Task)
+
+// program len = sizeof(Program) + noTasks * sizeof(Task)
 
 typedef struct {
     uint8_t noPrograms;
     uint8_t valveId;
     Program programs[];
 } Valve;
-    // valve len = sizeof(Valve) + noPrograms * program len
+
+// valve len = sizeof(Valve) + noPrograms * program len
 
 typedef struct {
     BaseCommand command;
     uint32_t timestamp;
     uint8_t todayIndex;
     uint8_t noValves;
-    uint16_t len;
+    uint16_t padding = 0;
     Valve valves[];
 } Configuration;
-
-
 }
+
 using ConfigurationContainer = std::unique_ptr<const void, UnmapperPartitionDMA>;
 #pragma pack(pop)
