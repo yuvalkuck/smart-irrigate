@@ -1,5 +1,5 @@
 #include "command.h"
-
+#pragma pack(push, 4)
 extern "C" {
 /*
     |- config
@@ -14,24 +14,26 @@ extern "C" {
 */
 #define ProgramTyNormal 0x01
 #define ProgramTyEmergency = 0x02
-
 typedef struct {
-    uint16_t startTime;
+    uint8_t hours;      // 0-23
+    uint8_t minutes;    // 0-59
     uint16_t duration;
 } Task;
 
 typedef struct {
-    uint16_t len; // length in bytes of Program
-    uint16_t type;
+    uint8_t noTasks;
+    uint8_t type;
+    uint16_t padding;
     Task tasks[];
 } Program;
+    // program len = sizeof(Program) + noTasks * sizeof(Task)
 
 typedef struct {
-    uint16_t len;
     uint8_t noPrograms;
     uint8_t valveId;
     Program programs[];
 } Valve;
+    // valve len = sizeof(Valve) + noPrograms * program len
 
 typedef struct {
     BaseCommand command;
@@ -42,3 +44,4 @@ typedef struct {
     Valve valves[];
 } Configuraion;
 }
+#pragma pack(pop)

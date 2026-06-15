@@ -1,6 +1,5 @@
-#if !defined(EXCOMM_H)
-#define EXCOMM_H
-
+#if !defined(PROTOCOL_H)
+#define PROTOCOL_H
 
 
 #endif
