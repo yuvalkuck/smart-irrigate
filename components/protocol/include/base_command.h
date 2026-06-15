@@ -1,5 +1,7 @@
 #if !defined(EXCOMM_COMMAND_H)
 #define EXCOMM_COMMAND_H
+#include <esp_partition.h>
+#include <memory>
 #include <stdio.h>
 
 extern "C" {
@@ -21,5 +23,16 @@ typedef struct {
     uint8_t client;
     uint8_t command;
 } BaseCommand;
+
+struct UnmapperPartitionDMA {
+    esp_partition_mmap_handle_t handle;
+
+    // The unique_ptr will call this operator automatically when destroyed
+    void operator()(const void* ptr) const {
+        if (ptr != nullptr && handle != 0) {
+            esp_partition_munmap(handle);
+        }
+    }
+};
 }
 #endif

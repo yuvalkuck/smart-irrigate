@@ -1,4 +1,5 @@
-#include "command.h"
+#include "base_command.h"
+
 #pragma pack(push, 4)
 extern "C" {
 /*
@@ -42,6 +43,9 @@ typedef struct {
     uint8_t noValves;
     uint16_t len;
     Valve valves[];
-} Configuraion;
+} Configuration;
+
+
 }
+using ConfigurationContainer = std::unique_ptr<const void, UnmapperPartitionDMA>;
 #pragma pack(pop)

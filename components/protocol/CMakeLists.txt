@@ -1,2 +1,3 @@
 idf_component_register(SRCS "protocol.cpp"
-                    INCLUDE_DIRS "inc" "include")
+        REQUIRES esp_partition
+        INCLUDE_DIRS "inc" "include")

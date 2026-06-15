@@ -8,7 +8,7 @@
 #include "default_initiate.h"
 
 #define NVS_NAMESPACE "."
-#define NVS_PARTITION_NAME "config"
+#define NVS_PARTITION_NAME "setup"
 
 static const char* TAG = "flash:";
 static nvs_handle_t hNVS;
