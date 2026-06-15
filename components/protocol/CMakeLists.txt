@@ -1,2 +1,2 @@
-idf_component_register(SRCS "excomm.cpp"
+idf_component_register(SRCS "protocol.cpp"
                     INCLUDE_DIRS "inc" "include")
