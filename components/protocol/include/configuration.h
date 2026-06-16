@@ -48,6 +48,7 @@ typedef struct {
     Valve valves[];
 } Configuration;
 }
-
+#if !defined(TESTER)
 using ConfigurationContainer = std::unique_ptr<const void, UnmapperPartitionDMA>;
+#endif
 #pragma pack(pop)

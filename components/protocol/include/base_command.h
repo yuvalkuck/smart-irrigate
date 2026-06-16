@@ -1,8 +1,14 @@
 #if !defined(EXCOMM_COMMAND_H)
 #define EXCOMM_COMMAND_H
+
+#if !defined(TESTER)
 #include <esp_partition.h>
 #include <memory>
+#else
+    #include <stdint.h>
+#endif
 #include <stdio.h>
+
 
 extern "C" {
 enum Command {
@@ -24,6 +30,7 @@ typedef struct {
     uint8_t command;
 } BaseCommand;
 
+#if !defined(TESTER)
 struct UnmapperPartitionDMA {
     esp_partition_mmap_handle_t handle;
 
@@ -34,5 +41,6 @@ struct UnmapperPartitionDMA {
         }
     }
 };
+#endif
 }
 #endif

@@ -1,0 +1,18 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 4.1)
+PROJECT(genpaylaod
+        VERSION 0.1.0
+        LANGUAGES CXX
+)
+ADD_COMPILE_DEFINITIONS(TESTER)
+FIND_PACKAGE(CLI11 REQUIRED)
+ADD_EXECUTABLE(${PROJECT_NAME}
+        main.cpp
+        config_payload.cpp
+)
+#target_link_libraries(my_app PRIVATE DependencyPackage::TargetName)
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
+        PRIVATE ${CMAKE_INSTALL_PREFIX}/include
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../components/protocol/include
+)
+INSTALL(TARGETS ${PROJECT_NAME} DESTINATION bin)
+
