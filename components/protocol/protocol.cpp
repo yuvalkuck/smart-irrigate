@@ -50,6 +50,10 @@ static std::vector<uint8_t> *createEmptyConfiguration() {
     init_buff.assign((uint8_t*)&empty, (uint8_t*)&empty + sizeof(empty));
     return &init_buff;
 }
+Command getPayloadCommand(std::vector<uint8_t> *payload) {
+    auto *cmd = reinterpret_cast<BaseCommand*>(payload->data());
+    return static_cast<Command>(cmd->command);
+}
 
 bool setConfiguration(const std::vector<uint8_t> *buff = createEmptyConfiguration()) {
     const esp_partition_t* partition = esp_partition_find_first(

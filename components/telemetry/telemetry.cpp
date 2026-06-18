@@ -11,7 +11,7 @@
 #define I2C_PORT       I2C_NUM_0
 #define SDA_GPIO       GPIO_NUM_19
 #define SCL_GPIO       GPIO_NUM_20
-
+#define TASK_DELAY     1000*10
 // BME680 default I2C Address (usually 0x76 or 0x77 depending on SDO pin state)
 #define BME680_I2C_ADDR BME680_I2C_ADDR_1
 static bme680_t sensor;
@@ -47,8 +47,6 @@ void init_telemetry(void) {
     // Set a context environment baseline temperature
     bme680_set_ambient_temperature(&sensor, 25);
 }
-
-#define TASK_DELAY 5000
 
 [[noreturn]] static void cbTelemetryTask(void* ) {
     uint32_t duration;

@@ -5,5 +5,6 @@
 #include <vector>
 std::optional<ConfigurationContainer> getConfiguration();
 bool setConfiguration(const std::vector<uint8_t> *);
+Command getPayloadCommand(std::vector<uint8_t> *);
 
 #endif

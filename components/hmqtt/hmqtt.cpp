@@ -4,7 +4,7 @@
 #include "mqtt_client.h"
 #include "hmqtt.h"
 #include "flash.h"
-#include "protocol.h"
+#include "common_event.h"
 
 static const char* TAG = "hmqtt:";
 extern const uint8_t ca_crt_start[] asm("_binary_ca_crt_start");
@@ -27,11 +27,7 @@ constexpr size_t MAX_EXPECTED_PAYLOAD_SIZE = 4096;
 static std::vector<uint8_t> reassembly_buffer;
 static size_t total_expected_data = 0;
 
-void parse_complete_binary_payload(std::span<const uint8_t> full_payload) {
-    ESP_LOGI(TAG, "Processing complete data packet of %d bytes.", full_payload.size());
-
-    // Perform your binary struct casting or parsing logic safely here...
-}
+#define TOPIC_CONFIGURATION "/client/configuration"
 
 static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t event_id, void* event_data) {
     ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%" PRIi32 "", base, event_id);
@@ -41,12 +37,7 @@ static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t 
     switch ((esp_mqtt_event_id_t)event_id) {
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
-            /*
-            msg_id = esp_mqtt_client_publish(client, "/client/upstream", "{}", 0, 1, 0);
-            ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
-            */
-
-            msg_id = esp_mqtt_client_subscribe(client, "/client/configuration", 0);
+            msg_id = esp_mqtt_client_subscribe(client, TOPIC_CONFIGURATION, 0);
             ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
             break;
         case MQTT_EVENT_DISCONNECTED:
@@ -93,13 +84,16 @@ static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t 
 
             // Check if we have received the complete message
             if (reassembly_buffer.size() >= total_expected_data) {
+                total_expected_data = 0;
                 ESP_LOGI(TAG, "Message fully reassembled successfully!");
 
                 // Pass a safe, zero-copy span window of the complete buffer to your parser
-                parse_complete_binary_payload(std::span<const uint8_t>(reassembly_buffer));
-
+                if ( strncmp(event->topic, TOPIC_CONFIGURATION, event->topic_len) == 0) {
+                    ESP_LOGI(TAG, "Received configuration");
+                    esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_ACCEPT_SERVER_CONFIGURATION, reassembly_buffer.data(), reassembly_buffer.size(), portMAX_DELAY);
+                }
                 // Clear tracking variables for the next incoming MQTT message
-                total_expected_data = 0;
+
             }
         }
             break;

@@ -1,5 +1,5 @@
 idf_component_register(SRCS "hmqtt.cpp"
-        REQUIRES flash protocol
+        REQUIRES flash common
         PRIV_REQUIRES log mqtt
         EMBED_TXTFILES "../../certs/ca.crt" "../../certs/client.crt" "../../certs/client.key"
         INCLUDE_DIRS "include")

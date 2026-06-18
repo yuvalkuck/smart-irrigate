@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <protocol.h>
 #include <telemetry.h>
 
 #include "sdkconfig.h"
@@ -14,6 +15,7 @@
 #include "time.h"
 #include "common_event.h"
 #include "bme680.h"
+
 
 static const char* TAG = "App:";
 extern bme680_values_float_t telemetryValues;
@@ -52,6 +54,11 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
                          telemetryValues.pressure,
                          telemetryValues.gas_resistance);
                 mqtt_publish("/client/telemetry", payload);
+                break;
+            case COMMON_EVENT_ACCEPT_SERVER_CONFIGURATION:
+                if ( !setConfiguration(static_cast<std::vector<uint8_t>*>(event_data)) ) {
+                     ESP_LOGE(TAG, "Failed to set configuration");
+                }
                 break;
             default:
                 break;
