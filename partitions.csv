@@ -4,5 +4,5 @@ nvs,data,nvs,0x9000,16K,
 phy_init,data,phy,0xd000,4K,
 factory,app,factory,0x10000,1600K,
 setup,data,nvs,0x1a0000,12K,
-config,data,undefined,0x1a3000,8K,
+config,data,undefined,0x1a3000,4K,
 

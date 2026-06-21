@@ -7,7 +7,6 @@ ESP_EVENT_DEFINE_BASE(COMMON_BASE_EVENTS);
 
 static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base, int32_t event_id, void* event_data) {
     ESP_LOGV(TAG, "%s", __func__);
-    char payload[64];
     if (event_base == COMMON_BASE_EVENTS) {
         EventData* event = static_cast<EventData*>(event_data);
         switch (event_id) {
