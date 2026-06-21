@@ -15,9 +15,9 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
                 ESP_LOGV(TAG, "COMMON_EVENT_SENSOR_UPDATED");
                 float *payload = static_cast<float*>(event->data);
                 char send[64];
-                // telemetryValues.temperature,    //!< temperature in degree C        (Invalid value -327.68)
-                // telemetryValues.pressure,       //!< barometric pressure in hPascal (Invalid value 0.0)
-                // telemetryValues.humidity,       //!< relative humidity in %         (Invalid value 0.0)
+                // telemetryValues.temperature,    //!< temperature in degree C
+                // telemetryValues.pressure,       //!< barometric pressure in hPascal
+                // telemetryValues.humidity,       //!< relative humidity in %
                 // telemetryValues.gas_resistance, //!< gas resistance in Ohm
                 snprintf(send, sizeof(send), "%.2f|%.2f|%.2f|%.2f", payload[0], payload[1],payload[2],payload[3]);
                 mqtt_publish("/client/telemetry", send);
