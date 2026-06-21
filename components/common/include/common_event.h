@@ -3,6 +3,7 @@
 
 #include "esp_event.h"
 
+
 ESP_EVENT_DECLARE_BASE(COMMON_BASE_EVENTS);
 
 enum {
@@ -10,4 +11,9 @@ enum {
     COMMON_EVENT_ACCEPT_SERVER_CONFIGURATION
 };
 
+struct EventData {
+    size_t size;
+    void * data;
+    size_t length() const {return size+sizeof(EventData);}
+};
 #endif

@@ -24,7 +24,7 @@ static esp_mqtt_client_handle_t client;
 constexpr size_t MAX_EXPECTED_PAYLOAD_SIZE = 4096;
 
 // Persistent buffer to avoid constantly allocating/freeing memory on the heap
-static std::vector<uint8_t> reassembly_buffer;
+std::vector<uint8_t> reassembly_buffer;
 static size_t total_expected_data = 0;
 
 #define TOPIC_CONFIGURATION "/client/configuration"
@@ -89,8 +89,9 @@ static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t 
 
                 // Pass a safe, zero-copy span window of the complete buffer to your parser
                 if ( strncmp(event->topic, TOPIC_CONFIGURATION, event->topic_len) == 0) {
-                    ESP_LOGI(TAG, "Received configuration");
-                    esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_ACCEPT_SERVER_CONFIGURATION, reassembly_buffer.data(), reassembly_buffer.size(), portMAX_DELAY);
+                    ESP_LOGI(TAG, "Received configuration: %i", reassembly_buffer.size());
+                    EventData event = {reassembly_buffer.size(), reassembly_buffer.data()};
+                    esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_ACCEPT_SERVER_CONFIGURATION, &event, event.length(), portMAX_DELAY);
                 }
                 // Clear tracking variables for the next incoming MQTT message
 

@@ -16,7 +16,7 @@
 #define BME680_I2C_ADDR BME680_I2C_ADDR_1
 static bme680_t sensor;
 static const char* TAG = "BME680:";
-bme680_values_float_t telemetryValues;
+static bme680_values_float_t telemetryValues;
 
 void init_telemetry(void) {
     ESP_LOGI(TAG, "%s", __func__);
@@ -56,7 +56,14 @@ void init_telemetry(void) {
         if (bme680_force_measurement(&sensor) == ESP_OK) {
             vTaskDelay(duration);
             if (bme680_get_results_float(&sensor, &telemetryValues) == ESP_OK) {
-                esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_SENSOR_UPDATED, NULL, 0, portMAX_DELAY);
+                float payload[4] = {
+                    telemetryValues.temperature,    //!< temperature in degree C        (Invalid value -327.68)
+                    telemetryValues.pressure,       //!< barometric pressure in hPascal (Invalid value 0.0)
+                    telemetryValues.humidity,       //!< relative humidity in %         (Invalid value 0.0)
+                    telemetryValues.gas_resistance, //!< gas resistance in Ohm
+                };
+                EventData event = {sizeof(payload), &payload};
+                esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_SENSOR_UPDATED, &event, event.length(), portMAX_DELAY);
             }
             else {
                 ESP_LOGE(TAG, "Could not fetch registers from BME680.");

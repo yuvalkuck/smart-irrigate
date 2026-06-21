@@ -66,7 +66,7 @@ bool setConfiguration(const std::vector<uint8_t> *buff = createEmptyConfiguratio
     }
 
     if (buff->size() > partition->size) {
-        ESP_LOGE(TAG, "Store failed: Data size exceeds partition size.");
+        ESP_LOGE(TAG, "Store failed: Data size exceeds partition size. %i > %i", buff->size(),partition->size);
         return false;
     }
 
