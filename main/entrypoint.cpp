@@ -13,16 +13,13 @@
 #include "blesrv.h"
 #include "driver/gpio.h"
 #include "time.h"
-#include "common_event.h"
-#include "bme680.h"
 
 
 static const char* TAG = "App:";
-extern bme680_values_float_t telemetryValues;
 #define GPIO_LED GPIO_NUM_15
 #define GPIO_FORCE_BLE GPIO_NUM_17
-ESP_EVENT_DEFINE_BASE(COMMON_BASE_EVENTS);
 
+void init_event_app_handle();
 static void setLedState(int fliper) {
     // ESP_LOGI(TAG, "set %d", fliper);
     gpio_set_level((gpio_num_t)GPIO_LED, fliper);
@@ -43,28 +40,7 @@ void continue_after_time_sync_cb(struct timeval* tv) {
     }
 }
 
-static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base, int32_t event_id, void* event_data) {
-    ESP_LOGV(TAG, "%s", __func__);
-    char payload[64];
-    if (event_base == COMMON_BASE_EVENTS) {
-        switch (event_id) {
-            case COMMON_EVENT_SENSOR_UPDATED:
-                snprintf(payload, sizeof(payload), "%.2f|%.2f|%.2f|%.2f", telemetryValues.temperature,
-                         telemetryValues.humidity,
-                         telemetryValues.pressure,
-                         telemetryValues.gas_resistance);
-                mqtt_publish("/client/telemetry", payload);
-                break;
-            case COMMON_EVENT_ACCEPT_SERVER_CONFIGURATION:
-                if ( !setConfiguration(static_cast<std::vector<uint8_t>*>(event_data)) ) {
-                     ESP_LOGE(TAG, "Failed to set configuration");
-                }
-                break;
-            default:
-                break;
-        }
-    }
-}
+
 
 static void init_gpio() {
     gpio_reset_pin((gpio_num_t)GPIO_LED);
@@ -112,13 +88,7 @@ extern "C" void app_main(void) {
         }
         else {
             ESP_LOGI(TAG, "Start Regular Load");
-            esp_event_handler_instance_register(
-                COMMON_BASE_EVENTS,
-                ESP_EVENT_ANY_ID,
-                &cbCommonEventHandler,
-                NULL,
-                NULL
-            );
+            init_event_app_handle();
             init_telemetry();
 
             init_wifi();

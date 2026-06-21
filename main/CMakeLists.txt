@@ -1,4 +1,4 @@
-idf_component_register(SRCS "entrypoint.cpp"
+idf_component_register(SRCS "entrypoint.cpp" "event_handler.cpp"
         REQUIRES flash hwifi hmqtt hsntp blesrv telemetry common protocol
         PRIV_REQUIRES log esp_event esp_driver_gpio mqtt
         INCLUDE_DIRS "."
