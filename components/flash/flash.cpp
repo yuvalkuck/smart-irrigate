@@ -7,57 +7,29 @@
 #include "nvs_flash.h"
 #include "default_initiate.h"
 
-#define PARTITION_SETUP_NAMESPACE "."
-#define PARTITION_SETUP_NAME "setup"
+static constexpr const char* PARTITION_SETUP_NAMESPACE_STR = ".";
+static constexpr const char* PARTITION_SETUP_NAME_STR = "setup";
 
 static const char* TAG = "flash:";
-static nvs_handle_t hNVS;
 
-bool NvsConfig::isStrEmpty(const char* key) const {
-    char tmp[128] = {0};
-    size_t len = sizeof(tmp);
-    auto err = nvs_get_str(handler_, key, tmp, &len);
-    switch (err) {
-        case ESP_ERR_NVS_INVALID_HANDLE:
-            ESP_LOGE(TAG, "ESP_ERR_NVS_INVALID_HANDLE");
-            return true;
-        case ESP_ERR_NVS_NOT_FOUND:
-            ESP_LOGI(TAG, "ESP_ERR_NVS_NOT_FOUND");
-            return true;
-        case ESP_ERR_NVS_INVALID_LENGTH:
-            ESP_LOGE(TAG, "ESP_ERR_NVS_INVALID_LENGTH");
-            return false;
-        case ESP_OK:
-            if (strlen(tmp) < 1) {
-                return true;
-            }
-            break;
-        default:
-            ESP_LOGE(TAG, "Unhandled error: %d", err);
-    }
-    return false;
-}
+esp_err_t nvsCreateKeyStr(nvs_handle_t handler, const char* name, const char* default_value = "") {
+    ESP_LOGD(TAG, "%s: %s", __func__, name);
+    size_t required_size;
+    esp_err_t err = nvs_get_str(handler, name, NULL, &required_size);
 
-static void nvsCreateKeyStr(const char* name, const char* default_value = "") {
-    ESP_LOGI(TAG, "%s:%s", __func__, name);
-    esp_err_t err;
-
-    char tmp[1] = {0};
-    size_t len = sizeof(tmp);
-    // Step 1: Get the size of the stored string (includes null terminator)
-    err = nvs_get_str(hNVS, name, tmp, &len);
     if (err == ESP_ERR_NVS_NOT_FOUND) {
-        err = nvs_set_str(hNVS, name, default_value);
-        if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) {
-            ESP_LOGE(TAG, "failed to create: %s", default_value);
+        err = nvs_set_str(handler, name, default_value);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to set default value for key '%s': %s", name, esp_err_to_name(err));
         }
     }
+    return err;
 }
 
 static esp_err_t nvs_config(nvs_handle_t* handler) {
-    esp_err_t ret = nvs_open_from_partition(PARTITION_SETUP_NAME,PARTITION_SETUP_NAMESPACE, NVS_READWRITE, handler);
+    esp_err_t ret = nvs_open_from_partition(PARTITION_SETUP_NAME_STR, PARTITION_SETUP_NAMESPACE_STR, NVS_READWRITE, handler);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, PARTITION_SETUP_NAME, PARTITION_SETUP_NAMESPACE);
+        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, PARTITION_SETUP_NAME_STR, PARTITION_SETUP_NAMESPACE_STR);
     }
     return ret;
 }
@@ -70,55 +42,108 @@ NvsConfig::~NvsConfig() {
     nvs_close(handler_);
 }
 
-bool NvsConfig::getStr(const char* key, char* value, size_t len) {
-    char buffer[128] = {};
-    size_t cpylen = sizeof(buffer);
-    if (nvs_get_str(handler_, key, buffer, &cpylen) != ESP_OK) {
-        return false;
+bool NvsConfig::isStrEmpty(const char* key) const {
+    size_t required_size;
+    esp_err_t err = nvs_get_str(handler_, key, NULL, &required_size);
+    if (err == ESP_ERR_NVS_NOT_FOUND) {
+        return true;
     }
-    memcpy(value, buffer, std::min(len, cpylen));
-    return true;
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error checking if key '%s' is empty: %s", key, esp_err_to_name(err));
+        return true;
+    }
+    return required_size <= 1; // Only null terminator or truly empty
 }
 
-bool NvsConfig::setStr(const char* key, const char* value, size_t len) {
-    if (nvs_set_blob(handler_, key, value, len) != ESP_OK) {
+bool NvsConfig::getStr(const char* key, char* value, size_t len) {
+    size_t required_size;
+    esp_err_t err;
+
+    // 1. Get the required size of the string (including null terminator)
+    err = nvs_get_str(handler_, key, NULL, &required_size);
+    if (err != ESP_OK) {
+        if (err != ESP_ERR_NVS_NOT_FOUND) {
+            ESP_LOGE(TAG, "Error (%s) getting size for NVS key '%s'", esp_err_to_name(err), key);
+        }
+        return false; // Key not found or other error
+    }
+
+    // 2. Check if the provided buffer is large enough
+    if (len < required_size) {
+        ESP_LOGE(TAG, "Buffer too small for NVS key '%s'. Required: %zu, Provided: %zu", key, required_size, len);
         return false;
     }
-    return true;
+
+    // 3. Read the string into the provided buffer
+    err = nvs_get_str(handler_, key, value, &required_size);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error (%s) reading NVS key '%s'", esp_err_to_name(err), key);
+        return false;
+    }
+
+    return true; // Success
+}
+
+bool NvsConfig::setStr(const char* key, const char* value) {
+    esp_err_t err = nvs_set_str(handler_, key, value);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error (%s) writing NVS key '%s'", esp_err_to_name(err), key);
+        return false;
+    }
+    err = nvs_commit(handler_);
+    return err == ESP_OK;
 }
 
 esp_err_t init_flash(void) {
     ESP_LOGI(TAG, "nvs flash init");
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_erase();
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to erase NVS flash: %s", esp_err_to_name(ret));
+            return ret;
+        }
         ret = nvs_flash_init();
-        ESP_ERROR_CHECK(ret);
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to re-initialize NVS flash after erase: %s", esp_err_to_name(ret));
+            return ret;
+        }
     }
-    ret = nvs_flash_init_partition(PARTITION_SETUP_NAME);
+    ret = nvs_flash_init_partition(PARTITION_SETUP_NAME_STR);
     if (ret != ESP_OK) {
-        ESP_ERROR_CHECK(nvs_flash_erase_partition(PARTITION_SETUP_NAME));
-        nvs_flash_init_partition(PARTITION_SETUP_NAME);
+        ret = nvs_flash_erase_partition(PARTITION_SETUP_NAME_STR);
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to erase NVS partition '%s': %s", PARTITION_SETUP_NAME_STR, esp_err_to_name(ret));
+            return ret;
+        }
+        ret = nvs_flash_init_partition(PARTITION_SETUP_NAME_STR);
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to re-initialize NVS partition '%s' after erase: %s", PARTITION_SETUP_NAME_STR, esp_err_to_name(ret));
+            return ret;
+        }
     }
-    ret = nvs_config(&hNVS);
+
+    nvs_handle_t setup_handle;
+    ret = nvs_config(&setup_handle);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, PARTITION_SETUP_NAME, PARTITION_SETUP_NAMESPACE);
-        return 0;
+        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, PARTITION_SETUP_NAME_STR, PARTITION_SETUP_NAMESPACE_STR);
+        return ret;
     }
+
     ESP_LOGI(TAG, "start init keys");
-    ret = nvs_commit(hNVS);
-    nvsCreateKeyStr(CFG_NVS_KEY_WIFI_SSID, INITIATE_WIFI_SSID);
-    nvsCreateKeyStr(CFG_NVS_KEY_WIFI_PASSWORD, INITIATE_WIFI_PASSWORD);
-    nvsCreateKeyStr(CFG_NVS_KEY_BT_DEVICE_NAME, INITIATE_BT_DEVICE_NAME);
-    nvsCreateKeyStr(CFG_NVS_KEY_MQTT_URL, INITIATE_BROKER_URL);
-    nvsCreateKeyStr(CFG_NVS_KEY_MQTT_USERNAME, INITIATE_MQTT_CLIENT_USERNAME);
-    nvsCreateKeyStr(CFG_NVS_KEY_MQTT_PASSWORD, INITIATE_MQTT_CLIENT_PASSWORD);
-    nvsCreateKeyStr(CFG_NVS_KEY_NTP_SERVER,INITIATE_NTP_SERVER);
-    nvsCreateKeyStr(CFG_NVS_KEY_LOCALE_TZ,INITIATE_DEFAULT_LOCALE_TIME_ZONE);
-    ret = nvs_commit(hNVS);
+    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_WIFI_SSID, INITIATE_WIFI_SSID);
+    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_WIFI_PASSWORD, INITIATE_WIFI_PASSWORD);
+    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_BT_DEVICE_NAME, INITIATE_BT_DEVICE_NAME);
+    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_MQTT_URL, INITIATE_BROKER_URL);
+    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_MQTT_USERNAME, INITIATE_MQTT_CLIENT_USERNAME);
+    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_MQTT_PASSWORD, INITIATE_MQTT_CLIENT_PASSWORD);
+    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_NTP_SERVER, INITIATE_NTP_SERVER);
+    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_LOCALE_TZ, INITIATE_DEFAULT_LOCALE_TIME_ZONE);
+
+    ret = nvs_commit(setup_handle);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "failed (%d) nvs_commit", ret);
     }
-    nvs_close(hNVS);
+    nvs_close(setup_handle);
     return ESP_OK;
 }

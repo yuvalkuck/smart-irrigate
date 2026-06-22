@@ -5,6 +5,7 @@
 #include <string>
 #include "nvs.h"
 #include "sdkconfig.h"
+#include <vector> // Required for std::vector
 
 #define NVS_NAMESPACE "."
 #define NVS_PARTITION_NAME "config"
@@ -191,5 +192,59 @@ static int nvs_read_access_cb(uint16_t conn_handle, uint16_t attr_handle,
 
 static int nvs_write_access_cb(uint16_t conn_handle, uint16_t attr_handle,
                                struct ble_gatt_access_ctxt* ctxt, void* arg) {
-    return 0;
+    ESP_LOGI(TAG, "NVS Write Access Callback. Op: %d", ctxt->op);
+
+    /* FIXME: should be handle later on when write will be implemented by android
+    if (ctxt->op == BLE_GATT_ACCESS_OP_WRITE_CHR) {
+        // Get the length of the incoming data
+        size_t data_len = OS_MBUF_PKTLEN(ctxt->om);
+
+        // Allocate a buffer to hold the incoming data
+        // Using std::vector for automatic memory management
+        std::vector<uint8_t> write_data(data_len);
+
+        // Copy data from os_mbuf to our buffer
+        int rc = ble_hs_mbuf_copydata(ctxt->om, 0, data_len, write_data.data());
+        if (rc != 0) {
+            ESP_LOGE(TAG, "Failed to copy incoming NVS write data; rc=%d", rc);
+            return BLE_ATT_ERR_UNLIKELY; // Indicate a generic error
+        }
+
+        // Convert to string for parsing (assuming null-terminated string)
+        // Add null terminator for safety if not already present
+        std::string payload_str(write_data.begin(), write_data.end());
+        if (!payload_str.empty() && payload_str.back() != '\0') {
+            payload_str += '\0'; // Ensure null termination for parsing functions
+        }
+
+        ESP_LOGI(TAG, "Received NVS write payload: %s", payload_str.c_str());
+
+        // Parse "key=value" format
+        size_t eq_pos = payload_str.find('=');
+        if (eq_pos == std::string::npos || eq_pos == 0 || eq_pos == payload_str.length() - 1) {
+            ESP_LOGE(TAG, "Invalid NVS write format. Expected 'key=value'. Received: %s", payload_str.c_str());
+            return BLE_ATT_ERR_INVALID_ATTR_VALUE_LEN; // Or another appropriate error
+        }
+
+        std::string key = payload_str.substr(0, eq_pos);
+        std::string value = payload_str.substr(eq_pos + 1);
+
+        // Write to NVS
+        NvsConfig hCfg;
+        if (!hCfg) {
+            ESP_LOGE(TAG, "Failed to open NVS for writing.");
+            return BLE_ATT_ERR_INSUFFICIENT_RES;
+        }
+
+        // Use setStr, which now handles nvs_set_str and nvs_commit
+        if (!hCfg.setStr(key.c_str(), value.c_str(), value.length())) {
+            ESP_LOGE(TAG, "Failed to write NVS key '%s' with value '%s'", key.c_str(), value.c_str());
+            return BLE_ATT_ERR_UNLIKELY;
+        }
+
+        ESP_LOGI(TAG, "Successfully wrote NVS key '%s' = '%s'", key.c_str(), value.c_str());
+    }
+    */
+
+    return 0; // Success
 }

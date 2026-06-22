@@ -17,8 +17,13 @@ static void log_error_if_nonzero(const char* message, int error_code) {
     }
 }
 
+// Declare static buffers to store MQTT configuration strings
+static char mqtt_broker_uri[256] = {0};
+static char mqtt_username[64] = {0};
+static char mqtt_password[128] = {0};
+
 static esp_mqtt_client_config_t mqtt_cfg;
-static esp_mqtt_client_handle_t client;
+static esp_mqtt_client_handle_t hClient;
 
 // Define the absolute maximum binary payload size you expect to receive
 constexpr size_t MAX_EXPECTED_PAYLOAD_SIZE = 4096;
@@ -31,13 +36,12 @@ static size_t total_expected_data = 0;
 
 static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t event_id, void* event_data) {
     ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%" PRIi32 "", base, event_id);
-    esp_mqtt_event_handle_t event = esp_mqtt_event_handle_t(static_cast<esp_mqtt_event_handle_t>(event_data));
-    esp_mqtt_client_handle_t client = event->client;
+    auto event = esp_mqtt_event_handle_t(static_cast<esp_mqtt_event_handle_t>(event_data));
     int msg_id;
-    switch ((esp_mqtt_event_id_t)event_id) {
+    switch (static_cast<esp_mqtt_event_id_t>(event_id)) {
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
-            msg_id = esp_mqtt_client_subscribe(client, TOPIC_CONFIGURATION, 0);
+            msg_id = esp_mqtt_client_subscribe(hClient, TOPIC_CONFIGURATION, 0);
             ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
             break;
         case MQTT_EVENT_DISCONNECTED:
@@ -79,7 +83,7 @@ static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t 
             if (total_expected_data == 0) return;
 
             // Append the current chunk into our persistent buffer
-            const uint8_t* chunk_ptr = reinterpret_cast<const uint8_t*>(event->data);
+            const auto* chunk_ptr = reinterpret_cast<const uint8_t*>(event->data);
             reassembly_buffer.insert(reassembly_buffer.end(), chunk_ptr, chunk_ptr + event->data_len);
 
             // Check if we have received the complete message
@@ -114,53 +118,54 @@ static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t 
     }
 }
 
-void init_hmqtt(void) {
+void init_hmqtt() {
     ESP_LOGI(TAG, "%s", __func__);
     NvsConfig hCfg;
-    char url[256] = {0};
-    if (hCfg.getStr(CFG_NVS_KEY_MQTT_URL, url, sizeof(url))) {
-        mqtt_cfg.broker.address.uri = url;
-    }
-    else {
+
+    if (hCfg.getStr(CFG_NVS_KEY_MQTT_URL, mqtt_broker_uri, sizeof(mqtt_broker_uri))) {
+        mqtt_cfg.broker.address.uri = mqtt_broker_uri;
+    } else {
         ESP_LOGE(TAG, "Failed to get MQTT URL");
         return;
     }
-    char uname[64] = {0};
-    if (hCfg.getStr(CFG_NVS_KEY_MQTT_USERNAME, uname, sizeof(uname))) {
-        mqtt_cfg.credentials.username = uname;
-    }
-    else {
+
+    if (hCfg.getStr(CFG_NVS_KEY_MQTT_USERNAME, mqtt_username, sizeof(mqtt_username))) {
+        mqtt_cfg.credentials.username = mqtt_username;
+    } else {
         ESP_LOGE(TAG, "Failed to get MQTT Username");
+        // It might be acceptable to proceed without a username if the broker allows it,
+        // but for now, we'll return.
         return;
     }
-    char pword[128] = {0};
-    if (hCfg.getStr(CFG_NVS_KEY_MQTT_PASSWORD, pword, sizeof(pword))) {
-        mqtt_cfg.credentials.authentication.password = pword;
-    }
-    else {
-        ESP_LOGE(TAG, "Failed to get MQTT Username");
+
+    if (hCfg.getStr(CFG_NVS_KEY_MQTT_PASSWORD, mqtt_password, sizeof(mqtt_password))) {
+        mqtt_cfg.credentials.authentication.password = mqtt_password;
+    } else {
+        ESP_LOGE(TAG, "Failed to get MQTT Password");
+        // Similar to username, decide if this is a critical failure.
         return;
     }
-    mqtt_cfg.broker.verification.certificate = (const char*)ca_crt_start,
-        mqtt_cfg.credentials.authentication.certificate = (const char*)client_crt_start,
-        mqtt_cfg.credentials.authentication.key = (const char*)client_key_start,
-        mqtt_cfg.broker.verification.skip_cert_common_name_check = true;
-    client = esp_mqtt_client_init(&mqtt_cfg);
-    if (client == nullptr) {
+
+    mqtt_cfg.broker.verification.certificate = (const char*)ca_crt_start;
+    mqtt_cfg.credentials.authentication.certificate = (const char*)client_crt_start;
+    mqtt_cfg.credentials.authentication.key = (const char*)client_key_start;
+    mqtt_cfg.broker.verification.skip_cert_common_name_check = true;
+
+    hClient = esp_mqtt_client_init(&mqtt_cfg);
+    if (hClient == nullptr) {
         ESP_LOGE(TAG, "esp_mqtt_client_init failed");
-    }
-    else {
+    } else {
         /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
-        esp_mqtt_client_register_event(client, MQTT_EVENT_ANY, mqttEventHandler, NULL);
+        esp_mqtt_client_register_event(hClient, MQTT_EVENT_ANY, mqttEventHandler, NULL);
     }
 }
 
-void start_hmqtt(void) {
+void start_hmqtt() {
     ESP_LOGI(TAG, "%s", __func__);
-    esp_mqtt_client_start(client);
+    esp_mqtt_client_start(hClient);
 }
 
-int mqtt_publish(const char* topic, const char* payload) {
+esp_err_t mqtt_publish(const char* topic, const char* payload) {
     ESP_LOGI(TAG, "%s:[%s]->[%s]", __func__, topic, payload);
-    return esp_mqtt_client_publish(client, topic, payload, strlen(payload), 1, 0);
+    return esp_mqtt_client_publish(hClient, topic, payload, strlen(payload), 1, 0);
 }

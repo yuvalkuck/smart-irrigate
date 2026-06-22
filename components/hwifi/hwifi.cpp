@@ -4,7 +4,6 @@
 #include "esp_event.h"
 #include "esp_netif.h"
 #include "esp_wifi.h"
-#include "mqtt_client.h"
 #include "sdkconfig.h"
 #include <algorithm>
 #include "flash.h"
@@ -46,7 +45,7 @@ void init_wifi(void) {
     // Register Event Handlers
 
     // MQTT_EVENT_ANY = -1
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, MQTT_EVENT_ANY, &wifiEventHandler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifiEventHandler, NULL, NULL));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifiEventHandler, NULL, NULL));
 
     // 5. Configure Station Mode

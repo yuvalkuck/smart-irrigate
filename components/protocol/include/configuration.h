@@ -13,7 +13,7 @@ extern "C" {
             |--- program
                 |--- task
 */
-#define ProgramTyNormal 0x01
+#define ProgramTyNormal = 0x01
 #define ProgramTyEmergency = 0x02
 
 typedef struct {

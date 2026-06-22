@@ -1,4 +1,7 @@
 #include <host/ble_gap.h>
+#include "sdkconfig.h" // Include sdkconfig to access Kconfig options
+
+#ifdef CONFIG_BLE_DEBUG_EVENTS // Only compile if this Kconfig option is enabled
 
 #define EventName(eve) [eve] = #eve,
 
@@ -64,3 +67,9 @@ const char *events[] = {
 
     EventName(BLE_GAP_EVENT_CACHE_ASSOC)
 };
+
+#else // CONFIG_BLE_DEBUG_EVENTS is not defined, provide a dummy array
+const char *events[] = {
+    "BLE_GAP_EVENT_UNKNOWN", // Default for unknown events
+};
+#endif // CONFIG_BLE_DEBUG_EVENTS

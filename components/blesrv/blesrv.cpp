@@ -128,10 +128,8 @@ static int ble_gap_event_cb(struct ble_gap_event* event, void* arg) {
             MODLOG_DFLT(INFO, "disconnect; reason=%d ", event->disconnect.reason);
             bleprph_print_conn_desc(&event->disconnect.conn);
             MODLOG_DFLT(INFO, "\n");
-            if (event->connect.status != 0) {
-                /* Connection failed; resume advertising. */
-                start_advertising();
-            }
+            /* Always resume advertising after a disconnect. */
+            start_advertising();
             break;
 #if 0
         case BLE_GAP_EVENT_CONN_UPDATE:

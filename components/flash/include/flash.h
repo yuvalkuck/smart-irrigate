@@ -6,24 +6,24 @@
 typedef uint32_t nvs_handle_t;
 #endif
 
-#define CFG_NVS_KEY_WIFI_SSID       "wifi_ssid"
-#define CFG_NVS_KEY_WIFI_PASSWORD   "wifi_password"
-#define CFG_NVS_KEY_BT_DEVICE_NAME  "device_name"
-#define CFG_NVS_KEY_MQTT_URL        "mqtt_url"
-#define CFG_NVS_KEY_MQTT_USERNAME   "mqtt_uname"
-#define CFG_NVS_KEY_MQTT_PASSWORD   "mqtt_pword"
-#define CFG_NVS_KEY_NTP_SERVER      "ntp_server"
-#define CFG_NVS_KEY_LOCALE_TZ       "locale_tz"
+static constexpr const char* CFG_NVS_KEY_WIFI_SSID = "wifi_ssid";
+static constexpr const char* CFG_NVS_KEY_WIFI_PASSWORD = "wifi_password";
+static constexpr const char* CFG_NVS_KEY_BT_DEVICE_NAME = "device_name";
+static constexpr const char* CFG_NVS_KEY_MQTT_URL = "mqtt_url";
+static constexpr const char* CFG_NVS_KEY_MQTT_USERNAME = "mqtt_uname";
+static constexpr const char* CFG_NVS_KEY_MQTT_PASSWORD = "mqtt_pword";
+static constexpr const char* CFG_NVS_KEY_NTP_SERVER = "ntp_server";
+static constexpr const char* CFG_NVS_KEY_LOCALE_TZ = "locale_tz";
 
 esp_err_t init_flash(void);
 /* use C++ for handler container */
 class NvsConfig {
     nvs_handle_t handler_ = 0;
 public:
-    operator bool() const {
+    explicit operator bool() const {
         return handler_ != 0;
     }
-    operator nvs_handle_t() const {
+    explicit operator nvs_handle_t() const {
         return handler_;
     }
     NvsConfig();
@@ -32,7 +32,7 @@ public:
     NvsConfig& operator=(const NvsConfig&) = delete;
     NvsConfig(NvsConfig&&) = delete;
     NvsConfig& operator=(NvsConfig&&) = delete;
-    bool setStr(const char *key, const char *value, size_t len);
+    bool setStr(const char* key, const char* value);
     bool getStr(const char *key, char *value, size_t len);
     bool getStr(const char *key, uint8_t *value, size_t len) {
         return getStr(key, (char *)value, len);
@@ -41,6 +41,3 @@ public:
 };
 
 #endif
-
-
-
