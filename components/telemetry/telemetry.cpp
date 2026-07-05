@@ -18,7 +18,7 @@ static bme680_t sensor;
 static const char* TAG = "BME680:";
 static bme680_values_float_t telemetryValues;
 
-void init_telemetry(void) {
+void init_telemetry() {
     ESP_LOGI(TAG, "%s", __func__);
     memset(&sensor, 0, sizeof(bme680_t));
     // Initialize underlying thread-safe esp-idf-lib hardware driver wrapper
@@ -76,7 +76,7 @@ void init_telemetry(void) {
     }
 }
 
-void start_telemetry(void) {
+void start_telemetry() {
     ESP_LOGI(TAG, "%s", __func__);
     BaseType_t result = xTaskCreate(
         cbTelemetryTask,
