@@ -16,4 +16,10 @@ struct EventData {
     void * data;
     size_t length() const {return size+sizeof(EventData);}
 };
+
+struct TelemetryData {
+    float temperature;    //!< temperature in degree C
+    float humidity;       //!< relative humidity in %
+};
+
 #endif

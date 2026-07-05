@@ -15,10 +15,8 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
                 float *payload = static_cast<float*>(event->data);
                 char send[64];
                 // telemetryValues.temperature,    //!< temperature in degree C
-                // telemetryValues.pressure,       //!< barometric pressure in hPascal
                 // telemetryValues.humidity,       //!< relative humidity in %
-                // telemetryValues.gas_resistance, //!< gas resistance in Ohm
-                snprintf(send, sizeof(send), "%.2f|%.2f|%.2f|%.2f", payload[0], payload[1],payload[2],payload[3]);
+                snprintf(send, sizeof(send), "%.2f|%.2f", payload[0], payload[1]);
                 mqtt_publish("/client/telemetry", send);
             }
             break;

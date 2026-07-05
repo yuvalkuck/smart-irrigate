@@ -2,7 +2,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
-#include "bme680.h"
+#include "sht4x.h"
 #include "common_event.h"
 #include "esp_event.h"
 
@@ -14,63 +14,36 @@
 #define TASK_DELAY     1000*10
 // BME680 default I2C Address (usually 0x76 or 0x77 depending on SDO pin state)
 #define BME680_I2C_ADDR BME680_I2C_ADDR_1
-static bme680_t sensor;
-static const char* TAG = "BME680:";
-static bme680_values_float_t telemetryValues;
+static sht4x_t sensor;
+static const char* TAG = "SHT41:";
+static TelemetryData telemetryValues;
 
 void init_telemetry() {
     ESP_LOGI(TAG, "%s", __func__);
-    memset(&sensor, 0, sizeof(bme680_t));
+    memset(&sensor, 0, sizeof(sht4x_t));
     // Initialize underlying thread-safe esp-idf-lib hardware driver wrapper
     ESP_ERROR_CHECK(i2cdev_init());
 
-    // Connect the sensor descriptor with DFRobot's exact pin infrastructure
-    ESP_ERROR_CHECK(bme680_init_desc(&sensor, BME680_I2C_ADDR, I2C_PORT , SDA_GPIO, SCL_GPIO));
-
-    // Perform validation and initialization of chip parameters
-    if (bme680_init_sensor(&sensor) != ESP_OK) {
+    ESP_ERROR_CHECK(sht4x_init_desc(&sensor, I2C_PORT, SDA_GPIO, SCL_GPIO));
+    if ( sht4x_init(&sensor) != ESP_OK ) {
         ESP_LOGE(TAG, "Sensor initialization failed! Check wiring on SDA(19) and SCL(20).");
-        return;
     }
-
-    // Configure oversampling profiles
-    bme680_set_oversampling_rates(&sensor, BME680_OSR_2X, BME680_OSR_8X, BME680_OSR_1X);
-
-    // Set digital filter size to isolate telemetry spikes
-    bme680_set_filter_size(&sensor, BME680_IIR_SIZE_3);
-
-    // Warm up the VOC Gas Sensor Matrix: Target 320°C for 150ms
-    //bme680_set_heater_run_program(&sensor, true);
-    bme680_set_heater_profile(&sensor, 0, 320, 150);
-    bme680_use_heater_profile(&sensor, 0);
-
-    // Set a context environment baseline temperature
-    bme680_set_ambient_temperature(&sensor, 25);
 }
 
 [[noreturn]] static void cbTelemetryTask(void* ) {
-    uint32_t duration;
-    bme680_get_measurement_duration(&sensor, &duration);
-    ESP_LOGI(TAG, "duration:%d", duration);
     while (1) {
-        if (bme680_force_measurement(&sensor) == ESP_OK) {
-            vTaskDelay(duration);
-            if (bme680_get_results_float(&sensor, &telemetryValues) == ESP_OK) {
-                float payload[4] = {
-                    telemetryValues.temperature,    //!< temperature in degree C        (Invalid value -327.68)
-                    telemetryValues.pressure,       //!< barometric pressure in hPascal (Invalid value 0.0)
-                    telemetryValues.humidity,       //!< relative humidity in %         (Invalid value 0.0)
-                    telemetryValues.gas_resistance, //!< gas resistance in Ohm
-                };
-                EventData event = {sizeof(payload), &payload};
-                esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_SENSOR_UPDATED, &event, event.length(), portMAX_DELAY);
-            }
-            else {
-                ESP_LOGE(TAG, "Could not fetch registers from BME680.");
-            }
-        }
-        else {
-            ESP_LOGE(TAG, "Could not force measurement command.");
+        // Read sensor data using the high-precision mode
+        esp_err_t res = sht4x_measure(&sensor, &telemetryValues.temperature, &telemetryValues.humidity);
+        if (res == ESP_OK) {
+            ESP_LOGI(TAG, "Temperature: %.2f °C | Humidity: %.2f %%", telemetryValues.temperature, telemetryValues.humidity);
+            float payload[2] = {
+                telemetryValues.temperature,    //!< temperature in degree C        (Invalid value -327.68)
+                telemetryValues.humidity       //!< relative humidity in %         (Invalid value 0.0)
+            };
+            EventData event = {sizeof(payload), &payload};
+            esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_SENSOR_UPDATED, &event, event.length(), portMAX_DELAY);
+        } else {
+            ESP_LOGE(TAG, "Failed to read data from sensor");
         }
         vTaskDelay(pdMS_TO_TICKS(TASK_DELAY));
     }
