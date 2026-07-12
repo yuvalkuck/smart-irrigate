@@ -65,6 +65,16 @@ dependencies:
     - esp32s2
     - esp32s3
     version: 1.0.7
+  espressif/fmt:
+    component_hash: aad535ae0552e693978867f5e53731c8ae6592092cfb087698b7ec1ddf75c7cb
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.1'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 11.0.1
   espressif/mqtt:
     component_hash: ffdad5659706b4dc14bc63f8eb73ef765efa015bf7e9adf71c813d52a2dc9342
     dependencies:
@@ -81,8 +91,9 @@ dependencies:
     version: 6.0.1
 direct_dependencies:
 - esp-idf-lib/sht4x
+- espressif/fmt
 - espressif/mqtt
 - idf
-manifest_hash: 718f57325f871e9e908b3dfa8d798bf03f08a3394ca6484d987fefba132772aa
+manifest_hash: 05e4c3ff96e22203ae06e91d1f6ac5859d0592dd5a8fba031e0f02fb52446a62
 target: esp32c6
 version: 3.0.0

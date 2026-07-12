@@ -6,9 +6,11 @@
 
 #include <esp_http_server.h>
 #include <esp_log.h>
+#include <fmt/core.h>
 
 static const char *TAG = "WebServer";
-
+static char workBuf[128] = {0};
+static char payload[1024] = {0};
 #include <esp_http_server.h>
 
 httpd_handle_t start_webserver() {
@@ -31,8 +33,23 @@ httpd_handle_t start_webserver() {
 
 // 1. Define the GET Handler Function
 esp_err_t get_handler(httpd_req_t *req) {
+    NvsConfig hCfg;
+
+
+    /*
+    hCfg.getStr( CFG_NVS_KEY_WIFI_SSID, workBuf, sizeof(workBuf));
     const char *resp_str = "Hello From ESP32";
-    httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);
+    static constexpr const char* CFG_NVS_KEY_WIFI_SSID = "wifi_ssid";
+    static constexpr const char* CFG_NVS_KEY_WIFI_PASSWORD = "wifi_password";
+    static constexpr const char* CFG_NVS_KEY_BT_DEVICE_NAME = "device_name";
+    static constexpr const char* CFG_NVS_KEY_MQTT_URL = "mqtt_url";
+    static constexpr const char* CFG_NVS_KEY_MQTT_USERNAME = "mqtt_uname";
+    static constexpr const char* CFG_NVS_KEY_MQTT_PASSWORD = "mqtt_pword";
+    static constexpr const char* CFG_NVS_KEY_NTP_SERVER = "ntp_server";
+    static constexpr const char* CFG_NVS_KEY_LOCALE_TZ = "locale_tz";
+    */
+
+    //httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
 

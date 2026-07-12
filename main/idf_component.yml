@@ -16,3 +16,4 @@ dependencies:
   #   public: true
   espressif/mqtt: ^1.0.0
   esp-idf-lib/sht4x: '*'
+  espressif/fmt: '*'
