@@ -10,7 +10,6 @@
 #include "hwifi.h"
 #include "hmqtt.h"
 #include "hsntp.h"
-#include "blesrv.h"
 #include "driver/gpio.h"
 #include "time.h"
 
@@ -39,8 +38,6 @@ void continue_after_time_sync_cb(struct timeval* tv) {
         ESP_LOGE(TAG, "failed to set timezone from fkasg");
     }
 }
-
-
 
 static void init_gpio() {
     gpio_reset_pin((gpio_num_t)GPIO_LED);
@@ -80,9 +77,10 @@ extern "C" void app_main(void) {
             return;
         }
         if (!initRegular || hCfg.isStrEmpty(CFG_NVS_KEY_WIFI_SSID)) {
-            ESP_LOGI(TAG, "Start BLE");
-            init_blesrv();
-            start_blesrv();
+            ESP_LOGI(TAG, "Start wifi configuration state");
+            init_wifi_softap();
+            start_wifi();
+
             initRegular = false;
             ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
         }
@@ -91,7 +89,7 @@ extern "C" void app_main(void) {
             init_event_app_handle();
             init_telemetry();
 
-            init_wifi();
+            init_wifi_sta();
             // // 6. Start Wi-Fi
             start_wifi();
             // SNTP

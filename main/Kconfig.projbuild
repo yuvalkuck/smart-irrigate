@@ -11,4 +11,16 @@ menu "Device Limit Configuration"
         help
             The maximum number of setups a valve can handle.
 
+    config DEVICE_DEFAULT_UNIQUE_SSID
+        string "If empty use mac_address"
+        default ""
+        help
+            Enable to append something to Irrigate prefix (Max:24).
+
+    config DEVICE_MAX_DEFAULT_UNIQUE_SSID
+        int
+        default 24
+        help
+            Internal max length limit for DEVICE_DEFAULT_UNIQUE_SSID (excluding null terminator).
+
 endmenu
