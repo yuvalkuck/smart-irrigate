@@ -11,4 +11,10 @@ menu "Device Limit Configuration"
         help
             The maximum number of setups a valve can handle.
 
+    config PROTOCOL_MAGIC_NUMBER
+        hex "Hex 32bit number"
+        range 0x00 0xFFFFFFFF
+        default 0x51B06040
+        help
+            Hex 32bit number use in communication magic.
 endmenu

@@ -54,7 +54,7 @@ static void init_gpio() {
         .intr_type = GPIO_INTR_DISABLE
     };
     gpio_config(&io_conf);
-    vTaskDelay(pdMS_TO_TICKS(50));
+    vTaskDelay(pdMS_TO_TICKS(100));
 }
 
 extern "C" void app_main(void) {
@@ -79,14 +79,13 @@ extern "C" void app_main(void) {
             ESP_LOGE(TAG, "failed to init config flash");
             return;
         }
-        if (!initRegular || hCfg.isStrEmpty(CFG_NVS_KEY_WIFI_SSID)) {
+        if (initRegular || hCfg.isStrEmpty(CFG_NVS_KEY_WIFI_SSID)) {
             ESP_LOGI(TAG, "Start BLE");
             init_blesrv();
             start_blesrv();
             initRegular = false;
             ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
-        }
-        else {
+        } else {
             ESP_LOGI(TAG, "Start Regular Load");
             init_event_app_handle();
             init_telemetry();

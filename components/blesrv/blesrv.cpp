@@ -1,5 +1,8 @@
 #include "blesrv.h"
 
+#include <cstring>
+
+#include "esp_bt.h"
 #include "esp_log.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
@@ -7,22 +10,22 @@
 #include "host/ble_hs_adv.h"
 #include "services/gap/ble_svc_gap.h"
 #include "sdkconfig.h"
-#include <unordered_map>
 
 #include "../flash/include/flash.h"
 #include "inc/services.h"
 
 extern const char* events[];
 static const char* TAG = "BleSrv:";
-#define BLE_ATT_UUID_PRIMARY_SERVICE 0x2800
 #define GATT_SVR_SVC_ALERT_UUID               0x1811
 
 static uint8_t own_addr_type = BLE_OWN_ADDR_RANDOM;
+#define BLE_SVC_GAP_APPEARANCE_GEN_DISPLAY 0x0100
+#define BLE_SVC_GAP_APPEARANCE_GEN_THERMOMETER 0x0300;
 #define BLE_GAP_APPEARANCE_GENERIC_TAG 0x0200
 #define BLE_GAP_LE_ROLE_PERIPHERAL 0x01
 // Characteristic UUID for NVS Read (to get a list of key-value pairs).
 // Example Characteristic UUID: 00000002-8D6A-46F6-B20C-9A5163000000
-static void start_advertising(void);
+static void start_advertising();
 static void
 print_addr(const void* addr) {
     const char* u8p = (const char*)addr;
@@ -56,13 +59,21 @@ bleprph_print_conn_desc(struct ble_gap_conn_desc* desc) {
 
 // 1. GAP Event Handler (Handles connections/advertising)
 static int ble_gap_event_cb(struct ble_gap_event* event, void* arg) {
-    ESP_LOGI(TAG, "ble_gap_event_cb, event: %d : %s", event->type, events[event->type]);
+    const char* event_name = (event->type < 64 && events[event->type])
+                              ? events[event->type] : "UNKNOWN";
+    ESP_LOGI(TAG, "ble_gap_event_cb, event: %d : %s", event->type, event_name);
 
     struct ble_gap_conn_desc desc;
     int rc;
 
-
     switch (event->type) {
+        case BLE_GAP_EVENT_ADV_COMPLETE:
+            ESP_LOGI(TAG, "adv complete, reason=%d", event->adv_complete.reason);
+            // Only restart if not stopped by a connection
+            if (event->adv_complete.reason != BLE_HS_ENOTCONN) {
+                start_advertising();
+            }
+            break;
         case BLE_GAP_EVENT_CONNECT:
             /* A new connection was established or a connection attempt failed. */
             MODLOG_DFLT(INFO, "connection %s; status=%d ",
@@ -131,205 +142,139 @@ static int ble_gap_event_cb(struct ble_gap_event* event, void* arg) {
             /* Always resume advertising after a disconnect. */
             start_advertising();
             break;
-#if 0
-        case BLE_GAP_EVENT_CONN_UPDATE:
-            /* The central has updated the connection parameters. */
-            MODLOG_DFLT(INFO, "connection updated; status=%d ",
-                        event->conn_update.status);
-            rc = ble_gap_conn_find(event->conn_update.conn_handle, &desc);
-            assert(rc == 0);
-            bleprph_print_conn_desc(&desc);
-            MODLOG_DFLT(INFO, "\n");
-            break;
-
-        case BLE_GAP_EVENT_ADV_COMPLETE:
-            MODLOG_DFLT(INFO, "advertise complete; reason=%d",
-                        event->adv_complete.reason);
-            start_advertising();
-            break;
-
-        case BLE_GAP_EVENT_ENC_CHANGE:
-            /* Encryption has been enabled or disabled for this connection. */
-            MODLOG_DFLT(INFO, "encryption change event; status=%d ",
-                        event->enc_change.status);
-            rc = ble_gap_conn_find(event->enc_change.conn_handle, &desc);
-            assert(rc == 0);
-            bleprph_print_conn_desc(&desc);
-            MODLOG_DFLT(INFO, "\n");
-            break;
-
-        case BLE_GAP_EVENT_NOTIFY_TX:
-            MODLOG_DFLT(INFO, "notify_tx event; conn_handle=%d attr_handle=%d "
-                        "status=%d is_indication=%d",
-                        event->notify_tx.conn_handle,
-                        event->notify_tx.attr_handle,
-                        event->notify_tx.status,
-                        event->notify_tx.indication);
-            break;
-
-        case BLE_GAP_EVENT_SUBSCRIBE:
-            MODLOG_DFLT(INFO, "subscribe event; conn_handle=%d attr_handle=%d "
-                        "reason=%d prevn=%d curn=%d previ=%d curi=%d\n",
-                        event->subscribe.conn_handle,
-                        event->subscribe.attr_handle,
-                        event->subscribe.reason,
-                        event->subscribe.prev_notify,
-                        event->subscribe.cur_notify,
-                        event->subscribe.prev_indicate,
-                        event->subscribe.cur_indicate);
-            break;
-
-        case BLE_GAP_EVENT_MTU:
-            MODLOG_DFLT(INFO, "mtu update event; conn_handle=%d cid=%d mtu=%d\n",
-                        event->mtu.conn_handle,
-                        event->mtu.channel_id,
-                        event->mtu.value);
-            break;
-
-        case BLE_GAP_EVENT_REPEAT_PAIRING:
-            /* We already have a bond with the peer, but it is attempting to
-             * establish a new secure link.  This app sacrifices security for
-             * convenience: just throw away the old bond and accept the new link.
-             */
-
-            /* Delete the old bond. */
-            rc = ble_gap_conn_find(event->repeat_pairing.conn_handle, &desc);
-            assert(rc == 0);
-            ble_store_util_delete_peer(&desc.peer_id_addr);
-
-            /* Return BLE_GAP_REPEAT_PAIRING_RETRY to indicate that the host should
-             * continue with the pairing operation.
-             */
-            return BLE_GAP_REPEAT_PAIRING_RETRY;
-
-        case BLE_GAP_EVENT_PASSKEY_ACTION: {
-            ESP_LOGI(TAG, "PASSKEY_ACTION_EVENT started");
-            struct ble_sm_io pkey = {0};
-            int key = 0;
-
-            if (event->passkey.params.action == BLE_SM_IOACT_DISP) {
-                pkey.action = event->passkey.params.action;
-                pkey.passkey = 123456; // This is the passkey to be entered on peer
-                ESP_LOGI(TAG, "Enter passkey %" PRIu32 "on the peer side", pkey.passkey);
-                rc = ble_sm_inject_io(event->passkey.conn_handle, &pkey);
-                ESP_LOGI(TAG, "ble_sm_inject_io result: %d", rc);
-            }
-            else if (event->passkey.params.action == BLE_SM_IOACT_NUMCMP) {
-                ESP_LOGI(TAG, "Passkey on device's display: %" PRIu32, event->passkey.params.numcmp);
-                ESP_LOGI(TAG, "Accept or reject the passkey through console in this format -> key Y or key N");
-                pkey.action = event->passkey.params.action;
-                // if (scli_receive_key(&key)) {
-                //     pkey.numcmp_accept = key;
-                // } else {
-                //     pkey.numcmp_accept = 0;
-                //     ESP_LOGE(TAG, "Timeout! Rejecting the key");
-                // }
-                rc = ble_sm_inject_io(event->passkey.conn_handle, &pkey);
-                ESP_LOGI(TAG, "ble_sm_inject_io result: %d", rc);
-            }
-            else if (event->passkey.params.action == BLE_SM_IOACT_OOB) {
-                static uint8_t tem_oob[16] = {0};
-                pkey.action = event->passkey.params.action;
-                for (int i = 0; i < 16; i++) {
-                    pkey.oob[i] = tem_oob[i];
-                }
-                rc = ble_sm_inject_io(event->passkey.conn_handle, &pkey);
-                ESP_LOGI(TAG, "ble_sm_inject_io result: %d", rc);
-            }
-            else if (event->passkey.params.action == BLE_SM_IOACT_INPUT) {
-                ESP_LOGI(TAG, "Enter the passkey through console in this format-> key 123456");
-                pkey.action = event->passkey.params.action;
-                // if (scli_receive_key(&key)) {
-                //     pkey.passkey = key;
-                // } else {
-                //     pkey.passkey = 0;
-                //     ESP_LOGE(TAG, "Timeout! Passing 0 as the key");
-                // }
-                rc = ble_sm_inject_io(event->passkey.conn_handle, &pkey);
-                ESP_LOGI(TAG, "ble_sm_inject_io result: %d", rc);
-            }
-        }
-        break;
-
-            /*
-        case BLE_GAP_EVENT_TRANSMIT_POWER:
-            MODLOG_DFLT(INFO, "Transmit power event : status=%d conn_handle=%d reason=%d "
-                        "phy=%d power_level=%x power_level_flag=%d delta=%d",
-                        event->transmit_power.status,
-                        event->transmit_power.conn_handle,
-                        event->transmit_power.reason,
-                        event->transmit_power.phy,
-                        event->transmit_power.transmit_power_level,
-                        event->transmit_power.transmit_power_level_flag,
-                        event->transmit_power.delta);
-            break;
-
-            */
-#endif
         default:
-            ESP_LOGW(TAG, "UNHANDLED EVENT %d : %s", event->type, events[event->type]);
+            ESP_LOGW(TAG, "UNHANDLED EVENT %d : %s", event->type, event_name);
     }
 
     return 0;
 }
 
+static struct ble_gap_adv_params adv_params = {};
+static struct ble_hs_adv_fields adv_fields = {};
+static struct ble_npl_callout adv_callout;
 
-static void start_advertising(void) {
-    /* Local variables */
+static void adv_callout_cb(struct ble_npl_event* ev) {
+    ESP_LOGI(TAG, "adv_callout_cb: adv_active=%d, gap_conn_active=%d",
+                 ble_gap_adv_active(),
+                 ble_gap_conn_active());
+    start_advertising();
+}
+
+static void start_advertising() {
+    // WITH:
+    if (ble_gap_adv_active()) {
+        ble_gap_adv_stop();
+    }
+    if (ble_gap_disc_active()) {
+        ble_gap_disc_cancel();
+    }
     int rc = 0;
     NvsConfig hCfg;
-    char buff[64] = {0};
-    if ( !hCfg.getStr(CFG_NVS_KEY_BT_DEVICE_NAME, buff, sizeof(buff)) ) {
+    static char buff[32] = {0};
+
+    if (!hCfg.getStr(CFG_NVS_KEY_BT_DEVICE_NAME, buff, sizeof(buff))) {
         ESP_LOGE(TAG, "Failed to get BT device name");
-        return;
+        strncpy(buff, "ESP32C6_BLE", sizeof(buff) - 1);
+    }
+    if (strlen(buff) > 19) {
+        buff[19] = '\0';
     }
 
-    struct ble_gap_adv_params adv_params = {};
-    struct ble_hs_adv_fields adv_fields = {};
-    ESP_LOGI(TAG, ">>>>>>> start advertising");
-    /* Set advertising flags */
-    adv_fields.flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP;
+    ESP_LOGI(TAG, ">>>>>>> start advertising [%s] (%d bytes)", buff, strlen(buff));
 
-    /* Set device name */
-    adv_fields.name = (uint8_t*)buff;
-    adv_fields.name_len = strlen(buff);
-    adv_fields.name_is_complete = 1;
-
-    //CONFIG_MY_BT_DEVICE_UUID
-
-    /* Set device tx power */
-    adv_fields.tx_pwr_lvl = BLE_HS_ADV_TX_PWR_LVL_AUTO;
+    memset(&adv_fields, 0, sizeof(adv_fields));
+    adv_fields.flags                 = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP;
+    adv_fields.name                  = (uint8_t*)buff;
+    adv_fields.name_len              = strlen(buff);
+    adv_fields.name_is_complete      = 1;
+    adv_fields.tx_pwr_lvl            = BLE_HS_ADV_TX_PWR_LVL_AUTO;
     adv_fields.tx_pwr_lvl_is_present = 1;
-
-    // /* Set device appearance */
-    adv_fields.appearance = BLE_SVC_GAP_APPEARANCE_GEN_COMPUTER;
+    adv_fields.appearance            = BLE_SVC_GAP_APPEARANCE_GEN_DISPLAY;
     adv_fields.appearance_is_present = 1;
-    //
-    // /* Set device LE role */
-    adv_fields.le_role = BLE_GAP_LE_ROLE_PERIPHERAL;
-    adv_fields.le_role_is_present = 1;
 
-    /* Set advertiement fields */
     rc = ble_gap_adv_set_fields(&adv_fields);
     if (rc != 0) {
-        ESP_LOGE(TAG, "failed to set advertising data, error code: %d", rc);
+        ESP_LOGE(TAG, "adv_set_fields failed: %d, retrying...", rc);
+        // ↓ retry via callout instead of giving up
+        ble_npl_callout_reset(&adv_callout, pdMS_TO_TICKS(100));
         return;
     }
+
     memset(&adv_params, 0, sizeof(adv_params));
-    adv_params.conn_mode = BLE_GAP_CONN_MODE_UND; // Undirected connectable
-    adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN; // General discoverable
-    ble_gap_adv_start(BLE_OWN_ADDR_PUBLIC, NULL, BLE_HS_FOREVER, &adv_params, ble_gap_event_cb, NULL);
+    adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
+    adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
+
+    rc = ble_gap_adv_start(BLE_OWN_ADDR_RANDOM, NULL, BLE_HS_FOREVER,
+                           &adv_params, ble_gap_event_cb, NULL);
+    if (rc != 0) {
+        ESP_LOGE(TAG, "adv_start failed: %d adv=%d conn=%d disc=%d",
+                 rc,
+                 ble_gap_adv_active(),
+                 ble_gap_conn_active(),
+                 ble_gap_disc_active());
+        ble_npl_callout_reset(&adv_callout, pdMS_TO_TICKS(100));
+        return;
+    }
+    ESP_LOGI(TAG, "advertising started OK");
 }
+// static void start_advertising() {
+//     /* Local variables */
+//     int rc = 0;
+//     NvsConfig hCfg;
+//     static char buff[32] = {0};
+//     if ( !hCfg.getStr(CFG_NVS_KEY_BT_DEVICE_NAME, buff, sizeof(buff)) ) {
+//         ESP_LOGE(TAG, "Failed to get BT device name");
+//         strncpy(buff, "ESP32C6_BLE", sizeof(buff) - 1);
+//     }
+//     if (strlen(buff) > 19) {
+//         ESP_LOGW(TAG, "Device name too long, truncating");
+//         buff[19] = '\0';
+//     }
+//
+//     ESP_LOGI(TAG, ">>>>>>> start advertising [%s] (%d bytes)", buff, strlen(buff));
+//     /* Set advertising flags */
+//     adv_fields.flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP;
+//
+//     /* Set device name */
+//     adv_fields.name = (uint8_t*)buff;
+//     adv_fields.name_len = strlen(buff);
+//     adv_fields.name_is_complete = 1;
+//
+//     //CONFIG_MY_BT_DEVICE_UUID
+//
+//     /* Set device tx power */
+//     adv_fields.tx_pwr_lvl = BLE_HS_ADV_TX_PWR_LVL_AUTO;
+//     adv_fields.tx_pwr_lvl_is_present = 1;
+//
+//     // /* Set device appearance */
+//     adv_fields.appearance = BLE_SVC_GAP_APPEARANCE_GEN_DISPLAY;
+//     adv_fields.appearance_is_present = 1;
+//     //
+//     // /* Set device LE role */
+//     adv_fields.le_role = BLE_GAP_LE_ROLE_PERIPHERAL;
+//     adv_fields.le_role_is_present = 1;
+//
+//     /* Set advertisement fields */
+//     rc = ble_gap_adv_set_fields(&adv_fields);
+//     if (rc != 0) {
+//         ESP_LOGE(TAG, "failed to set advertising data, error code: %d", rc);
+//         return;
+//     }
+//     memset(&adv_params, 0, sizeof(adv_params));
+//     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND; // Undirected connectable
+//     adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN; // General discoverable
+//     ble_gap_adv_start(BLE_OWN_ADDR_RANDOM, NULL, BLE_HS_FOREVER, &adv_params, ble_gap_event_cb, NULL);
+// }
 
 static void
 on_reset_cb(int reason) {
     MODLOG_DFLT(ERROR, "Resetting state; reason=%d\n", reason);
 }
 
-static void on_sync_cb(void) {
+static void on_sync_cb() {
     ESP_LOGI(TAG, "on_sync_cb");
     /* Figure out address to use while advertising (no privacy for now) */
-    auto rc = ble_hs_id_infer_auto(0, &own_addr_type);
+    auto rc = ble_hs_id_infer_auto(1, &own_addr_type);
     if (rc != 0) {
         MODLOG_DFLT(ERROR, "error determining address type; rc=%d\n", rc);
         return;
@@ -338,7 +283,7 @@ static void on_sync_cb(void) {
     char buff[64] = {0};
     if ( !hCfg.getStr(CFG_NVS_KEY_BT_DEVICE_NAME, buff, sizeof(buff)) ) {
         ESP_LOGE(TAG, "Failed to get BT device name");
-        return;
+        strncpy(buff, "ESP32C6_BLE_Device", sizeof(buff) - 1);
     }
 
     // Set your device name
@@ -356,7 +301,9 @@ static void on_sync_cb(void) {
     print_addr(addr_val);
     MODLOG_DFLT(INFO, "\n");
 
-    start_advertising();
+    ble_npl_callout_reset(&adv_callout, pdMS_TO_TICKS(3000));
+    // ble_npl_callout_init(&adv_callout, nimble_port_get_dflt_eventq(), adv_callout_cb, NULL);
+    // ble_npl_callout_reset(&adv_callout, pdMS_TO_TICKS(500));
 }
 
 void host_task_cb(void* param) {
@@ -368,12 +315,13 @@ void gatt_svr_register_cb(struct ble_gatt_register_ctxt* ctxt, void* arg) {
     ESP_LOGI(TAG, "gatt_svr_register_cb");
 }
 
-void init_blesrv(void) {
+void init_blesrv() {
     auto ret = nimble_port_init();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to init nimble %d ", ret);
         return;
     }
+    ble_npl_callout_init(&adv_callout, nimble_port_get_dflt_eventq(), adv_callout_cb, NULL);
     /* Initialize the NimBLE host configuration. */
 
     ble_hs_cfg.sync_cb = on_sync_cb;
@@ -386,6 +334,6 @@ void init_blesrv(void) {
     }
 }
 
-void start_blesrv(void) {
+void start_blesrv() {
     nimble_port_freertos_init(host_task_cb);
 }

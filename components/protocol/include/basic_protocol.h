@@ -1,6 +1,6 @@
-#if !defined(EXCOMM_COMMAND_H)
-#define EXCOMM_COMMAND_H
-
+#if !defined(BASIC_PROTOCOL_H)
+#define BASIC_PROTOCOL_H
+#include "sdkconfig.h"
 #if !defined(TESTER)
 #include <esp_partition.h>
 #include <memory>
@@ -8,7 +8,6 @@
     #include <stdint.h>
 #endif
 #include <stdio.h>
-
 
 extern "C" {
 enum Command {
@@ -25,7 +24,13 @@ enum Command {
 };
 
 typedef struct {
-    uint16_t revision = 0x01;
+    uint32_t magic = CONFIG_PROTOCOL_MAGIC_NUMBER;
+    uint16_t revision = 0x0001;
+    uint16_t padding = 0x00;
+} BaseProtocol;
+
+typedef struct {
+    const BaseProtocol magic;
     uint8_t client;
     uint8_t command;
 } BaseCommand;
@@ -43,4 +48,5 @@ struct UnmapperPartitionDMA {
 };
 #endif
 }
+#pragma pack(pop)
 #endif

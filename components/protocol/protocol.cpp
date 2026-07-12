@@ -1,7 +1,4 @@
 #include "protocol.h"
-
-#include <cstring>
-
 #include "esp_partition.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
@@ -91,5 +88,3 @@ bool setConfiguration(const std::vector<uint8_t> *buff = createEmptyConfiguratio
 
     return true;
 }
-
-

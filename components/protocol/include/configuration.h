@@ -1,4 +1,4 @@
-#include "base_command.h"
+#include "basic_protocol.h"
 
 #pragma pack(push, 4)
 extern "C" {
