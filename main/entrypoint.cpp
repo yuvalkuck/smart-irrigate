@@ -8,6 +8,7 @@
 #include "esp_event.h"
 #include "flash.h"
 #include "hwifi.h"
+#include "wifi_softap.h"
 #include "hmqtt.h"
 #include "hsntp.h"
 #include "driver/gpio.h"
@@ -80,7 +81,6 @@ extern "C" void app_main(void) {
             ESP_LOGI(TAG, "Start wifi configuration state");
             init_wifi_softap();
             start_wifi();
-
             initRegular = false;
             ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
         }
