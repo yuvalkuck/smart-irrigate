@@ -5,6 +5,18 @@ menu "Wifi Configuration"
         help
             Set the configuration-mode device password
 
+    config DEVICE_IP_DEFAULT_GATEWAY
+        string "Configuration mode gateway"
+        default "192.168.3.1"
+        help
+            Set the configuration-mode device IP & Gateway
+
+    config DEVICE_IP_DEFAULT_MASK
+        string "Configuration mode mask"
+        default "255.255.255.0"
+        help
+            Set the configuration-mode device mast
+
     config DEVICE_MAX_VALVES
         int "Maximum Number of Valves"
         default 6

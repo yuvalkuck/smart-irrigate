@@ -6,6 +6,7 @@
 #include "esp_wifi.h"
 #include "esp_mac.h"
 #include "sdkconfig.h"
+#include <lwip/ip4_addr.h>
 #include <esp_http_server.h>
 
 #include "flash.h"
@@ -19,10 +20,9 @@ static httpd_handle_t server_instance = NULL;
 
 static void wifiEventHandlerSoftAP(void* arg, esp_event_base_t event_base,
                                    int32_t event_id, void* event_data) {
-    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_AP_START) {
+    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_AP_STACONNECTED) {
         esp_wifi_connect(); // Start connection once driver is ready
         server_instance = start_webserver();
-
     }
     else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_AP_STADISCONNECTED) {
         httpd_stop(server_instance);
@@ -31,6 +31,29 @@ static void wifiEventHandlerSoftAP(void* arg, esp_event_base_t event_base,
     }
 }
 
+
+
+static void setAddressAP(esp_netif_t *ap_netif) {
+    // 3. Stop the DHCP Server before modifying IP structures
+        ESP_ERROR_CHECK(esp_netif_dhcps_stop(ap_netif));
+
+    // 4. Define your custom network parameters
+    esp_netif_ip_info_t ip_info;
+
+    // Set your SoftAP IP Address (e.g., 192.168.10.1)
+    ip4addr_aton(CONFIG_DEVICE_IP_DEFAULT_GATEWAY, (ip4_addr_t *)&ip_info.ip);
+    // Set the Gateway IP (usually matches the AP's own IP address)
+    ip4addr_aton(CONFIG_DEVICE_IP_DEFAULT_GATEWAY, (ip4_addr_t *)&ip_info.gw);
+    // Set the Subnet Mask (e.g., 255.255.255.0)
+    ip4addr_aton(CONFIG_DEVICE_IP_DEFAULT_MASK, (ip4_addr_t *)&ip_info.netmask);
+
+    // 5. Apply the new configuration to the interface
+    ESP_ERROR_CHECK(esp_netif_set_ip_info(ap_netif, &ip_info));
+
+    // 6. Restart the DHCP Server to hand out IPs in the new subnet range
+    ESP_ERROR_CHECK(esp_netif_dhcps_start(ap_netif));
+
+}
 
 static void genDefaultSSID(char* buff) {
     // buff is minimum 32 chars
@@ -57,11 +80,11 @@ static void genDefaultSSID(char* buff) {
     }
 }
 
-#define DEV_PASSWORD "56781234"
 void init_wifi_softap() {
     ESP_LOGI(TAG, "ESP_WIFI_MODE_AP");
     ESP_ERROR_CHECK(esp_netif_init());
-    esp_netif_create_default_wifi_ap();
+    setAddressAP(esp_netif_create_default_wifi_ap());
+
     // Wi-Fi Driver Initialization
     wifi_init_config_t wifiInitCfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&wifiInitCfg));
@@ -81,7 +104,7 @@ void init_wifi_softap() {
             },
         },
     };
-    memset(wifi_config.ap.password,0,sizeof(wifi_config.ap.password));
+    memset(wifi_config.ap.password, 0, sizeof(wifi_config.ap.password));
     memmove(wifi_config.ap.password, CONFIG_DEVICE_DEFAULT_WPK_PASSWORD, sizeof(CONFIG_DEVICE_DEFAULT_WPK_PASSWORD));
     memmove(wifi_config.ap.ssid, ssid, sizeof(wifi_config.ap.ssid));
     wifi_config.ap.ssid_len = strlen(ssid);
