@@ -1,4 +1,4 @@
-idf_component_register(SRCS "hwifi.cpp" "soft_ap.cpp" "webserver.cpp"
+idf_component_register(SRCS "hwifi_sta.cpp" "soft_ap.cpp" "ap_webserver.cpp"
         PRIV_REQUIRES log esp_wifi esp_netif mqtt esp_http_server espressif__fmt
         REQUIRES flash
         INCLUDE_DIRS "include")
