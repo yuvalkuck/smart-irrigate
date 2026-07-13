@@ -5,18 +5,14 @@
 #include "esp_netif.h"
 #include "esp_wifi.h"
 #include "sdkconfig.h"
-#include <algorithm>
-#include <time.h>
-
 #include "flash.h"
 
 
-
 static EventGroupHandle_t wifiEventGroup;
-static const char* TAG = "hwifi:";
+static const char* TAG = "hwifi_sta:";
 
 static void wifiEventHandlerSTA(void* arg, esp_event_base_t event_base,
-                             int32_t event_id, void* event_data) {
+                                int32_t event_id, void* event_data) {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         esp_wifi_connect(); // Start connection once driver is ready
     }
@@ -45,14 +41,16 @@ void init_wifi_sta() {
     // Register Event Handlers
 
     // MQTT_EVENT_ANY = -1
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifiEventHandlerSTA, NULL, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifiEventHandlerSTA, NULL, NULL));
+    ESP_ERROR_CHECK(
+        esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifiEventHandlerSTA, NULL, NULL));
+    ESP_ERROR_CHECK(
+        esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifiEventHandlerSTA, NULL, NULL));
 
     // 5. Configure Station Mode
     NvsConfig hCfg;
     wifi_config_t wifi_config = {};
-    hCfg.getStr( CFG_NVS_KEY_WIFI_SSID, wifi_config.sta.ssid, sizeof(wifi_config.sta.ssid));
-    hCfg.getStr( CFG_NVS_KEY_WIFI_PASSWORD, wifi_config.sta.password, sizeof(wifi_config.sta.password));
+    hCfg.getStr(CFG_NVS_KEY_WIFI_SSID, wifi_config.sta.ssid, sizeof(wifi_config.sta.ssid));
+    hCfg.getStr(CFG_NVS_KEY_WIFI_PASSWORD, wifi_config.sta.password, sizeof(wifi_config.sta.password));
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
 }
@@ -68,4 +66,3 @@ void start_wifi() {
     xEventGroupWaitBits(wifiEventGroup, BIT0, pdFALSE, pdFALSE, portMAX_DELAY);
     ESP_LOGI(TAG, "WiFi setup complete.");
 }
-
