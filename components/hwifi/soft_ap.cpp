@@ -8,8 +8,7 @@
 #include "sdkconfig.h"
 #include <lwip/ip4_addr.h>
 #include <esp_http_server.h>
-
-#include "flash.h"
+//#include "flash.h"
 
 static const char* TAG = "wifi_softap:";
 static httpd_handle_t server_instance = NULL;
