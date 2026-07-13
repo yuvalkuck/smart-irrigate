@@ -12,7 +12,7 @@ static const char *TAG = "WebServer";
 static char workBuf[128] = {0};
 static char payload[1024] = {0};
 #include <esp_http_server.h>
-
+static void register_routes(httpd_handle_t server);
 httpd_handle_t start_webserver() {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 
@@ -25,6 +25,7 @@ httpd_handle_t start_webserver() {
 
     httpd_handle_t server = NULL;
     if (httpd_start(&server, &config) == ESP_OK) {
+        register_routes(server);
         // Register URI handlers here
         return server;
     }
@@ -32,6 +33,10 @@ httpd_handle_t start_webserver() {
 }
 
 // 1. Define the GET Handler Function
+esp_err_t get_rootpage(httpd_req_t *req) {
+    httpd_resp_send(req,R"(<html><header/><body><a href="http://localhost/api/status">status</a></body></html>)", HTTPD_RESP_USE_STRLEN);
+    return ESP_OK;
+}
 esp_err_t get_handler(httpd_req_t *req) {
     NvsConfig hCfg;
 
@@ -73,10 +78,19 @@ esp_err_t post_handler(httpd_req_t *req) {
 }
 
 // 3. Registering the Handlers inside your server initialization
-void register_routes(httpd_handle_t server) {
+static void register_routes(httpd_handle_t server) {
     // GET Route Configuration
+    {
+        httpd_uri_t get_uri = {
+            .uri      = "/",
+            .method   = HTTP_GET,
+            .handler  = get_rootpage,
+            .user_ctx = NULL
+        };
+        httpd_register_uri_handler(server, &get_uri);
+    }
     httpd_uri_t get_uri = {
-        .uri      = "/api/data",
+        .uri      = "/api/status",
         .method   = HTTP_GET,
         .handler  = get_handler,
         .user_ctx = NULL
@@ -85,7 +99,7 @@ void register_routes(httpd_handle_t server) {
 
     // POST Route Configuration
     httpd_uri_t post_uri = {
-        .uri      = "/api/submit",
+        .uri      = "/api/set",
         .method   = HTTP_POST,
         .handler  = post_handler,
         .user_ctx = NULL
