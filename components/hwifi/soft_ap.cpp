@@ -9,7 +9,7 @@
 #include <esp_http_server.h>
 
 #include "flash.h"
-static EventGroupHandle_t wifiEventGroup;
+
 static const char* TAG = "wifi_softap:";
 static httpd_handle_t server_instance = NULL;
 //
@@ -57,6 +57,7 @@ static void genDefaultSSID(char* buff) {
     }
 }
 
+#define DEV_PASSWORD "56781234"
 void init_wifi_softap() {
     ESP_LOGI(TAG, "ESP_WIFI_MODE_AP");
     ESP_ERROR_CHECK(esp_netif_init());
@@ -64,24 +65,24 @@ void init_wifi_softap() {
     // Wi-Fi Driver Initialization
     wifi_init_config_t wifiInitCfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&wifiInitCfg));
-    // event group must be decalre because use int the event handler
-    wifiEventGroup = xEventGroupCreate();
     // Register Event Handlers
-
     ESP_ERROR_CHECK(
         esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifiEventHandlerSoftAP, NULL, NULL));
+
     static char ssid[32] = {0};
     genDefaultSSID((char*)&ssid);
     wifi_config_t wifi_config = {
         .ap = {
             .channel = 0,
-            .authmode = WIFI_AUTH_OPEN,
+            .authmode = WIFI_AUTH_WPA2_WPA3_PSK,
             .max_connection = 1,
             .pmf_cfg = {
                 .required = false,
             },
         },
     };
+    memset(wifi_config.ap.password,0,sizeof(wifi_config.ap.password));
+    memmove(wifi_config.ap.password, CONFIG_DEVICE_DEFAULT_WPK_PASSWORD, sizeof(CONFIG_DEVICE_DEFAULT_WPK_PASSWORD));
     memmove(wifi_config.ap.ssid, ssid, sizeof(wifi_config.ap.ssid));
     wifi_config.ap.ssid_len = strlen(ssid);
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));

@@ -1,4 +1,10 @@
-menu "Device Limit Configuration"
+menu "Wifi Configuration"
+    config DEVICE_DEFAULT_WPK_PASSWORD
+        string "Configuration mode device password"
+        default "56784321"
+        help
+            Set the configuration-mode device password
+
     config DEVICE_MAX_VALVES
         int "Maximum Number of Valves"
         default 6

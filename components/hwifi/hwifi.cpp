@@ -42,8 +42,6 @@ void init_wifi_sta() {
     wifi_init_config_t wifiInitCfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&wifiInitCfg));
 
-    // event group must be decalre because use int the event handler
-    wifiEventGroup = xEventGroupCreate();
     // Register Event Handlers
 
     // MQTT_EVENT_ANY = -1
@@ -62,6 +60,9 @@ void init_wifi_sta() {
 void start_wifi() {
     // 6. Start Wi-Fi
     ESP_ERROR_CHECK(esp_wifi_start());
+    // event group must be decalre because use int the event handler
+    wifiEventGroup = xEventGroupCreate();
+    configASSERT(wifiEventGroup);
 
     // Wait until connection is established
     xEventGroupWaitBits(wifiEventGroup, BIT0, pdFALSE, pdFALSE, portMAX_DELAY);
