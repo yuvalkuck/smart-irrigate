@@ -9,7 +9,6 @@
 #include <fmt/core.h>
 
 static const char* TAG = "WebServer";
-static char payload[1024] = {0};
 #include <esp_http_server.h>
 static void register_routes(httpd_handle_t server);
 
@@ -33,15 +32,23 @@ httpd_handle_t start_webserver() {
 }
 
 // 1. Define the GET Handler Function
-esp_err_t get_rootpage(httpd_req_t* req) {
+static esp_err_t get_rootpage(httpd_req_t* req) {
+    ESP_LOGI(TAG, "get_rootpage");
     httpd_resp_send(req, R"(<html><header/><body>NoUserInterface</body></html>)",
                     HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
+static esp_err_t get_command_restart(httpd_req_t* req) {
+    ESP_LOGI(TAG, "get_command_restart");
+    esp_restart();
+    return ESP_OK;
+}
+
 
 #define MAX_STRING_LENGTH 128
 
-esp_err_t get_handler(httpd_req_t* req) {
+static esp_err_t get_status_handler(httpd_req_t* req) {
+    ESP_LOGI(TAG, "get_status_handler");
     std::array<char[MAX_STRING_LENGTH], 5> strCache = {};
     NvsConfig hCfg;
     hCfg.getStr(CFG_NVS_KEY_WIFI_SSID, strCache[0],MAX_STRING_LENGTH);
@@ -49,7 +56,7 @@ esp_err_t get_handler(httpd_req_t* req) {
     hCfg.getStr(CFG_NVS_KEY_MQTT_URL, strCache[2],MAX_STRING_LENGTH);
     hCfg.getStr(CFG_NVS_KEY_MQTT_USERNAME, strCache[3],MAX_STRING_LENGTH);
     hCfg.getStr(CFG_NVS_KEY_MQTT_PASSWORD, strCache[4],MAX_STRING_LENGTH);
-
+    char payload[1024] = {0};
     fmt::format_to_n(payload, sizeof(payload), R"({{"{}"="{}","{}"="{}","{}"="{}","{}"="{}","{}"="{}"}})",
                      CFG_NVS_KEY_WIFI_SSID, strCache[0],
                      CFG_NVS_KEY_WIFI_PASSWORD, strCache[1],
@@ -62,10 +69,11 @@ esp_err_t get_handler(httpd_req_t* req) {
 }
 
 // 2. Define the POST Handler Function
-esp_err_t post_handler(httpd_req_t* req) {
-    char buf[64]; // Keep small to save stack memory
+static esp_err_t post_handler(httpd_req_t* req) {
+    ESP_LOGI(TAG, "post_handler");
+    char buf[256]; // Keep small to save stack memory
     int ret, remaining = req->content_len;
-
+    // interface is mostly send config key and process it
     while (remaining > 0) {
         // Read the incoming data stream safely
         if ((ret = httpd_req_recv(req, buf, MIN(remaining, sizeof(buf)))) <= 0) {
@@ -73,15 +81,23 @@ esp_err_t post_handler(httpd_req_t* req) {
             return ESP_FAIL;
         }
         remaining -= ret;
-        // Process 'buf' chunk here if needed
+        auto key = buf;
+        auto value = strchr(buf, '=');
+
+        *value = 0; value++;
+        ESP_LOGI(TAG, "accept: %s=%s", key, value);
+        NvsConfig hCfg;
+        hCfg.setStr(key, value);
     }
 
     httpd_resp_send_chunk(req, NULL, 0); // End response
     return ESP_OK;
 }
 
+
 // 3. Registering the Handlers inside your server initialization
 static void register_routes(httpd_handle_t server) {
+    ESP_LOGI(TAG, "-----register_routes");
     // GET Route Configuration
     {
         httpd_uri_t get_uri = {
@@ -92,10 +108,20 @@ static void register_routes(httpd_handle_t server) {
         };
         httpd_register_uri_handler(server, &get_uri);
     }
+    {
+        httpd_uri_t get_uri = {
+            .uri = "/api/restart",
+            .method = HTTP_GET,
+            .handler = get_command_restart,
+            .user_ctx = NULL
+        };
+        httpd_register_uri_handler(server, &get_uri);
+    }
+
     httpd_uri_t get_uri = {
         .uri = "/api/status",
         .method = HTTP_GET,
-        .handler = get_handler,
+        .handler = get_status_handler,
         .user_ctx = NULL
     };
     httpd_register_uri_handler(server, &get_uri);
