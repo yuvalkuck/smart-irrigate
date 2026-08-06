@@ -25,16 +25,16 @@ graph TD
         C1 --> C2[Start TCP Server]
         C2 --> C3[Listen for Android Connection]
         C3 --> C4[Ingest Network & MQTT Credentials]
-        C4 --> C5[Save to nvs_comm Partition]
+        C4 --> C5[Save to setup Partition]
         C5 --> C6[Trigger Hardware System Reset]
     end
     
     subgraph Operational Pipeline
-        D --> D1[Load Connection Profiles from nvs_comm]
+        D --> D1[Load Connection Profiles from setup]
         D1 --> D2[Connect Wi-Fi Station]
         D2 --> D3[Sync System Clock via SNTP]
-        D3 --> D4[Initialize Client Core & Secure MQTT Connection]
-        D4 --> D5[Fetch Baseline Profiles from irrigate_data Partition]
+        D4 --> D4[Initialize Client Core & Secure MQTT Connection]
+        D4 --> D5[Fetch Baseline Profiles from config Partition]
         D5 --> D6[Spawn High-Priority Sensor Engine Task]
         D6 --> D7[Execute Proactive Valve Relay Controls]
     end
@@ -45,10 +45,13 @@ graph TD
 ## 3. Core Concepts & Operational Logic
 
 ### 3.1 Predictive & Macro-Environmental Irrigation Control
-Smart Irrigate explicitly avoids relying on a high density of localized ground moisture probes. Because ground sensors only reflect moisture in a very localized, narrow radius, they fail to account for the broader macro-environmental variables driving true plant transpiration and soil evaporation. Instead, this system utilizes a macro-environmental tracking approach to calculate total water demand:
+Smart Irrigate explicitly avoids relying on a high density of localized ground moisture probes. Because ground sensors only reflect moisture in a very localized, narrow radius, they fail to account for the broader macro-environmental variables driving true plant transpiration and soil evaporation. Instead, this system utilizes an advanced atmospheric and thermal tracking approach to calculate total water demand:
 * **Evapotranspiration & Microclimate Analysis:** Rather than measuring stagnant ground moisture, the device continuously samples ambient air temperature, relative humidity (via the SHT41), and barometric pressure (via the BMP581). By combining these real-time data streams, the system monitors the vapor pressure deficit (VPD) and thermal conditions that directly influence how fast plants lose water and how quickly the ground dries up.
+* **Solar Load Quantification:** To prevent identical watering behaviors on overcast versus clear days, the system utilizes a high-dynamic-range digital light sensor (TSL2591) to capture both visible and infrared light intensities. This real-time solar irradiance data allows the edge logic to accurately model solar energy accumulation across the landscape zone.
+* **Thermal Inertia & Soil Mass Tracking:** A ruggedized, single-point digital thermometer (DS18B20) is deployed just below the topsoil layer. This serves as a thermal anchor, tracking core soil temperature trends against rapid shifts in air temperature to accurately determine evaporation behavior influenced by soil thermal mass.
+* **Boundary Layer Evolution (Future Wind Speed Expansion):** To account for wind stripping away the humid leaf boundary layer and spiking transpiration rates, the architecture reserves hardware processing nodes for a future anemometer interface. Until physical integration occurs, boundary layer wind dynamics are optionally supplemented via inbound regional data profiles over the MQTT layer.
 * **Barometric Weather Prediction & Seasonal Inflection Tracking:** The system monitors short-term barometric pressure tendencies using the BMP581 to anticipate regional rain fronts, adjusting upcoming irrigation volumes dynamically. On a macro-scale, the device cross-references its real-time atmospheric tracking with historical trends sent via the MQTT broker to map seasonal inflections (e.g., changes in solar intensity, regional winds, and seasonal dry spells). This atmospheric data profile allows the system to accurately predict landscape water depletion across the entire zone without deploying numerous spot-checking ground probes.
-* **Environmental Compensation (Adaptive Volume):** The system evaluates live atmospheric metrics against the baseline parameters received in the MQTT configuration profile. If measured air temperature exceeds or relative humidity drops significantly below the expected thresholds, the edge logic dynamically increases or decreases the calculated watering duration to compensate for altered soil evaporation rates.
+* **Environmental Compensation (Adaptive Volume):** The system evaluates live atmospheric metrics against the baseline parameters received in the MQTT configuration profile. If measured air temperature or solar load exceeds, or relative humidity drops significantly below the expected thresholds, the edge logic dynamically increases or decreases the calculated watering duration to compensate for altered soil evaporation rates.
 
 ### 3.2 Hydraulic Feedback & Healing (Zero-Pressure Handling)
 * If the system opens a relay to actuate a valve but the XDB401 transmitter reports a **"No Water Pressure"** state (indicating a dry main line, pump failure, or supply cutoff), the controller proactively shuts down the valve to protect hardware and avoid dry cycling.
@@ -68,11 +71,15 @@ The device natively manages a matrix of **6 independent physical water valves**,
 The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time variables defined via Kconfig:
 * **System Boot Switch:** **GPIO 17**. Configured as a digital input relying on internal pull-up resistors. A logical `LOW` reading recorded during the power-on sequence intercepts standard execution loops to force execution into Configuration Mode.
 * **Shared I2C Bus:** **GPIO 19 (SDA)** and **GPIO 20 (SCL)**. This digital serial bus multiplexes data extraction lines from the local environment sensors.
-    * *SHT41 Sensor:* Provides precision ambient temperature and relative humidity parameters via fixed I2C signaling.
-    * *BMP581 Sensor:* Transmits targeted barometric pressure metrics and ambient temperature data. It functions on the exact same physical GPIO 19 and 20 paths, using a unique factory hardware address layer to prevent data line collisions.
+  * *SHT41 Sensor:* Provides precision ambient temperature and relative humidity parameters via fixed I2C signaling.
+  * *BMP581 Sensor:* Transmits targeted barometric pressure metrics and ambient temperature data.
+  * *TSL2591 Sensor:* Measures high-resolution visible and infrared light spectrum intensities to calculate real-time solar irradiance load.
+  * *Note:* All three sensors function on the exact same physical GPIO 19 and 20 paths, utilizing unique factory hardware address layers to prevent data line collisions.
+* **1-Wire Serial Interface:** **GPIO 18**. Configured as an open-drain bidirectional digital line with a dedicated external pull-up resistor.
+  * *DS18B20 Sensor:* Provides high-accuracy underground soil thermal parameters using the precision timing 1-Wire protocol.
+* **Future Wind Speed Expansion Pin:** **GPIO 2**. Reserved in the hardware layout as an edge-triggered digital interrupt input to interface with a pulse-output or frequency-based anemometer.
 * **Analog Interface:** **GPIO 0 (ADC1_CH0)** or **GPIO 1 (ADC1_CH1)**.
-    * *XDB401 Pressure Transmitter:* Interfaced directly to a dedicated 12-bit Analog-to-Digital Converter channel using the modern **`esp_adc/adc_oneshot.h` driver API ecosystem**. It records real-time water pressure values, utilizing external hardware conditioning to scale raw output bounds down to safely fit the internal reference voltage scale of the ESP32-C6.
-* **Relay Array Controls (6 Channels - Kconfig Hard-Mapped):** Map directly to 6 distinct GPIO fields defined via `CONFIG_VALVE_1_GPIO` through `CONFIG_VALVE_6_GPIO` (e.g., standard defaults like **GPIOs 4, 5, 6, 7, 8, and 9**). Configured as standard digital push-pull outputs. These outputs drive the low-voltage coils of a relay array, isolation optocouplers, or transistors to safely switch the higher voltage AC current supplying the 6 physical water solenoid valves.
+  * *XDB401 Pressure Transmitter:* Interfaced directly to a dedicated 12-bit Analog-to-Digital Converter channel using the modern **`esp_adc/adc_oneshot.h` driver API ecosystem**. It records real-time water pressure values, utilizing external hardware conditioning to scale raw output bounds down to safely fit the internal reference voltage scale of the ESP32-C6.
 
 ### 4.2 Network & Protocol Configurations
 The network architecture is configured natively under the revised ESP-IDF 6.0 components using the following specifications:
