@@ -1007,13 +1007,23 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# Device Limit Configuration
+# Wifi Configuration
 #
+# default:
+CONFIG_DEVICE_DEFAULT_WPK_PASSWORD="56784321"
+# default:
+CONFIG_DEVICE_IP_DEFAULT_GATEWAY="192.168.3.1"
+# default:
+CONFIG_DEVICE_IP_DEFAULT_MASK="255.255.255.0"
 # default:
 CONFIG_DEVICE_MAX_VALVES=6
 # default:
 CONFIG_DEVICE_MAX_VALVE_CONFIG=4
-# end of Device Limit Configuration
+# default:
+CONFIG_DEVICE_DEFAULT_UNIQUE_SSID=""
+# default:
+CONFIG_DEVICE_MAX_DEFAULT_UNIQUE_SSID=24
+# end of Wifi Configuration
 
 #
 # Compiler options

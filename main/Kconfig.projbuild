@@ -1,4 +1,22 @@
-menu "Device Limit Configuration"
+menu "Wifi Configuration"
+    config DEVICE_DEFAULT_WPK_PASSWORD
+        string "Configuration mode device password"
+        default "56784321"
+        help
+            Set the configuration-mode device password
+
+    config DEVICE_IP_DEFAULT_GATEWAY
+        string "Configuration mode gateway"
+        default "192.168.3.1"
+        help
+            Set the configuration-mode device IP & Gateway
+
+    config DEVICE_IP_DEFAULT_MASK
+        string "Configuration mode mask"
+        default "255.255.255.0"
+        help
+            Set the configuration-mode device mast
+
     config DEVICE_MAX_VALVES
         int "Maximum Number of Valves"
         default 6
@@ -10,5 +28,17 @@ menu "Device Limit Configuration"
         default 4
         help
             The maximum number of setups a valve can handle.
+
+    config DEVICE_DEFAULT_UNIQUE_SSID
+        string "If empty use mac_address"
+        default ""
+        help
+            Enable to append something to Irrigate prefix (Max:24).
+
+    config DEVICE_MAX_DEFAULT_UNIQUE_SSID
+        int
+        default 24
+        help
+            Internal max length limit for DEVICE_DEFAULT_UNIQUE_SSID (excluding null terminator).
 
 endmenu
