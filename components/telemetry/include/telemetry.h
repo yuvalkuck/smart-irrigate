@@ -1,7 +1,8 @@
 #ifndef TELEMETRY_H
 #define TELEMETRY_H
+#include "esp_err.h"
 
-void init_telemetry(void);
+esp_err_t init_telemetry(void);
 void start_telemetry(void);
 
 #endif
