@@ -17,6 +17,7 @@ inline constexpr uint8_t BIT_BMP581_OK  = (1 << 1); // 0x02: Barometric Pressure
 inline constexpr uint8_t BIT_TSL2591_OK = (1 << 2); // 0x04: Solar Irradiance
 inline constexpr uint8_t BIT_DS18B20_OK = (1 << 3); // 0x08: Topsoil Subsurface Thermal
 inline constexpr uint8_t BIT_XDB401_OK  = (1 << 4); // 0x10: Hydraulic Line Pressure
+inline constexpr uint8_t BIT_WIND_OK    = (1 << 5);
 
 // Hex values for targeting the I2C physical layer addresses
 constexpr uint8_t SHT41_I2C_ADDR  = 0x44;
