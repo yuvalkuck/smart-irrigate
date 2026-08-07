@@ -30,7 +30,7 @@ static i2c_master_bus_config_t bus_config = {
     .sda_io_num = I2C_SDA_PIN,
     .scl_io_num = I2C_SCL_PIN,
     .clk_source = I2C_CLK_SRC_DEFAULT,
-    .glitch_ignore_cnt = 7,
+    .glitch_ignore_cnt = 7
 };
 
 static sht4x_handle_t sht41_handle{};
