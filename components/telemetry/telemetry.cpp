@@ -1,7 +1,7 @@
 #include "telemetry.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "esp_log.h"
+#include "logger.h"
 #include "sht4x.h"
 #include "common_event.h"
 #include "esp_event.h"
@@ -42,7 +42,7 @@ static sht4x_config_t sht41_config = {
 };
 
 esp_err_t init_telemetry() {
-    ESP_LOGI(TAG, "%s", __func__);
+    METHODTRACE
     /***** init services ****/
     bus_config.flags.enable_internal_pullup = true;
     // I2C Master
@@ -54,13 +54,13 @@ esp_err_t init_telemetry() {
         .bitwidth = ADC_BITWIDTH_DEFAULT, // Hardware native resolution (12-bit for C6)
     };
     // For ESP32-C6 ADC1, ADC_CHANNEL_0 maps to GPIO0
-    auto rc = adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_0, &chan_config);
-    if (rc != ESP_OK) {
-        ESP_ERROR_CHECK(rc);
-        return rc;
-    }
+    // auto rc = adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_0, &chan_config);
+    // if (rc != ESP_OK) {
+    //     ESP_ERROR_CHECK(rc);
+    //     return rc;
+    // }
     /***** Register sensors ****/
-    rc = sht4x_init(bus_handle, &sht41_config, &sht41_handle);
+    auto rc = sht4x_init(bus_handle, &sht41_config, &sht41_handle);
     if (rc != ESP_OK) {
         ESP_ERROR_CHECK(rc);
         return rc;
@@ -93,7 +93,7 @@ esp_err_t init_telemetry() {
 }
 
 void start_telemetry() {
-    ESP_LOGI(TAG, "%s", __func__);
+    METHODTRACE
     BaseType_t result = xTaskCreate(
         cbTelemetryTask,
         "TelemetryTask",

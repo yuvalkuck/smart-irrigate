@@ -77,9 +77,9 @@ The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time
   * *Note:* All three sensors function on the exact same physical GPIO 19 and 20 paths, utilizing unique factory hardware address layers to prevent data line collisions.
 * **1-Wire Serial Interface:** **GPIO 18**. Configured as an open-drain bidirectional digital line with a dedicated external pull-up resistor.
   * *DS18B20 Sensor:* Provides high-accuracy underground soil thermal parameters using the precision timing 1-Wire protocol.
-* **Analog Interface Architecture: The system uses two independent analog input channels to gather real-time data from physical equipment.
-  * *XDB401 Pressure Transmitter (GPIO 0):* Interfaced directly to the primary analog channel. It records real-time water line pressure values, using hardware conditioning to scale raw output signals down to fit within safe internal limits.
-  * *Analog Wind Speed Sensor (GPIO 1):* Interfaced directly to the secondary analog channel. Because the sensor outputs a 0–5V range, an external voltage divider circuit steps the incoming voltage down to a safe, readable level. The software maps this reading back to the true 0.0–30.0 meters per second wind speed curve.
+* **Analog Interface Architecture:** The system uses two independent analog input channels to gather real-time data from physical equipment.
+  * *XDB401 Pressure Transmitter (GPIO 2):* Interfaced directly to the primary analog channel. It records real-time water line pressure values, using hardware conditioning to scale raw output signals down to fit within safe internal limits.(ADC1_CH2)
+  * *Analog Wind Speed Sensor (GPIO 3):* Interfaced directly to the secondary analog channel. Because the sensor outputs a 0–5V range, an external voltage divider circuit steps the incoming voltage down to a safe, readable level. The software maps this reading back to the true 0.0–30.0 meters per second wind speed curve.(ADC1_CH3)
 
 ### 4.2 Network & Protocol Configurations
 The network architecture is configured natively under the revised ESP-IDF 6.0 components using the following specifications:

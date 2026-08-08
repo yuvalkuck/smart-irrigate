@@ -15,6 +15,7 @@
 #include "hmqtt.h"
 #include "hsntp.h"
 #include "driver/gpio.h"
+#include "esp_adc/adc_oneshot.h"
 #include "time.h"
 
 static const char* TAG = "App:";
@@ -131,17 +132,29 @@ static void init_gpio() {
         .intr_type = GPIO_INTR_DISABLE
     };
     gpio_config(&onewire_conf);
+}
+extern adc_oneshot_unit_handle_t adc1_handle;
+static void init_adc() {
+    // 1. Configure the ADC1 Unit Configuration Structure
 
-    // === 5. Future Wind Speed Expansion Pin (Anemometer) ===
-    gpio_reset_pin(GPIO_WIND_EXPANSION);
-    const gpio_config_t wind_conf = {
-        .pin_bit_mask = (1ULL << GPIO_WIND_EXPANSION),
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = GPIO_PULLUP_ENABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_NEGEDGE
+    const adc_oneshot_unit_init_cfg_t init_config1 = {
+        .unit_id = ADC_UNIT_1,
+        .clk_src = ADC_DIGI_CLK_SRC_DEFAULT, // Explicitly required for modern ESP-IDF 6.0 compatibility
+        .ulp_mode = ADC_ULP_MODE_DISABLE,
     };
-    gpio_config(&wind_conf);
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
+
+    // 2. Define Shared Channel Properties
+    const adc_oneshot_chan_cfg_t config = {
+        .atten = ADC_ATTEN_DB_12,       // Safe range attenuation config for up to ~3.3V
+        .bitwidth = ADC_BITWIDTH_DEFAULT, // Auto-resolves correct target bit depth (e.g., 12-bit)
+    };
+
+    // 3. Register Channel 2 and Channel 3 sequentially to ADC1 Unit
+    //    2 pressure
+    //    3 wind speed
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_2, &config));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_3, &config));
 }
 
 extern "C" void app_main(void) {
@@ -149,6 +162,7 @@ extern "C" void app_main(void) {
     ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
 
     init_gpio();
+    init_adc();
     //Initialize NVS
     bool initRegular = (gpio_get_level(GPIO_CONFIG_MODE_PIN) == 0 ? false : true);
     esp_err_t ret = init_flash();

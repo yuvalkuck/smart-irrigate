@@ -2,10 +2,12 @@
 // Created by uv on 06/08/2026.
 //
 #include "diagnostics.h"
-#include "esp_log.h"
+#include "logger.h"
 #include "FreeRTOSConfig.h"
 #include "portmacro.h"
 #include "freertos/projdefs.h"
+#include "esp_adc/adc_oneshot.h"
+extern adc_oneshot_unit_handle_t adc1_handle;
 /**
  * @brief Synchronously validates individual sensor registers and electrical metrics.
  * @param i2c_bus Active master bus peripheral handle from the modern ESP-IDF 6.0 engine.
@@ -18,6 +20,7 @@ uint8_t execute_operational_self_test(
     i2c_master_bus_handle_t i2c_bus,
     adc_oneshot_unit_handle_t adc_handle
 ) noexcept {
+    METHODTRACE
     uint8_t diagnostic_mask = 0x00;
 
     // --- Step 1: Probe SHT41 ---
@@ -54,10 +57,11 @@ uint8_t execute_operational_self_test(
     else {
         ESP_LOGE(TAG, "  [FAIL] DS18B20 missing or line ground short detected.");
     }
+#endif
 
     // --- Step 5: Evaluate XDB401 Electrical Window ---
     int raw_adc_sample = 0;
-    if (adc_oneshot_read(adc_handle, ADC_CHANNEL_0, &raw_adc_sample) == ESP_OK) {
+    if (adc_oneshot_read(adc1_handle, ADC_CHANNEL_2, &raw_adc_sample) == ESP_OK) {
         if (raw_adc_sample > 150 && raw_adc_sample < 4000) {
             diagnostic_mask |= BIT_XDB401_OK;
         }
@@ -68,10 +72,10 @@ uint8_t execute_operational_self_test(
     else {
         ESP_LOGE(TAG, "  [FAIL] ADC tracking core rejected sample processing.");
     }
-
+#if defined(AVALIABLE_SENSOR)
     // --- Step 6: Evaluate Analog Wind Speed Sensor Electrical Window ---
     int raw_wind_sample = 0;
-    if (adc_oneshot_read(adc_handle, ADC_CHANNEL_1, &raw_wind_sample) == ESP_OK) {
+    if (adc_oneshot_read(adc1_handle, ADC_CHANNEL_3, &raw_wind_sample) == ESP_OK) {
         // Enforce boundary check to identify line shorts (close to 0) or floating/shorted inputs (close to max)
         if (raw_wind_sample > 50 && raw_wind_sample < 4050) {
             diagnostic_mask |= BIT_WIND_OK;

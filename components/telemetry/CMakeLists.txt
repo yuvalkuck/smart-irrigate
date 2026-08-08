@@ -1,4 +1,4 @@
-idf_component_register(SRCS "telemetry.cpp" "diagnostics.cpp"
+idf_component_register(SRCS "telemetry.cpp" "diagnostics.cpp" "adc_sensors.cpp"
         PRIV_REQUIRES i2cdev esp_sht4x esp_event esp_adc
         REQUIRES common
                     INCLUDE_DIRS "include")
