@@ -8,6 +8,8 @@
 #include "portmacro.h"
 #include "esp_adc/adc_oneshot.h"
 #include "sht4x.h"
+#include "bmp5.h"
+#include "tsl2591.h"
 extern adc_oneshot_unit_handle_t adc_handle;
 /**
  * @brief Synchronously validates individual sensor registers and electrical metrics.
@@ -18,9 +20,6 @@ extern adc_oneshot_unit_handle_t adc_handle;
 static const char* TAG = "Diagnostic:";
 namespace Diagnostics {
     // Hex values for targeting the I2C physical layer addresses
-    constexpr uint8_t BMP581_I2C_ADDR = 0x47;
-    constexpr uint8_t TSL2591_I2C_ADDR = 0x29;
-
     constexpr MaskStateOK& operator|=(MaskStateOK& lhs, MaskStateOK rhs) {
         lhs = lhs | rhs;
         return lhs;
@@ -47,7 +46,7 @@ namespace Diagnostics {
         }
 #if defined(AVALIABLE_SENSOR)
         // --- Step 2: Probe BMP581 ---
-        if (i2c_master_probe(i2c_bus, BMP581_I2C_ADDR, pdMS_TO_TICKS(50)) == ESP_OK) {
+        if (i2c_master_probe(i2c_bus, BMP5_I2C_ADDR_SEC, pdMS_TO_TICKS(50)) == ESP_OK) {
             diagnostic_mask |= MaskStateOK::BMP581;
         }
         else {

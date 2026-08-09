@@ -1,6 +1,6 @@
 idf_component_register(SRCS "telemetry.cpp" "diagnostics.cpp" "adc_sensors.cpp"
         PRIV_REQUIRES i2cdev esp_sht4x esp_event esp_adc
-        REQUIRES common bmp5api
+        REQUIRES common bmp5api tsl2591 ds18b20
                     INCLUDE_DIRS "include")
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
