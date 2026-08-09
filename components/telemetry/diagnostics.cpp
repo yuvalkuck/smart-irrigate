@@ -4,9 +4,10 @@
 #include "diagnostics.h"
 #include "logger.h"
 #include "FreeRTOSConfig.h"
-#include "portmacro.h"
 #include "freertos/projdefs.h"
+#include "portmacro.h"
 #include "esp_adc/adc_oneshot.h"
+#include "sht4x.h"
 extern adc_oneshot_unit_handle_t adc_handle;
 /**
  * @brief Synchronously validates individual sensor registers and electrical metrics.
@@ -16,8 +17,11 @@ extern adc_oneshot_unit_handle_t adc_handle;
  */
 static const char* TAG = "Diagnostic:";
 namespace Diagnostics {
+    // Hex values for targeting the I2C physical layer addresses
+    constexpr uint8_t BMP581_I2C_ADDR = 0x47;
+    constexpr uint8_t TSL2591_I2C_ADDR = 0x29;
+
     constexpr MaskStateOK& operator|=(MaskStateOK& lhs, MaskStateOK rhs) {
-        // Cast to underlying integer type, apply bitwise OR, cast back, and assign
         lhs = lhs | rhs;
         return lhs;
     }
@@ -35,7 +39,7 @@ namespace Diagnostics {
         MaskStateOK diagnostic_mask = MaskStateOK::Reset;
 
         // --- Step 1: Probe SHT41 ---
-        if (i2c_master_probe(i2c_bus, SHT41_I2C_ADDR, pdMS_TO_TICKS(50)) == ESP_OK) {
+        if (i2c_master_probe(i2c_bus, I2C_SHT4X_DEV_ADDR_LO, pdMS_TO_TICKS(50)) == ESP_OK) {
             diagnostic_mask |= MaskStateOK::SHT41;
         }
         else {
@@ -89,7 +93,7 @@ namespace Diagnostics {
         if (adc_oneshot_read(adc_handle, ADC_CHANNEL_3, &raw_wind_sample) == ESP_OK) {
             // Enforce boundary check to identify line shorts (close to 0) or floating/shorted inputs (close to max)
             if (raw_wind_sample > 50 && raw_wind_sample < 4050) {
-                diagnostic_mask |= MaskStateOK::WIND;
+                diagnostic_mask |= MaskStateOK::WindSpeed;
             }
             else {
                 ESP_LOGE(TAG, "  [FAIL] Wind Sensor signal clipped out of bounds. Raw voltage fault: %d", raw_wind_sample);

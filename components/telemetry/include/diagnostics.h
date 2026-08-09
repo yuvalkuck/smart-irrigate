@@ -21,19 +21,12 @@ namespace Diagnostics {
         TSL2591 = (1 << 2),
         DS18B20 = (1 << 3),
         XDB401 = (1 << 4),
-        WIND = (1 << 5),
-        All = SHT41 | BMP581 | TSL2591 | DS18B20 | XDB401 | WIND
+        WindSpeed = (1 << 5),
+        All = SHT41 | BMP581 | TSL2591 | DS18B20 | XDB401 | WindSpeed
     };
 
     constexpr MaskStateOK& operator|=(MaskStateOK& lhs, MaskStateOK rhs);
     constexpr MaskStateOK operator|(MaskStateOK lhs, MaskStateOK rhs);
-
-
-    // Hex values for targeting the I2C physical layer addresses
-    constexpr uint8_t SHT41_I2C_ADDR = 0x44;
-    constexpr uint8_t BMP581_I2C_ADDR = 0x47;
-    constexpr uint8_t TSL2591_I2C_ADDR = 0x29;
-    // ... other bit assignments ...
 
     // Declaration only: Tells the compiler this function exists globally
     MaskStateOK execute_operational_self_test(i2c_master_bus_handle_t i2c_bus) noexcept;

@@ -17,12 +17,6 @@
 
 static const char* TAG = "Telemetry:";
 static TelemetryData telemetryValues;
-static adc_oneshot_unit_handle_t adc_handle;
-static adc_oneshot_unit_init_cfg_t adcConfig = {
-   .unit_id = ADC_UNIT_1,
-   .clk_src = static_cast<adc_oneshot_clk_src_t>(0),                    // 0 auto-selects default architecture clock
-   .ulp_mode = ADC_ULP_MODE_DISABLE, // C++ error if out of order!
-};
 
 static i2c_master_bus_handle_t bus_handle;
 static i2c_master_bus_config_t bus_config = {
