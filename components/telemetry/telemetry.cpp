@@ -47,18 +47,6 @@ esp_err_t init_telemetry() {
     bus_config.flags.enable_internal_pullup = true;
     // I2C Master
     ESP_ERROR_CHECK(i2c_new_master_bus(&bus_config, &bus_handle));
-    // ADC-1
-    ESP_ERROR_CHECK(adc_oneshot_new_unit(&adcConfig, &adc_handle));
-    adc_oneshot_chan_cfg_t chan_config = {
-        .atten = ADC_ATTEN_DB_12,         // Safe voltage range (~0V to 3.3V)
-        .bitwidth = ADC_BITWIDTH_DEFAULT, // Hardware native resolution (12-bit for C6)
-    };
-    // For ESP32-C6 ADC1, ADC_CHANNEL_0 maps to GPIO0
-    // auto rc = adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_0, &chan_config);
-    // if (rc != ESP_OK) {
-    //     ESP_ERROR_CHECK(rc);
-    //     return rc;
-    // }
     /***** Register sensors ****/
     auto rc = sht4x_init(bus_handle, &sht41_config, &sht41_handle);
     if (rc != ESP_OK) {
@@ -66,8 +54,8 @@ esp_err_t init_telemetry() {
         return rc;
     }
 
-    auto frc = execute_operational_self_test(bus_handle, adc_handle);
-    if ( frc != 0) {
+    auto frc = Diagnostics::execute_operational_self_test(bus_handle);
+    if ( frc != Diagnostics::MaskStateOK::Reset) {
         return ESP_FAIL;
     }
     return ESP_OK;

@@ -8,24 +8,34 @@
 
 #include "driver/i2c_master.h"
 #include "esp_adc/adc_oneshot.h"
+#include <type_traits>
 
 // ====================================================================
 // HARDWARE DIAGNOSTIC BITMASK POSITIONS (C++17 Binary Assignments)
 // ====================================================================
-inline constexpr uint8_t BIT_SHT41_OK   = (1 << 0); // 0x01: Ambient Temp & Humidity
-inline constexpr uint8_t BIT_BMP581_OK  = (1 << 1); // 0x02: Barometric Pressure
-inline constexpr uint8_t BIT_TSL2591_OK = (1 << 2); // 0x04: Solar Irradiance
-inline constexpr uint8_t BIT_DS18B20_OK = (1 << 3); // 0x08: Topsoil Subsurface Thermal
-inline constexpr uint8_t BIT_XDB401_OK  = (1 << 4); // 0x10: Hydraulic Line Pressure
-inline constexpr uint8_t BIT_WIND_OK    = (1 << 5);
+namespace Diagnostics {
+    enum class MaskStateOK : uint8_t {
+        Reset = 0x00,
+        SHT41 = (1 << 0),
+        BMP581 = (1 << 1),
+        TSL2591 = (1 << 2),
+        DS18B20 = (1 << 3),
+        XDB401 = (1 << 4),
+        WIND = (1 << 5),
+        All = SHT41 | BMP581 | TSL2591 | DS18B20 | XDB401 | WIND
+    };
 
-// Hex values for targeting the I2C physical layer addresses
-constexpr uint8_t SHT41_I2C_ADDR  = 0x44;
-constexpr uint8_t BMP581_I2C_ADDR = 0x47;
-constexpr uint8_t TSL2591_I2C_ADDR = 0x29;
-// ... other bit assignments ...
+    constexpr MaskStateOK& operator|=(MaskStateOK& lhs, MaskStateOK rhs);
+    constexpr MaskStateOK operator|(MaskStateOK lhs, MaskStateOK rhs);
 
-// Declaration only: Tells the compiler this function exists globally
-uint8_t execute_operational_self_test(i2c_master_bus_handle_t i2c_bus, adc_oneshot_unit_handle_t adc_handle) noexcept;
 
+    // Hex values for targeting the I2C physical layer addresses
+    constexpr uint8_t SHT41_I2C_ADDR = 0x44;
+    constexpr uint8_t BMP581_I2C_ADDR = 0x47;
+    constexpr uint8_t TSL2591_I2C_ADDR = 0x29;
+    // ... other bit assignments ...
+
+    // Declaration only: Tells the compiler this function exists globally
+    MaskStateOK execute_operational_self_test(i2c_master_bus_handle_t i2c_bus) noexcept;
+}
 #endif //IRRIGATE_DIAGNOSTICS_H

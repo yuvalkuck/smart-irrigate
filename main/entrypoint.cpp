@@ -133,7 +133,7 @@ static void init_gpio() {
     };
     gpio_config(&onewire_conf);
 }
-extern adc_oneshot_unit_handle_t adc1_handle;
+extern adc_oneshot_unit_handle_t adc_handle;
 static void init_adc() {
     // 1. Configure the ADC1 Unit Configuration Structure
 
@@ -142,7 +142,7 @@ static void init_adc() {
         .clk_src = ADC_DIGI_CLK_SRC_DEFAULT, // Explicitly required for modern ESP-IDF 6.0 compatibility
         .ulp_mode = ADC_ULP_MODE_DISABLE,
     };
-    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc_handle));
 
     // 2. Define Shared Channel Properties
     const adc_oneshot_chan_cfg_t config = {
@@ -153,8 +153,8 @@ static void init_adc() {
     // 3. Register Channel 2 and Channel 3 sequentially to ADC1 Unit
     //    2 pressure
     //    3 wind speed
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_2, &config));
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_3, &config));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_2, &config));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_3, &config));
 }
 
 extern "C" void app_main(void) {
