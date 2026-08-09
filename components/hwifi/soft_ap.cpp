@@ -1,6 +1,6 @@
 // #include <stdio.h>
 #include "wifi_softap.h"
-#include "esp_log.h"
+#include "logger.h"
 #include "esp_event.h"
 #include "esp_netif.h"
 #include "esp_wifi.h"
@@ -8,7 +8,6 @@
 #include "sdkconfig.h"
 #include <lwip/ip4_addr.h>
 #include <esp_http_server.h>
-//#include "flash.h"
 
 static const char* TAG = "wifi_softap:";
 static httpd_handle_t server_instance = NULL;
@@ -19,6 +18,7 @@ static httpd_handle_t server_instance = NULL;
 
 static void wifiEventHandlerSoftAP(void* arg, esp_event_base_t event_base,
                                    int32_t event_id, void* event_data) {
+    METHODTRACE
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_AP_STACONNECTED) {
         esp_wifi_connect(); // Start connection once driver is ready
         server_instance = start_webserver();
@@ -30,9 +30,8 @@ static void wifiEventHandlerSoftAP(void* arg, esp_event_base_t event_base,
     }
 }
 
-
-
 static void setAddressAP(esp_netif_t *ap_netif) {
+    METHODTRACE
     // 3. Stop the DHCP Server before modifying IP structures
         ESP_ERROR_CHECK(esp_netif_dhcps_stop(ap_netif));
 
@@ -56,6 +55,7 @@ static void setAddressAP(esp_netif_t *ap_netif) {
 
 static void genDefaultSSID(char* buff) {
     // buff is minimum 32 chars
+    METHODTRACE
     uint8_t lenDefault = strlen(CONFIG_DEVICE_DEFAULT_UNIQUE_SSID);
     if (lenDefault > 0) {
         if (lenDefault > CONFIG_DEVICE_MAX_DEFAULT_UNIQUE_SSID) {
@@ -80,7 +80,7 @@ static void genDefaultSSID(char* buff) {
 }
 
 void init_wifi_softap() {
-    ESP_LOGI(TAG, "ESP_WIFI_MODE_AP");
+    METHODTRACE
     ESP_ERROR_CHECK(esp_netif_init());
     setAddressAP(esp_netif_create_default_wifi_ap());
 

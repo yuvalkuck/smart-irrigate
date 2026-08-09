@@ -1,6 +1,6 @@
 #include <vector>
 #include <span>
-#include "esp_log.h"
+#include "logger.h"
 #include "mqtt_client.h"
 #include "hmqtt.h"
 #include "flash.h"
@@ -119,7 +119,7 @@ static void mqttEventHandler(void* handler_args, esp_event_base_t base, int32_t 
 }
 
 void init_hmqtt() {
-    ESP_LOGI(TAG, "%s", __func__);
+    METHODTRACE
     NvsConfig hCfg;
 
     if (hCfg.getStr(CFG_NVS_KEY_MQTT_URL, mqtt_broker_uri, sizeof(mqtt_broker_uri))) {
@@ -161,11 +161,12 @@ void init_hmqtt() {
 }
 
 void start_hmqtt() {
-    ESP_LOGI(TAG, "%s", __func__);
+    METHODTRACE
     esp_mqtt_client_start(hClient);
 }
 
 esp_err_t mqtt_publish(const char* topic, const char* payload) {
+    METHODTRACE
     ESP_LOGI(TAG, "%s:[%s]->[%s]", __func__, topic, payload);
     return esp_mqtt_client_publish(hClient, topic, payload, strlen(payload), 1, 0);
 }

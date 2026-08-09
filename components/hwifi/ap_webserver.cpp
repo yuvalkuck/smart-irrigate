@@ -5,7 +5,7 @@
 #include "flash.h"
 #include <array>
 #include <esp_http_server.h>
-#include <esp_log.h>
+#include <logger.h>
 #include <fmt/core.h>
 
 static const char* TAG = "WebServer";
@@ -13,6 +13,7 @@ static const char* TAG = "WebServer";
 static void register_routes(httpd_handle_t server);
 
 httpd_handle_t start_webserver() {
+    METHODTRACE
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 
     // Memory optimizations for ESP-IDF 6.x
@@ -33,13 +34,13 @@ httpd_handle_t start_webserver() {
 
 // 1. Define the GET Handler Function
 static esp_err_t get_rootpage(httpd_req_t* req) {
-    ESP_LOGI(TAG, "get_rootpage");
+    METHODTRACE
     httpd_resp_send(req, R"(<html><header/><body>NoUserInterface</body></html>)",
                     HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
 static esp_err_t get_command_restart(httpd_req_t* req) {
-    ESP_LOGI(TAG, "get_command_restart");
+    METHODTRACE
     esp_restart();
     return ESP_OK;
 }
@@ -48,7 +49,7 @@ static esp_err_t get_command_restart(httpd_req_t* req) {
 #define MAX_STRING_LENGTH 128
 
 static esp_err_t get_status_handler(httpd_req_t* req) {
-    ESP_LOGI(TAG, "get_status_handler");
+    METHODTRACE
     std::array<char[MAX_STRING_LENGTH], 5> strCache = {};
     NvsConfig hCfg;
     hCfg.getStr(CFG_NVS_KEY_WIFI_SSID, strCache[0],MAX_STRING_LENGTH);
@@ -70,7 +71,7 @@ static esp_err_t get_status_handler(httpd_req_t* req) {
 
 // 2. Define the POST Handler Function
 static esp_err_t post_handler(httpd_req_t* req) {
-    ESP_LOGI(TAG, "post_handler");
+    METHODTRACE
     char buf[256]; // Keep small to save stack memory
     int ret, remaining = req->content_len;
     // interface is mostly send config key and process it
@@ -97,7 +98,7 @@ static esp_err_t post_handler(httpd_req_t* req) {
 
 // 3. Registering the Handlers inside your server initialization
 static void register_routes(httpd_handle_t server) {
-    ESP_LOGI(TAG, "-----register_routes");
+    METHODTRACE
     // GET Route Configuration
     {
         httpd_uri_t get_uri = {

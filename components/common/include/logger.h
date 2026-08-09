@@ -7,7 +7,6 @@
 
 #include <cstdint>
 #include <cstring>
-#include <cstdio>
 #include "esp_log.h"
 class MethodTracer {
     char name_[64]{};

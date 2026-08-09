@@ -1,18 +1,18 @@
 #include <stdio.h>
 #include "hwifi.h"
-#include "esp_log.h"
+#include "logger.h"
 #include "esp_event.h"
 #include "esp_netif.h"
 #include "esp_wifi.h"
 #include "sdkconfig.h"
 #include "flash.h"
 
-
 static EventGroupHandle_t wifiEventGroup;
 static const char* TAG = "hwifi_sta:";
 
 static void wifiEventHandlerSTA(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data) {
+    METHODTRACE
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         esp_wifi_connect(); // Start connection once driver is ready
     }
@@ -29,7 +29,7 @@ static void wifiEventHandlerSTA(void* arg, esp_event_base_t event_base,
 
 void init_wifi_sta() {
     // Network Interface & Event Loop Initialization
-    ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
+    METHODTRACE
     ESP_ERROR_CHECK(esp_netif_init());
 
     esp_netif_create_default_wifi_sta();
@@ -56,6 +56,7 @@ void init_wifi_sta() {
 }
 
 void start_wifi() {
+    METHODTRACE
     // 6. Start Wi-Fi
     ESP_ERROR_CHECK(esp_wifi_start());
     // event group must be decalre because use int the event handler
