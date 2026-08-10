@@ -54,7 +54,15 @@ bool NvsConfig::isStrEmpty(const char* key) const {
     }
     return required_size <= 1; // Only null terminator or truly empty
 }
+size_t NvsConfig::getStrLen(const char* key) {
+    size_t required_size;
+    auto err = nvs_get_str(handler_, key, NULL, &required_size);
+    if (err != ESP_OK) {
+        return 0;
+    }
+    return required_size;
 
+}
 bool NvsConfig::getStr(const char* key, char* value, size_t len) {
     size_t required_size;
     esp_err_t err;
@@ -133,7 +141,7 @@ esp_err_t init_flash(void) {
     ESP_LOGI(TAG, "start init keys");
     nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_WIFI_SSID, INITIATE_WIFI_SSID);
     nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_WIFI_PASSWORD, INITIATE_WIFI_PASSWORD);
-    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_BT_DEVICE_NAME, INITIATE_BT_DEVICE_NAME);
+    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_DEVICE_UNIQUE, INITIATE_DEVICE_UNIQUE);
     nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_MQTT_URL, INITIATE_BROKER_URL);
     nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_MQTT_USERNAME, INITIATE_MQTT_CLIENT_USERNAME);
     nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_MQTT_PASSWORD, INITIATE_MQTT_CLIENT_PASSWORD);

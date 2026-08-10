@@ -13,6 +13,7 @@ enum {
 
 struct EventData {
     size_t size;
+
     void * data;
     size_t length() const {return size+sizeof(EventData);}
 };
