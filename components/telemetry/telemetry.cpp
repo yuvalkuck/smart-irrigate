@@ -2,74 +2,68 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "logger.h"
-#include "sht4x.h"
 #include "common_event.h"
 #include "esp_event.h"
 #include "diagnostics.h"
 #include "esp_adc/adc_oneshot.h"
+#include "sensor_sht4x.h"
+#include "sensor_bmp5xx.h"
 
 // Define I2C pins for ESP32-C6
 #define I2C_PORT       I2C_NUM_0
-#define I2C_SDA_PIN       GPIO_NUM_19
-#define I2C_SCL_PIN       GPIO_NUM_20
-#define TASK_DELAY     1000*10
+#define I2C_SDA_PIN    GPIO_NUM_19
+#define I2C_SCL_PIN    GPIO_NUM_20
+#define TASK_DELAY     (1000*10)
 
 
 static const char* TAG = "Telemetry:";
-static TelemetryData telemetryValues;
 
-static i2c_master_bus_handle_t bus_handle;
-static i2c_master_bus_config_t bus_config = {
+static i2c_master_bus_handle_t master_bus_handler;
+static i2c_master_bus_config_t master_bus_config = {
     .i2c_port = I2C_PORT,
     .sda_io_num = I2C_SDA_PIN,
     .scl_io_num = I2C_SCL_PIN,
     .clk_source = I2C_CLK_SRC_DEFAULT,
     .glitch_ignore_cnt = 7
 };
+///////////////////////////
 
-static sht4x_handle_t sht41_handle{};
-static sht4x_config_t sht41_config = {
-    .i2c_address    = I2C_SHT4X_DEV_ADDR_LO,
-    .i2c_clock_speed= I2C_SHT4X_DEV_CLK_SPD,
-    .repeat_mode    = SHT4X_REPEAT_HIGH,
-    .heater_mode    = SHT4X_HEATER_OFF
-};
+static SensorSHT4x sensorSHT;
+static SensorBMP5xx sensorBMP;
 
 esp_err_t init_telemetry() {
     METHODTRACE
     /***** init services ****/
-    bus_config.flags.enable_internal_pullup = true;
+    master_bus_config.flags.enable_internal_pullup = true;
     // I2C Master
-    ESP_ERROR_CHECK(i2c_new_master_bus(&bus_config, &bus_handle));
-    /***** Register sensors ****/
-    auto rc = sht4x_init(bus_handle, &sht41_config, &sht41_handle);
+    ESP_ERROR_CHECK(i2c_new_master_bus(&master_bus_config, &master_bus_handler));
+    // init I2C sensors
+    auto rc = sensorSHT.init(master_bus_handler);
+    if (rc != ESP_OK) {
+        ESP_ERROR_CHECK(rc);
+        return rc;
+    }
+    rc = sensorBMP.init(master_bus_handler);
     if (rc != ESP_OK) {
         ESP_ERROR_CHECK(rc);
         return rc;
     }
 
-    auto frc = Diagnostics::execute_operational_self_test(bus_handle);
-    if ( frc != Diagnostics::MaskStateOK::Reset) {
+    auto drc = Diagnostics::execute_operational_self_test(master_bus_handler);
+    if (drc != Diagnostics::MaskStateOK::Reset) {
+        ESP_LOGE(TAG, "Failed in sensors diagnostic!");
         return ESP_FAIL;
     }
     return ESP_OK;
 }
 
-[[noreturn]] static void cbTelemetryTask(void* ) {
+[[noreturn]] static void cbTelemetryTask(void*) {
+    TelemetryData telemetryPayload = {0};
+    EventData event = {sizeof(TelemetryData), &telemetryPayload};
     while (1) {
-        // Read sensor data using the high-precision mode
-        auto res = sht4x_get_measurement(sht41_handle, &telemetryValues.temperature, &telemetryValues.humidity);
-        if (res == ESP_OK) {
-            ESP_LOGI(TAG, "Temperature: %.2f °C | Humidity: %.2f %%", telemetryValues.temperature, telemetryValues.humidity);
-            float payload[2] = {
-                telemetryValues.temperature,    //!< temperature in degree C        (Invalid value -327.68)
-                telemetryValues.humidity       //!< relative humidity in %         (Invalid value 0.0)
-            };
-            EventData event = {sizeof(payload), &payload};
-            esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_SENSOR_UPDATED, &event, event.length(), portMAX_DELAY);
-        } else {
-            ESP_LOGE(TAG, "Failed to read data from sensor");
-        }
+        sensorSHT.read(telemetryPayload);
+        sensorBMP.read(telemetryPayload);
+        esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_UPDATED_SENSOR, &event, event.length(), portMAX_DELAY);
         vTaskDelay(pdMS_TO_TICKS(TASK_DELAY));
     }
 }

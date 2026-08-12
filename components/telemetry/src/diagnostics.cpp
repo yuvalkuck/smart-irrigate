@@ -44,7 +44,7 @@ namespace Diagnostics {
         else {
             ESP_LOGE(TAG, "  [FAIL] SHT41 interface dropped communications.");
         }
-#if defined(AVALIABLE_SENSOR)
+
         // --- Step 2: Probe BMP581 ---
         if (i2c_master_probe(i2c_bus, BMP5_I2C_ADDR_SEC, pdMS_TO_TICKS(50)) == ESP_OK) {
             diagnostic_mask |= MaskStateOK::BMP581;
@@ -52,7 +52,7 @@ namespace Diagnostics {
         else {
             ESP_LOGE(TAG, "  [FAIL] BMP581 interface dropped communications.");
         }
-
+#if defined(AVALIABLE_SENSOR)
         // --- Step 3: Probe TSL2591 ---
         if (i2c_master_probe(i2c_bus, TSL2591_I2C_ADDR, pdMS_TO_TICKS(50)) == ESP_OK) {
             diagnostic_mask |= MaskStateOK::TSL2591;

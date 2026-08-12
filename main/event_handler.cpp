@@ -12,8 +12,8 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
         time_t timestamp = time(nullptr);
         auto event = static_cast<EventData*>(event_data);
         switch (event_id) {
-            case COMMON_EVENT_SENSOR_UPDATED: {
-                ESP_LOGV(TAG, "COMMON_EVENT_SENSOR_UPDATED");
+            case COMMON_EVENT_UPDATED_SENSOR: {
+                ESP_LOGV(TAG, "COMMON_EVENT_UPDATED_SENSOR");
                 auto payload = static_cast<float*>(event->data);
                 char send[128];
                 /** record:
