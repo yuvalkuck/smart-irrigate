@@ -31,6 +31,17 @@ static i2c_master_bus_config_t master_bus_config = {
 static SensorSHT4x sensorSHT;
 static SensorBMP5xx sensorBMP;
 
+static void i2c_scan(i2c_master_bus_handle_t bus) {
+    ESP_LOGI(TAG, "Scanning I2C bus...");
+    for (uint8_t addr = 0x03; addr < 0x78; addr++) {
+        esp_err_t err = i2c_master_probe(bus, addr, 50);
+        if (err == ESP_OK) {
+            ESP_LOGI(TAG, "  Found device at 0x%02X", addr);
+        }
+    }
+    ESP_LOGI(TAG, "Scan complete.");
+}
+
 esp_err_t init_telemetry() {
     METHODTRACE
     /***** init services ****/
@@ -38,16 +49,19 @@ esp_err_t init_telemetry() {
     // I2C Master
     ESP_ERROR_CHECK(i2c_new_master_bus(&master_bus_config, &master_bus_handler));
     // init I2C sensors
+    i2c_scan(master_bus_handler);
     auto rc = sensorSHT.init(master_bus_handler);
     if (rc != ESP_OK) {
         ESP_ERROR_CHECK(rc);
         return rc;
     }
+
     rc = sensorBMP.init(master_bus_handler);
     if (rc != ESP_OK) {
         ESP_ERROR_CHECK(rc);
         return rc;
     }
+
 
     auto drc = Diagnostics::execute_operational_self_test(master_bus_handler);
     if (drc != Diagnostics::MaskStateOK::Reset) {

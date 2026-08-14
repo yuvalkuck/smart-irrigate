@@ -44,8 +44,7 @@ void continue_after_time_sync_cb(struct timeval* tv) {
         tzset();
         ESP_LOGI(TAG, "set TimeZone to: %s", buff);
         start_hmqtt();
-    }
-    else {
+    } else {
         ESP_LOGE(TAG, "failed to set timezone from fkasg");
     }
 }
@@ -133,7 +132,9 @@ static void init_gpio() {
     };
     gpio_config(&onewire_conf);
 }
+
 extern adc_oneshot_unit_handle_t adc_handle;
+
 static void init_adc() {
     // 1. Configure the ADC1 Unit Configuration Structure
 
@@ -146,7 +147,7 @@ static void init_adc() {
 
     // 2. Define Shared Channel Properties
     const adc_oneshot_chan_cfg_t config = {
-        .atten = ADC_ATTEN_DB_12,       // Safe range attenuation config for up to ~3.3V
+        .atten = ADC_ATTEN_DB_12, // Safe range attenuation config for up to ~3.3V
         .bitwidth = ADC_BITWIDTH_DEFAULT, // Auto-resolves correct target bit depth (e.g., 12-bit)
     };
 
@@ -157,7 +158,7 @@ static void init_adc() {
     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_3, &config));
 }
 
-extern "C" void app_main(void) {
+extern "C" [[noreturn]] void app_main(void) {
     ESP_LOGI(TAG, "setting up");
     ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
 
@@ -178,7 +179,7 @@ extern "C" void app_main(void) {
         NvsConfig hCfg;
         if (!hCfg) {
             ESP_LOGE(TAG, "failed to init config flash");
-            return;
+            abort();
         }
         if (!initRegular || hCfg.isStrEmpty(CFG_NVS_KEY_WIFI_SSID)) {
             ESP_LOGI(TAG, "Start wifi configuration state");
@@ -186,8 +187,7 @@ extern "C" void app_main(void) {
             start_wifi();
             initRegular = false;
             ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
-        }
-        else {
+        } else {
             ESP_LOGI(TAG, "Start Regular Load");
             init_event_app_handle();
             init_telemetry();
@@ -199,8 +199,7 @@ extern "C" void app_main(void) {
             char buff[128] = {0};
             if (hCfg.getStr(CFG_NVS_KEY_NTP_SERVER, buff, sizeof(buff))) {
                 init_sntp(buff, continue_after_time_sync_cb);
-            }
-            else {
+            } else {
                 ESP_LOGE(TAG, "failed to get NTP server url from flash");
             }
             // MQTT
