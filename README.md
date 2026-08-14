@@ -1,7 +1,8 @@
-# Smart Irrigate — High-Level Design (HLD)
+# Smart Irrigate — High-Level Design 
 
 ---
-
+* Project state: ***construction & sandbox***
+ 
 ## 1. Project Description
 **Smart Irrigate** is an automated, low-power irrigation controller engineered for the **ESP-IDF 6.0 framework** running on the ESP32-C6 FireBeetle 2 platform. The device acts as an intelligent edge-computing node that monitors microclimate variables, tracks live hydraulic line pressure data, and manages a matrix of physical AC water valves using an external relay array.
 
