@@ -160,3 +160,7 @@ bool SensorBMP5xx::read(TelemetryData& data) {
     }
     return false;
 }
+
+bool SensorBMP5xx::online(i2c_master_bus_handle_t bus) {
+    return (i2c_master_probe(bus, BMP5_I2C_ADDR_SEC, pdMS_TO_TICKS(50)) == ESP_OK);
+}

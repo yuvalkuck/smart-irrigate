@@ -8,11 +8,8 @@
 #include "esp_adc/adc_oneshot.h"
 #include "sensor_sht4x.h"
 #include "sensor_bmp5xx.h"
-
+#include "gpio_declaraion.h"
 // Define I2C pins for ESP32-C6
-#define I2C_PORT       I2C_NUM_0
-#define I2C_SDA_PIN    GPIO_NUM_19
-#define I2C_SCL_PIN    GPIO_NUM_20
 #define TASK_DELAY     (1000*10)
 
 
@@ -64,7 +61,7 @@ esp_err_t init_telemetry() {
 
 
     auto drc = Diagnostics::execute_operational_self_test(master_bus_handler);
-    if (drc != Diagnostics::MaskStateOK::Reset) {
+    if (drc != Diagnostics::MaskStateOK::NoValue) {
         ESP_LOGE(TAG, "Failed in sensors diagnostic!");
         return ESP_FAIL;
     }

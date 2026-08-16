@@ -1,6 +1,5 @@
 #include "sensor_sht4x.h"
 #include "sht4x.h"
-#include "common_event.h"
 #include "logger.h"
 static sht4x_handle_t sht41_handle{};
 static sht4x_config_t sht41_config = {
@@ -29,4 +28,8 @@ bool SensorSHT4x::read(TelemetryData& data) {
         return true;
     }
     return false;
+}
+
+bool SensorSHT4x::online(i2c_master_bus_handle_t bus) {
+    return (i2c_master_probe(bus, I2C_SHT4X_DEV_ADDR_LO, pdMS_TO_TICKS(50)) == ESP_OK);
 }

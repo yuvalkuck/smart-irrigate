@@ -17,18 +17,14 @@
 #include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
 #include "time.h"
+#include "gpio_declaraion.h"
+#if defined(ESP32S3_UART)
+#include "driver/uart.h"
+#endif
 
 static const char* TAG = "App:";
 
 void init_event_app_handle();
-
-// ====================================================================
-// CONFIGURABLE SYSTEM PINS (Declared right before the method)
-// ====================================================================
-#define GPIO_LED             GPIO_NUM_15  // Status indication LED
-#define GPIO_CONFIG_MODE_PIN GPIO_NUM_17  // Manual Configuration Mode intercept switch
-#define GPIO_ONEWIRE_BUS     GPIO_NUM_18  // 1-Wire data bus for DS18B20 soil thermometer
-#define GPIO_WIND_EXPANSION  GPIO_NUM_2   // Reserved pulse input for future anemometer
 
 static void setLedState(int fliper) {
     // ESP_LOGI(TAG, "set %d", fliper);
@@ -66,7 +62,7 @@ static void init_gpio() {
     const gpio_config_t config_mode_switch_conf = {
         .pin_bit_mask = (1ULL << GPIO_CONFIG_MODE_PIN),
         .mode = GPIO_MODE_INPUT,
-        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_up_en = GPIO_PULLUP_DISABLE, // CHANGED: Disabled internal pull-up to use external 10k resistor
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_DISABLE
     };
@@ -77,7 +73,6 @@ static void init_gpio() {
     size_t parsed_valve_count = 0;
 
     while (!pin_list_view.empty() && parsed_valve_count < CONFIG_DEVICE_MAX_VALVES) {
-        // Find position of next comma delimiter
         const size_t comma_pos = pin_list_view.find(',');
         const std::string_view token = (comma_pos == std::string_view::npos)
                                            ? pin_list_view
@@ -85,7 +80,6 @@ static void init_gpio() {
 
         if (!token.empty()) {
             int pin_num = 0;
-            // C++17 non-allocating, raw string parsing
             auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), pin_num);
             if (ec == std::errc{}) {
                 valve_gpio_pins[parsed_valve_count] = static_cast<gpio_num_t>(pin_num);
@@ -93,14 +87,13 @@ static void init_gpio() {
             }
         }
 
-        // Shift view past parsed segment
         if (comma_pos == std::string_view::npos) {
             break;
         }
         pin_list_view.remove_prefix(comma_pos + 1);
     }
 
-    // === 3. Relay Array Controls (CONFIG_DEVICE_MAX_VALVES Programmatic Channels) ===
+    // === 3. Relay Array Controls ===
     uint64_t valve_pin_mask = 0;
     for (size_t i = 0; i < parsed_valve_count; ++i) {
         gpio_reset_pin(valve_gpio_pins[i]);
@@ -116,7 +109,6 @@ static void init_gpio() {
     };
     gpio_config(&valve_conf);
 
-    // Force active lines low immediately at boot to prevent floating valve triggers
     for (size_t i = 0; i < parsed_valve_count; ++i) {
         gpio_set_level(valve_gpio_pins[i], 0);
     }
@@ -126,7 +118,7 @@ static void init_gpio() {
     const gpio_config_t onewire_conf = {
         .pin_bit_mask = (1ULL << GPIO_ONEWIRE_BUS),
         .mode = GPIO_MODE_INPUT_OUTPUT_OD,
-        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_up_en = GPIO_PULLUP_ENABLE, // Kept active as fallback logic under external 1.5k
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_DISABLE
     };
@@ -137,26 +129,42 @@ extern adc_oneshot_unit_handle_t adc_handle;
 
 static void init_adc() {
     // 1. Configure the ADC1 Unit Configuration Structure
-
     const adc_oneshot_unit_init_cfg_t init_config1 = {
         .unit_id = ADC_UNIT_1,
-        .clk_src = ADC_DIGI_CLK_SRC_DEFAULT, // Explicitly required for modern ESP-IDF 6.0 compatibility
+        .clk_src = ADC_DIGI_CLK_SRC_DEFAULT,
         .ulp_mode = ADC_ULP_MODE_DISABLE,
     };
     ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc_handle));
 
     // 2. Define Shared Channel Properties
     const adc_oneshot_chan_cfg_t config = {
-        .atten = ADC_ATTEN_DB_12, // Safe range attenuation config for up to ~3.3V
-        .bitwidth = ADC_BITWIDTH_DEFAULT, // Auto-resolves correct target bit depth (e.g., 12-bit)
+        .atten = ADC_ATTEN_DB_12,
+        .bitwidth = ADC_BITWIDTH_DEFAULT,
     };
 
-    // 3. Register Channel 2 and Channel 3 sequentially to ADC1 Unit
-    //    2 pressure
-    //    3 wind speed
+    // 3. Register Channel 2 (GPIO 2, Water Pressure) and Channel 3 (GPIO 3, Wind Speed) sequentially
     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_2, &config));
     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_3, &config));
 }
+#if defined(ESP32S3_UART)
+static void init_s3_uart_link() {
+    const uart_config_t uart_config = {
+        .baud_rate = 115200,          // Standard stable cross-chip transfer rate
+        .data_bits = UART_DATA_8_BITS,
+        .parity    = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .source_clk = UART_SCLK_DEFAULT,
+    };
+
+    // Install the driver using the defined port configuration
+    ESP_ERROR_CHECK(uart_driver_install(S3_LINK_UART_PORT, S3_LINK_UART_BUFF * 2, 0, 0, NULL, 0));
+    ESP_ERROR_CHECK(uart_param_config(S3_LINK_UART_PORT, &uart_config));
+
+    // Route the hardware matrix signals directly to your specific safe macro pins
+    ESP_ERROR_CHECK(uart_set_pin(S3_LINK_UART_PORT, GPIO_S3_LINK_TX, GPIO_S3_LINK_RX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+}
+#endif
 
 extern "C" [[noreturn]] void app_main(void) {
     ESP_LOGI(TAG, "setting up");
@@ -164,6 +172,9 @@ extern "C" [[noreturn]] void app_main(void) {
 
     init_gpio();
     init_adc();
+#if defined(ESP32S3_UART)
+    init_s3_uart_link();
+#endif
     //Initialize NVS
     bool initRegular = (gpio_get_level(GPIO_CONFIG_MODE_PIN) == 0 ? false : true);
     esp_err_t ret = init_flash();

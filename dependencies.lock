@@ -133,7 +133,7 @@ dependencies:
       require: private
       version: '>=5.0'
     source:
-      registry_url: https://components.espressif.com
+      registry_url: https://components.espressif.com/
       type: service
     version: 1.1.1
   espressif/sensor_hub:
@@ -188,8 +188,9 @@ direct_dependencies:
 - espressif/ds18b20
 - espressif/fmt
 - espressif/mqtt
+- espressif/onewire_bus
 - idf
 - k0i05/esp_sht4x
-manifest_hash: 0b7eeb0827891cc602856115255f806a750faf1ac04e772ab2b26320d01e200b
+manifest_hash: ac4e3d87b025b1a6aa94890d44c341084ce4225ed6db76ce6dc10a4c88f5095a
 target: esp32c6
 version: 3.0.0

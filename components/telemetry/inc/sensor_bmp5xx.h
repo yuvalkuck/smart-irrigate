@@ -4,13 +4,13 @@
 
 #ifndef SMART_IRRIGATE_BMP5XX_SENSOR_H
 #define SMART_IRRIGATE_BMP5XX_SENSOR_H
-#include "esp_err.h"
-#include "driver/i2c_types.h"
-struct TelemetryData;
-class SensorBMP5xx {
-public:
-    SensorBMP5xx() = default;
+#include "sensor_concept.h"
+class SensorBMP5xx : public SensorAbstract<SensorBMP5xx> {
+    public:
     esp_err_t init(i2c_master_bus_handle_t);
-    bool read(TelemetryData &);
+    bool read(TelemetryData& );
+    bool online(i2c_master_bus_handle_t);
 };
+
+
 #endif //SMART_IRRIGATE_BMP5XX_SENSOR_H
