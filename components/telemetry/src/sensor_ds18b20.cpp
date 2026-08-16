@@ -1,0 +1,74 @@
+//
+// Created by uv on 16/08/2026.
+//
+#include "ds18b20.h"
+#include "sensor_ds18b20.h"
+#include "logger.h"
+onewire_bus_handle_t onewire_bus_handle;
+static const char* TAG = "DS18B20:";
+static ds18b20_device_handle_t dev_handle = NULL;
+#define DS18B20_FAMILIY_CODE 0x28
+
+esp_err_t SensorDS18B20::init(onewire_bus_handle_t bus) {
+    // find device configuration by scanning current connected devices
+    onewire_device_iter_handle_t iter = nullptr;
+    ESP_ERROR_CHECK(onewire_new_device_iter(bus, &iter));
+    onewire_device_t dev;
+    bool found = false;
+    while (onewire_device_iter_get_next(iter, &dev) == ESP_OK) {
+        if ((uint8_t)(dev.address & 0xFF) == DS18B20_FAMILIY_CODE) {
+            found = true;
+            break;
+        }
+    }
+    onewire_del_device_iter(iter);
+
+    if (!found) {
+        ESP_LOGE(TAG, "No DS18B20 found on bus");
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    ds18b20_config_t ds_cfg = {};  // defaults are fine
+    esp_err_t err = ds18b20_new_device_from_bus(bus, &ds_cfg, &dev_handle);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "ds18b20_new_device() failed: %s", esp_err_to_name(err));
+        return err;
+    }
+
+    // Optional: set resolution (9-12 bit, default is usually 12-bit)
+    ds18b20_set_resolution(dev_handle, DS18B20_RESOLUTION_12B);
+
+    ESP_LOGI(TAG, "DS18B20 initialized, ROM 0x%016" PRIX64, dev.address);
+    return ESP_OK;
+}
+bool SensorDS18B20::read(TelemetryData& data) {
+    esp_err_t err = ds18b20_trigger_temperature_conversion(dev_handle);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "conversion trigger failed: %s", esp_err_to_name(err));
+        return false;
+    }
+
+    err = ds18b20_get_temperature(dev_handle, &data.soile_temperature);
+    if (err == ESP_OK) {
+        return true;
+    }
+    ESP_LOGE(TAG, "temperature read failed: %s", esp_err_to_name(err));
+    return false;
+}
+bool SensorDS18B20::online(onewire_bus_handle_t bus) {
+    METHODTRACE
+    auto err = onewire_bus_reset(bus);
+
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "DS18B20 online (presence pulse detected)");
+        return true;
+    }
+
+    if (err == ESP_ERR_NOT_FOUND) {
+        ESP_LOGW(TAG, "DS18B20 offline -- no presence pulse. Check power, "
+                       "wiring, and pull-up resistor.");
+    } else {
+        ESP_LOGE(TAG, "onewire_bus_reset() error: %s", esp_err_to_name(err));
+    }
+    return false;
+}

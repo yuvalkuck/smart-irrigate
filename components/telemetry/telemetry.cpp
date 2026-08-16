@@ -4,13 +4,40 @@
 #include "logger.h"
 #include "common_event.h"
 #include "esp_event.h"
-#include "diagnostics.h"
 #include "esp_adc/adc_oneshot.h"
 #include "sensor_sht4x.h"
 #include "sensor_bmp5xx.h"
 #include "gpio_declaraion.h"
+#include "driver/i2c_master.h"
+
+adc_oneshot_unit_handle_t adc_handle;
 // Define I2C pins for ESP32-C6
 #define TASK_DELAY     (1000*10)
+
+namespace Diagnostics {
+    enum class MaskStateOK : uint8_t {
+        NoValue = 0x00,
+        SHT41 = (1 << 0),
+        BMP581 = (1 << 1),
+        TSL2591 = (1 << 2),
+        DS18B20 = (1 << 3),
+        XDB401 = (1 << 4),
+        WindSpeed = (1 << 5),
+        All = SHT41 | BMP581 | TSL2591 | DS18B20 | XDB401 | WindSpeed
+    };
+    constexpr MaskStateOK operator|(MaskStateOK lhs, MaskStateOK rhs) {
+        return static_cast<MaskStateOK>(
+            static_cast<std::underlying_type_t<MaskStateOK>>(lhs) |
+            static_cast<std::underlying_type_t<MaskStateOK>>(rhs)
+        );
+    }
+
+    constexpr MaskStateOK& operator|=(MaskStateOK& lhs, MaskStateOK rhs) {
+        lhs = lhs | rhs;
+        return lhs;
+    }
+    // Declaration only: Tells the compiler this function exists globally
+}
 
 
 static const char* TAG = "Telemetry:";
@@ -38,7 +65,7 @@ static void i2c_scan(i2c_master_bus_handle_t bus) {
     }
     ESP_LOGI(TAG, "Scan complete.");
 }
-
+#define ONLINE_STATE(trg,clss,stat) trg |= clss.online(master_bus_handler) ? Diagnostics::MaskStateOK::stat : Diagnostics::MaskStateOK::NoValue
 esp_err_t init_telemetry() {
     METHODTRACE
     /***** init services ****/
@@ -47,6 +74,10 @@ esp_err_t init_telemetry() {
     ESP_ERROR_CHECK(i2c_new_master_bus(&master_bus_config, &master_bus_handler));
     // init I2C sensors
     i2c_scan(master_bus_handler);
+    Diagnostics::MaskStateOK state = Diagnostics::MaskStateOK::NoValue;
+    ONLINE_STATE(state,sensorSHT,SHT41);
+    ONLINE_STATE(state,sensorBMP,BMP581);
+
     auto rc = sensorSHT.init(master_bus_handler);
     if (rc != ESP_OK) {
         ESP_ERROR_CHECK(rc);
@@ -59,12 +90,6 @@ esp_err_t init_telemetry() {
         return rc;
     }
 
-
-    auto drc = Diagnostics::execute_operational_self_test(master_bus_handler);
-    if (drc != Diagnostics::MaskStateOK::NoValue) {
-        ESP_LOGE(TAG, "Failed in sensors diagnostic!");
-        return ESP_FAIL;
-    }
     return ESP_OK;
 }
 
