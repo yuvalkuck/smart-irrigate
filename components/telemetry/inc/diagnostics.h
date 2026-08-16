@@ -6,16 +6,15 @@
 #define IRRIGATE_DIAGNOSTICS_H
 #pragma once
 
-#include "driver/i2c_master.h"
-#include "esp_adc/adc_oneshot.h"
-#include <type_traits>
+#include <cstdint>
+
 
 // ====================================================================
 // HARDWARE DIAGNOSTIC BITMASK POSITIONS (C++17 Binary Assignments)
 // ====================================================================
 namespace Diagnostics {
     enum class MaskStateOK : uint8_t {
-        Reset = 0x00,
+        NoValue = 0x00,
         SHT41 = (1 << 0),
         BMP581 = (1 << 1),
         TSL2591 = (1 << 2),
@@ -29,6 +28,5 @@ namespace Diagnostics {
     constexpr MaskStateOK operator|(MaskStateOK lhs, MaskStateOK rhs);
 
     // Declaration only: Tells the compiler this function exists globally
-    MaskStateOK execute_operational_self_test(i2c_master_bus_handle_t i2c_bus) noexcept;
 }
 #endif //IRRIGATE_DIAGNOSTICS_H
