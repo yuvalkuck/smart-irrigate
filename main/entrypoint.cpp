@@ -18,6 +18,7 @@
 #include "esp_adc/adc_oneshot.h"
 #include "time.h"
 #include "gpio_declaraion.h"
+#include "onewire_bus.h"
 #if defined(ESP32S3_UART)
 #include "driver/uart.h"
 #endif
@@ -52,6 +53,7 @@ static std::array<gpio_num_t, CONFIG_DEVICE_MAX_VALVES> valve_gpio_pins{};
 // ====================================================================
 // INITIALIZATION METHOD
 // ====================================================================
+extern onewire_bus_handle_t onewire_bus_handle;
 static void init_gpio() {
     // === Status Indication ===
     gpio_reset_pin(GPIO_LED);
@@ -114,15 +116,17 @@ static void init_gpio() {
     }
 
     // === 4. 1-Wire Serial Interface (DS18B20 Soil Thermal) ===
-    gpio_reset_pin(GPIO_ONEWIRE_BUS);
-    const gpio_config_t onewire_conf = {
-        .pin_bit_mask = (1ULL << GPIO_ONEWIRE_BUS),
-        .mode = GPIO_MODE_INPUT_OUTPUT_OD,
-        .pull_up_en = GPIO_PULLUP_ENABLE, // Kept active as fallback logic under external 1.5k
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE
+    onewire_bus_config_t bus_config = {
+        .bus_gpio_num = GPIO_ONEWIRE_BUS,
+        .flags = {
+            .en_pull_up = true,   // matches your original GPIO_PULLUP_ENABLE fallback
+        },
     };
-    gpio_config(&onewire_conf);
+    onewire_bus_rmt_config_t rmt_config = {
+        .max_rx_bytes = 10,
+    };
+
+    ESP_ERROR_CHECK(onewire_new_bus_rmt(&bus_config, &rmt_config, &onewire_bus_handle));
 }
 
 extern adc_oneshot_unit_handle_t adc_handle;
