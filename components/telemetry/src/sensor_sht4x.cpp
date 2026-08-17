@@ -4,9 +4,9 @@
 static sht4x_handle_t sht41_handle{};
 static sht4x_config_t sht41_config = {
     .i2c_address = I2C_SHT4X_DEV_ADDR_LO,
-    .i2c_clock_speed = I2C_SHT4X_DEV_CLK_SPD,
+    .i2c_clock_speed = 100000,
     .repeat_mode = SHT4X_REPEAT_HIGH,
-    .heater_mode = SHT4X_HEATER_OFF
+    .heater_mode = SHT4X_HEATER_OFF,
 };
 static const char* TAG = "SHT4x:";
 
@@ -31,5 +31,6 @@ bool SensorSHT4x::read(TelemetryData& data) {
 }
 
 bool SensorSHT4x::online(i2c_master_bus_handle_t bus) {
+    METHODTRACE
     return (i2c_master_probe(bus, I2C_SHT4X_DEV_ADDR_LO, pdMS_TO_TICKS(50)) == ESP_OK);
 }

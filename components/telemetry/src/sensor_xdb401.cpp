@@ -12,6 +12,7 @@ bool SensorXDB4xx::read(TelemetryData& data) {
     return false;
 }
 bool SensorXDB4xx::online(adc_oneshot_unit_handle_t bus) {
+    METHODTRACE
     int raw_adc_sample = 0;
     if (adc_oneshot_read(bus, ADC_CHANNEL_2, &raw_adc_sample) == ESP_OK) {
         if (raw_adc_sample > 150 && raw_adc_sample < 4000) {

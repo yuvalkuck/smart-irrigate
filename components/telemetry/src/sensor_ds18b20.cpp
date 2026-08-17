@@ -1,13 +1,15 @@
 //
 // Created by uv on 16/08/2026.
 //
-#include "ds18b20.h"
+
+
 #include "sensor_ds18b20.h"
+#include "ds18b20.h"
 #include "logger.h"
-onewire_bus_handle_t onewire_bus_handle;
-static const char* TAG = "DS18B20:";
-static ds18b20_device_handle_t dev_handle = NULL;
-#define DS18B20_FAMILIY_CODE 0x28
+static constexpr auto TAG = "DS18B20:";
+extern onewire_bus_handle_t onewire_bus_handle;
+static ds18b20_device_handle_t dev_handle = nullptr;
+#define DS18B20_FAMILY_CODE 0x28
 
 esp_err_t SensorDS18B20::init(onewire_bus_handle_t bus) {
     // find device configuration by scanning current connected devices
@@ -16,7 +18,7 @@ esp_err_t SensorDS18B20::init(onewire_bus_handle_t bus) {
     onewire_device_t dev;
     bool found = false;
     while (onewire_device_iter_get_next(iter, &dev) == ESP_OK) {
-        if ((uint8_t)(dev.address & 0xFF) == DS18B20_FAMILIY_CODE) {
+        if ((uint8_t)(dev.address & 0xFF) == DS18B20_FAMILY_CODE) {
             found = true;
             break;
         }

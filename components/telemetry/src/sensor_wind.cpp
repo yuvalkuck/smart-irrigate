@@ -13,6 +13,7 @@ bool SensorWind::read(TelemetryData& data) {
     return false;
 }
 bool SensorWind::online(adc_oneshot_unit_handle_t bus) {
+    METHODTRACE
     int raw_wind_sample = 0;
     if (adc_oneshot_read(bus, ADC_CHANNEL_3, &raw_wind_sample) == ESP_OK) {
         // Enforce boundary check to identify line shorts (close to 0) or floating/shorted inputs (close to max)
