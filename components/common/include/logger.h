@@ -23,7 +23,7 @@ public:
     }
 };
 #ifdef  _DEBUG
-#define METHODTRACE MethodTracer(__FUNCTION__,__FILE_NAME__,__LINE__,sizeof(__func__)-1);
+#define METHODTRACE MethodTracer(__FUNCTION__,__FILE_NAME__,__LINE__,sizeof(__FUNCTION__)-1);
 #define LOGTRACE(tag, ...) ESP_LOGI(tag, ##__VA_ARGS__);
 #else
 #define METHODTRACE

@@ -55,7 +55,7 @@ Command getPayloadCommand(std::vector<uint8_t> *payload) {
     return static_cast<Command>(cmd->command);
 }
 
-bool setConfiguration(const std::vector<uint8_t> *buff = createEmptyConfiguration()) {
+bool setConfiguration(const char *buff, uint16_t length) {
     const esp_partition_t* partition = esp_partition_find_first(
             ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, PARTITION_CONFIG_NAME
         );
@@ -65,17 +65,14 @@ bool setConfiguration(const std::vector<uint8_t> *buff = createEmptyConfiguratio
         return false;
     }
 
-    if (buff->size() > partition->size) {
-        ESP_LOGE(TAG, "Store failed: Data size exceeds partition size. %i > %i", buff->size(),partition->size);
+    if (length > partition->size) {
+        ESP_LOGE(TAG, "Store failed: Data size exceeds partition size. %i > %i", length,partition->size);
         return false;
     }
 
     // Flash memory must be erased before writing. 
     // Sector size on ESP32 is always 4096 bytes. Align erase size up to 4KB.
-    size_t erase_size = (buff->size() + 4095) & ~4095;
-    
-    ESP_LOGI(TAG, "Erasing %d bytes...", erase_size);
-    esp_err_t err = esp_partition_erase_range(partition, 0, erase_size);
+    esp_err_t err = esp_partition_erase_range(partition, 0, 4096);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Erase failed: %s", esp_err_to_name(err));
         return false;
@@ -83,7 +80,7 @@ bool setConfiguration(const std::vector<uint8_t> *buff = createEmptyConfiguratio
 
     // Write the raw data to the physical offset 0 of the partition
     ESP_LOGI(TAG, "Writing data to flash...");
-    err = esp_partition_write(partition, 0, buff, buff->size());
+    err = esp_partition_write(partition, 0, buff, length);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Write failed: %s", esp_err_to_name(err));
         return false;

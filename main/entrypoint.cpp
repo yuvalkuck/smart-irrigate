@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <array>
 #include <string_view>
 #include <charconv>
@@ -7,7 +6,7 @@
 #include "telemetry.h"
 #include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
-#include "esp_log.h"
+#include "logger.h"
 #include "esp_event.h"
 #include "flash.h"
 #include "hwifi.h"
@@ -23,7 +22,7 @@
 #include "driver/uart.h"
 #endif
 
-static const char* TAG = "App:";
+static constexpr auto TAG = "App:";
 
 void init_event_app_handle();
 
@@ -48,7 +47,7 @@ void continue_after_time_sync_cb(struct timeval* tv) {
 
 // Flexible Valve Pin Mapping Structure
 // Instantiates size allocation from Kconfig dynamic targets
-static std::array<gpio_num_t, CONFIG_DEVICE_MAX_VALVES> valve_gpio_pins{};
+std::array<gpio_num_t, CONFIG_DEVICE_MAX_VALVES> valve_gpio_pins{};
 
 // ====================================================================
 // INITIALIZATION METHOD
@@ -162,7 +161,7 @@ static void init_s3_uart_link() {
     };
 
     // Install the driver using the defined port configuration
-    ESP_ERROR_CHECK(uart_driver_install(S3_LINK_UART_PORT, S3_LINK_UART_BUFF * 2, 0, 0, NULL, 0));
+    ESP_ERROR_CHECK(uart_driver_install(S3_LINK_UART_PORT, S3_LINK_UART_BUFF * 2, 0, 0, nullptr, 0));
     ESP_ERROR_CHECK(uart_param_config(S3_LINK_UART_PORT, &uart_config));
 
     // Route the hardware matrix signals directly to your specific safe macro pins
@@ -171,9 +170,7 @@ static void init_s3_uart_link() {
 #endif
 
 extern "C" [[noreturn]] void app_main(void) {
-    ESP_LOGI(TAG, "setting up");
-    ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
-
+    METHODTRACE
     init_gpio();
     init_adc();
 #if defined(ESP32S3_UART)
