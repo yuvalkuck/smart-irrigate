@@ -32,5 +32,5 @@ bool SensorSHT4x::read(TelemetryData& data) {
 
 bool SensorSHT4x::online(i2c_master_bus_handle_t bus) {
     METHODTRACE
-    return (i2c_master_probe(bus, I2C_SHT4X_DEV_ADDR_LO, pdMS_TO_TICKS(50)) == ESP_OK);
+    return (i2c_master_probe(bus, I2C_SHT4X_DEV_ADDR_LO, pdMS_TO_TICKS(200)) == ESP_OK);
 }
