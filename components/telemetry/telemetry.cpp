@@ -129,9 +129,9 @@ void start_telemetry() {
         cbTelemetryTask,
         "TelemetryTask",
         4096,
-        NULL,
+        nullptr,
         5,
-        NULL
+        nullptr
     );
 
     if (result != pdPASS) {
