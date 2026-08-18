@@ -34,8 +34,12 @@ concept SensorOneWire = requires(T instance, onewire_bus_handle_t bus) {
     { instance.online(bus) } -> std::same_as<bool>;
 };
 
+class AbstractSensor {
+    protected:
+       bool initialized_ = false;
+};
 template <typename Derived>
-class AbstractSensorI2C {
+class AbstractSensorI2C : public AbstractSensor {
     public:
     explicit AbstractSensorI2C() {
         static_assert(SensorConcept<Derived>,
@@ -45,7 +49,7 @@ class AbstractSensorI2C {
     }
 };
 template <typename Derived>
-class AbstractSensorADC {
+class AbstractSensorADC : public AbstractSensor {
     public:
     explicit AbstractSensorADC() {
         static_assert(SensorConcept<Derived>,
@@ -57,7 +61,7 @@ class AbstractSensorADC {
 
 
 template <typename Derived>
-class AbstractSensorOneWire {
+class AbstractSensorOneWire : public AbstractSensor {
     public:
     explicit AbstractSensorOneWire() {
         static_assert(SensorConcept<Derived>,

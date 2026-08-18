@@ -2,7 +2,6 @@
 // Created by uv on 16/08/2026.
 //
 
-
 #include "sensor_ds18b20.h"
 #include "ds18b20.h"
 #include "logger.h"
@@ -33,7 +32,7 @@ esp_err_t SensorDS18B20::init(onewire_bus_handle_t bus) {
         return ESP_ERR_NOT_FOUND;
     }
 
-    ds18b20_config_t ds_cfg = {};  // defaults are fine
+    ds18b20_config_t ds_cfg = {}; // defaults are fine
     esp_err_t err = ds18b20_new_device_from_bus(bus, &ds_cfg, &dev_handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "ds18b20_new_device() failed: %s", esp_err_to_name(err));
@@ -44,9 +43,12 @@ esp_err_t SensorDS18B20::init(onewire_bus_handle_t bus) {
     ds18b20_set_resolution(dev_handle, DS18B20_RESOLUTION_12B);
 
     ESP_LOGI(TAG, "DS18B20 initialized, ROM 0x%016" PRIX64, dev.address);
+    initialized_ = true;
     return ESP_OK;
 }
+
 bool SensorDS18B20::read(TelemetryData& data) {
+    if (!initialized_) { return false; }
     esp_err_t err = ds18b20_trigger_temperature_conversion(dev_handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "conversion trigger failed: %s", esp_err_to_name(err));
@@ -55,11 +57,13 @@ bool SensorDS18B20::read(TelemetryData& data) {
 
     err = ds18b20_get_temperature(dev_handle, &data.soile_temperature);
     if (err == ESP_OK) {
+        ESP_LOGI(TAG, "Soil Temperature:%.02f",data.soile_temperature);
         return true;
     }
     ESP_LOGE(TAG, "temperature read failed: %s", esp_err_to_name(err));
     return false;
 }
+
 bool SensorDS18B20::online(onewire_bus_handle_t bus) {
     METHODTRACE
     auto err = onewire_bus_reset(bus);
@@ -71,7 +75,7 @@ bool SensorDS18B20::online(onewire_bus_handle_t bus) {
 
     if (err == ESP_ERR_NOT_FOUND) {
         ESP_LOGW(TAG, "DS18B20 offline -- no presence pulse. Check power, "
-                       "wiring, and pull-up resistor.");
+                 "wiring, and pull-up resistor.");
     } else {
         ESP_LOGE(TAG, "onewire_bus_reset() error: %s", esp_err_to_name(err));
     }

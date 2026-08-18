@@ -22,7 +22,7 @@ struct TelemetryData {
     float humidity;       //!< relative humidity in %
     float pressure;
     float soile_temperature;
-    float light_level;
+    float solar_level;
     float wind_speed;
 };
 

@@ -79,8 +79,8 @@ static void i2c_scan(i2c_master_bus_handle_t bus) {
 #define ONLINE_STATE(trg,hand,clss,stat) trg |= clss.online(hand) ? Diagnostics::MaskStateOK::stat : Diagnostics::MaskStateOK::NoValue
 #define INIT_SENSOR(hand,obj,stat)    if ( state == (state | Diagnostics::MaskStateOK::stat)) { \
     auto rc = obj.init(hand);  \
-    if (rc != ESP_OK) { ESP_LOGE(TAG, "Sensor Init Failed: %s (%s)", # stat, esp_err_to_name(rc)); return rc;} \
-} else {ESP_LOGE(TAG, "Sensor Offline: %s", # stat); return ESP_FAIL; }
+    if (rc != ESP_OK) { ESP_LOGE(TAG, "Sensor Init Failed: %s (%s)", # stat, esp_err_to_name(rc));} \
+} else {ESP_LOGE(TAG, "Sensor Offline: %s", # stat); }
 
 
 esp_err_t init_telemetry() {
@@ -104,7 +104,7 @@ esp_err_t init_telemetry() {
     INIT_SENSOR(master_bus_handler,sensorSHT,SHT41)
     INIT_SENSOR(master_bus_handler,sensorBMP,BMP581)
     // INIT_SENSOR(master_bus_handler,sensorTSL25xx,TSL2591) - Disable until driver will be available
-    INIT_SENSOR(onewire_bus_handle,sensorDS18B20,DS18B20)
+    // INIT_SENSOR(onewire_bus_handle,sensorDS18B20,DS18B20)
     INIT_SENSOR(adc_handle,sensorXDB4xx,XDB401)
     INIT_SENSOR(adc_handle,sensorWind,WindSpeed)
 

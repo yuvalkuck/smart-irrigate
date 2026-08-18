@@ -22,6 +22,7 @@ esp_err_t SensorTSL25xx::init(i2c_master_bus_handle_t master_bus_handler) {
     return ESP_FAIL;
 }
 bool SensorTSL25xx::read(TelemetryData& data) {
+    if (!initialized_) {return false;}
     return false;
 }
 bool SensorTSL25xx::online(i2c_master_bus_handle_t bus) {

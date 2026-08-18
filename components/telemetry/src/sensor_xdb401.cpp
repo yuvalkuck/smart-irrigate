@@ -34,6 +34,7 @@ esp_err_t SensorXDB4xx::init(adc_oneshot_unit_handle_t bus) {
     if (rc != ESP_OK) {
         return rc;
     }
+    initialized_ = true;
     return ESP_OK;
 }
 
@@ -55,6 +56,7 @@ esp_err_t SensorXDB4xx::init(adc_oneshot_unit_handle_t bus) {
 const constexpr float divider_ratio = XDB401_DIV_R2_OHM / (XDB401_DIV_R1_OHM + XDB401_DIV_R2_OHM); // = 0.625
 
 bool SensorXDB4xx::read(TelemetryData& data) {
+    if (!initialized_) {return false;}
     int raw_value = 0;
     ESP_ERROR_CHECK(adc_oneshot_read(bus_handle, XDB401_ADC_CHANNEL, &raw_value));
 
@@ -68,7 +70,8 @@ bool SensorXDB4xx::read(TelemetryData& data) {
     if (sensor_mv > XDB401_V_MAX_MV) { sensor_mv = XDB401_V_MAX_MV; }
 
     // Convert sensor voltage to pressure
-    data.pressure = ((sensor_mv - XDB401_V_MIN_MV) / (XDB401_V_MAX_MV - XDB401_V_MIN_MV)) * XDB401_P_MAX_MPA;
+    data.soile_temperature = ((sensor_mv - XDB401_V_MIN_MV) / (XDB401_V_MAX_MV - XDB401_V_MIN_MV)) * XDB401_P_MAX_MPA;
+    ESP_LOGI(TAG, "Soile Temperature: %.02f",data.soile_temperature);
     return true;
 }
 
@@ -78,7 +81,7 @@ bool SensorXDB4xx::online(adc_oneshot_unit_handle_t bus) {
     if (adc_oneshot_read(bus, ADC_CHANNEL_2, &raw_adc_sample) == ESP_OK) {
         return true;
     } else {
-        ESP_LOGE(TAG, "  [FAIL] ADC tracking core rejected sample processing.");
+        ESP_LOGE(TAG, "ADC tracking core rejected sample processing.");
     }
     return false;
 }

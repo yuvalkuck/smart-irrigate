@@ -32,6 +32,7 @@ esp_err_t SensorWind::init(adc_oneshot_unit_handle_t bus) {
     if (rc != ESP_OK) {
         return rc;
     }
+    initialized_ = true;
     return ESP_OK;
 }
 
@@ -47,6 +48,7 @@ esp_err_t SensorWind::init(adc_oneshot_unit_handle_t bus) {
 
 const constexpr float divider_ratio = WIND_DIV_R2_OHM / (WIND_DIV_R1_OHM + WIND_DIV_R2_OHM); // = 0.625
 bool SensorWind::read(TelemetryData& data) {
+    if (!initialized_) {return false;}
     int raw_value = 0;
     if (adc_oneshot_read(bus_handle, WIND_ADC_CHANNEL, &raw_value) != ESP_OK) {
         ESP_LOGE(TAG, "ADC read failed");
@@ -66,6 +68,7 @@ bool SensorWind::read(TelemetryData& data) {
     if (sensor_mv > WIND_V_MAX_MV) { sensor_mv = WIND_V_MAX_MV; }
 
     data.wind_speed = ((sensor_mv - WIND_V_MIN_MV) / (WIND_V_MAX_MV - WIND_V_MIN_MV)) * WIND_SPEED_MAX_MS;
+    ESP_LOGI(TAG, "Wind Speed:%.02f",data.wind_speed);
     return true;
 }
 
