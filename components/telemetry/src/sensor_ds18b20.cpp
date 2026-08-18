@@ -17,7 +17,10 @@ esp_err_t SensorDS18B20::init(onewire_bus_handle_t bus) {
     ESP_ERROR_CHECK(onewire_new_device_iter(bus, &iter));
     onewire_device_t dev;
     bool found = false;
-    while (onewire_device_iter_get_next(iter, &dev) == ESP_OK) {
+    esp_err_t rc;
+    // ESP_ERR_NOT_FOUND is how the driver signals "search complete", not a fault.
+    while ((rc = onewire_device_iter_get_next(iter, &dev)) == ESP_OK) {
+        ESP_LOGD(TAG, "device add: 0x%016" PRIX64, dev.address);
         if ((uint8_t)(dev.address & 0xFF) == DS18B20_FAMILY_CODE) {
             found = true;
             break;

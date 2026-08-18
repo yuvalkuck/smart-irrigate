@@ -23,10 +23,10 @@ namespace Diagnostics {
         NoValue = 0x00,
         SHT41 = (1 << 0),
         BMP581 = (1 << 1),
-        TSL2591 = (1 << 2),
-        DS18B20 = (1 << 3),
-        XDB401 = (1 << 4),
-        WindSpeed = (1 << 5),
+        DS18B20 = (1 << 2),
+        XDB401 = (1 << 3),
+        WindSpeed = (1 << 4),
+        TSL2591 = (1 << 5),
         All = SHT41 | BMP581 | TSL2591 | DS18B20 | XDB401 | WindSpeed
     };
 
@@ -79,7 +79,7 @@ static void i2c_scan(i2c_master_bus_handle_t bus) {
 #define ONLINE_STATE(trg,hand,clss,stat) trg |= clss.online(hand) ? Diagnostics::MaskStateOK::stat : Diagnostics::MaskStateOK::NoValue
 #define INIT_SENSOR(hand,obj,stat)    if ( state == (state | Diagnostics::MaskStateOK::stat)) { \
     auto rc = obj.init(hand);  \
-    if (rc != ESP_OK) { ESP_ERROR_CHECK(rc); return rc;} \
+    if (rc != ESP_OK) { ESP_LOGE(TAG, "Sensor Init Failed: %s (%s)", # stat, esp_err_to_name(rc)); return rc;} \
 } else {ESP_LOGE(TAG, "Sensor Offline: %s", # stat); return ESP_FAIL; }
 
 
