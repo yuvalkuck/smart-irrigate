@@ -201,23 +201,25 @@ extern "C" [[noreturn]] void app_main(void) {
             ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
         } else {
             ESP_LOGI(TAG, "Start Regular Load");
-            init_event_app_handle();
-            init_telemetry();
-
-            init_wifi_sta();
-            // // 6. Start Wi-Fi
-            start_wifi();
-            // SNTP
-            char buff[128] = {0};
-            if (hCfg.getStr(CFG_NVS_KEY_NTP_SERVER, buff, sizeof(buff))) {
-                init_sntp(buff, continue_after_time_sync_cb);
+            if ( ESP_OK == init_telemetry()) {
+                init_event_app_handle();
+                init_wifi_sta();
+                // // 6. Start Wi-Fi
+                start_wifi();
+                // SNTP
+                char buff[128] = {0};
+                if (hCfg.getStr(CFG_NVS_KEY_NTP_SERVER, buff, sizeof(buff))) {
+                    init_sntp(buff, continue_after_time_sync_cb);
+                } else {
+                    ESP_LOGE(TAG, "failed to get NTP server url from flash");
+                }
+                // MQTT
+                init_hmqtt();
+                start_sntp();
+                start_telemetry();
             } else {
-                ESP_LOGE(TAG, "failed to get NTP server url from flash");
+                initRegular = false;
             }
-            // MQTT
-            init_hmqtt();
-            start_sntp();
-            start_telemetry();
         }
     }
     ESP_LOGI(TAG, "working stage");

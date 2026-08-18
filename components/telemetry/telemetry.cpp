@@ -19,7 +19,7 @@
 #define TASK_DELAY     (1000*10)
 
 namespace Diagnostics {
-    enum class MaskStateOK : uint8_t {
+    enum MaskStateOK {
         NoValue = 0x00,
         SHT41 = (1 << 0),
         BMP581 = (1 << 1),
@@ -76,8 +76,12 @@ static void i2c_scan(i2c_master_bus_handle_t bus) {
     ESP_LOGI(TAG, "Scan complete.");
 }
 
-
 #define ONLINE_STATE(trg,hand,clss,stat) trg |= clss.online(hand) ? Diagnostics::MaskStateOK::stat : Diagnostics::MaskStateOK::NoValue
+#define INIT_SENSOR(hand,obj,stat)    if ( state == (state | Diagnostics::MaskStateOK::stat)) { \
+    auto rc = obj.init(hand);  \
+    if (rc != ESP_OK) { ESP_ERROR_CHECK(rc); return rc;} \
+} else {ESP_LOGE(TAG, "Sensor Offline: %s", # stat); return ESP_FAIL; }
+
 
 esp_err_t init_telemetry() {
     METHODTRACE
@@ -88,26 +92,21 @@ esp_err_t init_telemetry() {
     // init I2C sensors
     i2c_scan(master_bus_handler);
     Diagnostics::MaskStateOK state = Diagnostics::MaskStateOK::NoValue;
-    ONLINE_STATE(state,master_bus_handler, sensorSHT, SHT41);
-    ONLINE_STATE(state,master_bus_handler, sensorBMP, BMP581);
-    // Disable until driver will be available
-    // ONLINE_STATE(state,master_bus_handler, sensorBMP, TSL2591);
+    ONLINE_STATE(state, master_bus_handler, sensorSHT, SHT41);
+    ONLINE_STATE(state, master_bus_handler, sensorBMP, BMP581);
+    // ONLINE_STATE(state,master_bus_handler, sensorTSL25xx, TSL2591); - Disable until driver will be available
     ONLINE_STATE(state, onewire_bus_handle, sensorDS18B20, DS18B20);
-    ONLINE_STATE(state, adc_handle, sensorWind, XDB401);
-    ONLINE_STATE(state, adc_handle, sensorXDB4xx, BMP581);
+    ONLINE_STATE(state, adc_handle, sensorXDB4xx, XDB401);
+    ONLINE_STATE(state, adc_handle, sensorWind, WindSpeed);
     const std::bitset<6> pr = static_cast<uint8_t>(state);
-    ESP_LOGI(TAG, "Sensors Online:%s",pr.to_string().c_str());
-    auto rc = sensorSHT.init(master_bus_handler);
-    if (rc != ESP_OK) {
-        ESP_ERROR_CHECK(rc);
-        return rc;
-    }
-
-    rc = sensorBMP.init(master_bus_handler);
-    if (rc != ESP_OK) {
-        ESP_ERROR_CHECK(rc);
-        return rc;
-    }
+    ESP_LOGI(TAG, "Sensors Online:%s", pr.to_string().c_str());
+    //-----------------------------
+    INIT_SENSOR(master_bus_handler,sensorSHT,SHT41)
+    INIT_SENSOR(master_bus_handler,sensorBMP,BMP581)
+    // INIT_SENSOR(master_bus_handler,sensorTSL25xx,TSL2591) - Disable until driver will be available
+    INIT_SENSOR(onewire_bus_handle,sensorDS18B20,DS18B20)
+    INIT_SENSOR(adc_handle,sensorXDB4xx,XDB401)
+    INIT_SENSOR(adc_handle,sensorWind,WindSpeed)
 
     return ESP_OK;
 }
@@ -118,6 +117,9 @@ esp_err_t init_telemetry() {
     while (1) {
         sensorSHT.read(telemetryPayload);
         sensorBMP.read(telemetryPayload);
+        sensorXDB4xx.read(telemetryPayload);
+        sensorDS18B20.read(telemetryPayload);
+        sensorWind.read(telemetryPayload);
         esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_UPDATED_SENSOR, &event, event.length(), portMAX_DELAY);
         vTaskDelay(pdMS_TO_TICKS(TASK_DELAY));
     }
