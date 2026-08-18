@@ -9,9 +9,34 @@
 ### System Tiers
 Smart Irrigate is designed to operate as a three-tier system, from a fully autonomous single unit up to a fleet managed by a central control server:
 * **Standalone Irrigation Computer:** The ESP32-C6 unit described above can run entirely on its own. It accepts a configuration (valve schedules, environmental baselines, thresholds) pushed from a phone app during provisioning or from a server over MQTT, and independently drives the valve relays according to that configuration and its own sensor readings — no continuous connection to a backend is required for it to keep irrigating correctly.
-* **Companion AI Module (ESP32-S3):** A second, chained ESP32-S3 module collects the microclimate and water-supply data streamed by the irrigation computer and runs local AI/ML inference to adapt the irrigation configuration to observed and forecast weather conditions. This module augments a single standalone unit; it does not require the central server to function.
+* **Companion AI Module (ESP32-S3):** A second, chained ESP32-S3 module collects the microclimate and water-supply data streamed by the irrigation computer and runs local AI/ML inference to adapt the irrigation configuration to observed and forecast weather conditions. Inference always runs standalone on the ESP32-S3 itself — it does not require the central server to function. The model it runs, however, is trained offline on an external server, using telemetry collected from the station together with free historical data pulled from existing meteorological services; the trained model is then pushed down to the ESP32-S3 for local inference.
 * **Central Control Server:** A backend service capable of managing a fleet of many standalone irrigation computers simultaneously. It ingests each unit's microclimate telemetry, status, and irrigation event history over MQTT, and can push updated configurations to any unit. It also coordinates with each unit's companion AI module, updating the AI's plan when broader, cross-site or historical data (e.g. regional weather trends) warrants a change beyond what the local AI module alone would decide.
   * It is possible to use only a single device with central control server. 
+
+```mermaid
+graph TD
+    Phone[Phone App]
+    Server[Central Control Server<br/>trains AI model]
+    MetSvc[External Meteorological Services<br/>free historical data]
+
+    subgraph Site["Irrigation Site (one of many)"]
+        IC[Standalone Irrigation Computer<br/>ESP32-C6]
+        AI[Companion AI Module<br/>ESP32-S3<br/>always-local inference]
+        Valves[Relay-Controlled Water Valves]
+        Sensors[Microclimate & Water-Supply Sensors]
+
+        Sensors -- readings --> IC
+        IC -- drives --> Valves
+        IC -- microclimate & water-supply data --> AI
+        AI -- adapted configuration --> IC
+    end
+
+    Phone -- provisioning / configuration --> IC
+    Server -- configuration / commands --> IC
+    IC -- telemetry, status, event history --> Server
+    MetSvc -- historical weather data --> Server
+    Server -- trained model update --> AI
+```
    
 ### Setup & Operational Mode 
 The software architecture leverages ESP-IDF 6.0 optimizations—such as the memory-efficient **Picolibc standard library**—to run proactive edge-logic routines. Smart Irrigate transitions between two software-controlled lifecycles evaluated at boot time:
