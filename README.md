@@ -70,61 +70,18 @@ The device natively manages a matrix of **6 independent physical water valves**,
 
 ### 4.1 Hardware Pin Configurations
 The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time variables defined via Kconfig:
-* **System Boot Switch:** **GPIO 17**. Configured as a digital input relying on internal pull-up resistors. A logical `LOW` reading recorded during the power-on sequence intercepts standard execution loops to force execution into Configuration Mode.
+* **System Boot Switch:** **GPIO 23**. Configured as a digital input relying on internal pull-up resistors. A logical `LOW` reading recorded during the power-on sequence intercepts standard execution loops to force execution into Configuration Mode.
 * **Shared I2C Bus:** **GPIO 19 (SDA)** and **GPIO 20 (SCL)**. This digital serial bus multiplexes data extraction lines from the local environment sensors.
   * *SHT41 Sensor:* Provides precision ambient temperature and relative humidity parameters via fixed I2C signaling.
   * *BMP581 Sensor:* Transmits targeted barometric pressure metrics and ambient temperature data.
   * *TSL2591 Sensor:* Measures high-resolution visible and infrared light spectrum intensities to calculate real-time solar irradiance load.
   * *Note:* All three sensors function on the exact same physical GPIO 19 and 20 paths, utilizing unique factory hardware address layers to prevent data line collisions.
-* **1-Wire Serial Interface:** **GPIO 18**. Configured as an open-drain bidirectional digital line with a dedicated external pull-up resistor.
+* **1-Wire Serial Interface:** **GPIO 4**. Configured as an open-drain bidirectional digital line with a dedicated external pull-up resistor.
   * *DS18B20 Sensor:* Provides high-accuracy underground soil thermal parameters using the precision timing 1-Wire protocol.
 * **Analog Interface Architecture:** The system uses two independent analog input channels to gather real-time data from physical equipment.
   * *XDB401 Pressure Transmitter (GPIO 2):* Interfaced directly to the primary analog channel. It records real-time water line pressure values, using hardware conditioning to scale raw output signals down to fit within safe internal limits.(ADC1_CH2)
   * *Analog Wind Speed Sensor (GPIO 3):* Interfaced directly to the secondary analog channel. Because the sensor outputs a 0–5V range, an external voltage divider circuit steps the incoming voltage down to a safe, readable level. The software maps this reading back to the true 0.0–30.0 meters per second wind speed curve.(ADC1_CH3)
-
----
-rewire
----
-### 1. System Boot Switch
-* **Pin:** `GPIO 23`
-* **Wiring:**
-  * Switch connects between `GPIO 23` and `GND`.
-  * Connect a **10kΩ resistor** from `GPIO 23` to `3.3V` (External Pull-Up).
-
-#### 2. I2C Bus: SHT41, BMP581, TSL2591
-* **Pins:** `GPIO 19` (SDA) & `GPIO 20` (SCL)
-* **Wiring:**
-  * Connect all sensor SDA wires to `GPIO 19`.
-  * Connect all sensor SCL wires to `GPIO 20`.
-  * Connect sensor power pins to `3.3V` and grounds to `GND`.
-
-#### 3. DS18B20 10m Soil Sensor
-* **Pin:** `GPIO 4` *(Changed to avoid conflicts with UART0 TX / serial debug line)*
-* **Wiring:**
-  * Sensor **VDD/Power** wire ➡️ External **5V Power**.
-  * Sensor **GND** wire ➡️ Board **GND**.
-  * Sensor **DQ/Data** wire ➡️ **100Ω resistor** ➡️ `GPIO 4`.
-  * **Pull-up:** Connect a **1.5kΩ resistor** between `GPIO 4` and `3.3V`.
-
-#### 4. XDB401 Pressure
-* **Pin:** `GPIO 2` (ADC1_CH2)
-* **Wiring:**
-  * Connect the scaled signal output (**0V–3.3V max**) directly to `GPIO 2`.
-
-#### 5. Wind Speed Sensor
-* **Pin:** `GPIO 3` (ADC1_CH3)
-* **Wiring:**
-  * Sensor 0–5V Output ➡️ **10kΩ resistor** ➡️ `GPIO 3`.
-  * `GPIO 3` ➡️ **15kΩ resistor** ➡️ **GND**.
-
-#### 6. Inter-Chip Link (ESP32-S3 Connection)
-* **Pins:** `GPIO 6` (TX) & `GPIO 7` (RX)
-* **Wiring:**
-  * Connect FireBeetle 2 `GPIO 6` to the **RX pin** of the ESP32-S3.
-  * Connect FireBeetle 2 `GPIO 7` to the **TX pin** of the ESP32-S3.
-  * Connect FireBeetle 2 `GND` directly to ESP32-S3 `GND`.
-
-
+* **Inter-Chip Link (ESP32-S3 Connection):** **GPIO 6 (TX)** and **GPIO 7 (RX)**. A UART link connecting the FireBeetle 2 to a companion ESP32-S3 module, with GPIO 6 wired to the ESP32-S3's RX pin and GPIO 7 to its TX pin.
 
 ### 4.2 Network & Protocol Configurations
 The network architecture is configured natively under the revised ESP-IDF 6.0 components using the following specifications:
