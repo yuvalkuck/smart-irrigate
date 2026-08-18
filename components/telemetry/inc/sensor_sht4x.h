@@ -4,14 +4,11 @@
 
 #ifndef SMART_IRRIGATE_SHT4X_SENSOR_H
 #define SMART_IRRIGATE_SHT4X_SENSOR_H
-#include "esp_err.h"
-#include "driver/i2c_types.h"
-
-struct TelemetryData;
-class SensorSHT4x {
+#include "sensor_concept.h"
+class SensorSHT4x : public AbstractSensorI2C<SensorSHT4x> {
     public:
-    SensorSHT4x() = default;
     esp_err_t init(i2c_master_bus_handle_t);
     bool read(TelemetryData &);
+    bool online(i2c_master_bus_handle_t);
 };
 #endif //SMART_IRRIGATE_SHT4X_SENSOR_H

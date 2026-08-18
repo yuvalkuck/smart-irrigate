@@ -147,10 +147,12 @@ esp_err_t SensorBMP5xx::init(i2c_master_bus_handle_t master_bus_handler) {
     if (rc != BMP5_OK) {
         ESP_LOGE(TAG, "bmp5_set_power_mode failed");
     }
+    initialized_ = true;
     return rc;
 }
 
 bool SensorBMP5xx::read(TelemetryData& data) {
+    if (!initialized_) {return false;}
     bmp5_sensor_data prob = {};
     auto rc = bmp5_get_sensor_data(&prob, &osr_odr_cfg, &bmp5_sensor);
     if (rc == BMP5_OK) {
@@ -159,4 +161,9 @@ bool SensorBMP5xx::read(TelemetryData& data) {
         return true;
     }
     return false;
+}
+
+bool SensorBMP5xx::online(i2c_master_bus_handle_t bus) {
+    METHODTRACE
+    return (i2c_master_probe(bus, BMP5_I2C_ADDR_SEC, pdMS_TO_TICKS(200)) == ESP_OK);
 }

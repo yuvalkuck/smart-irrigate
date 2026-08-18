@@ -1,6 +1,8 @@
 #ifndef FLASH_H
 #define FLASH_H
 
+#include <array>
+
 #include "esp_err.h"
 #if !defined(nvs_handle_t)
 typedef uint32_t nvs_handle_t;

@@ -3,18 +3,19 @@
 #include <protocol.h>
 #include <common_event.h>
 #include "flash.h"
-static const char* TAG = "AppEvent:";
+#include <array>
+static constexpr auto TAG = "AppEvent:";
 ESP_EVENT_DEFINE_BASE(COMMON_BASE_EVENTS);
-static char uniqueName[33] = {0};
+static std::array<char, 33> uniqueName;
+
 static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base, int32_t event_id, void* event_data) {
     ESP_LOGV(TAG, "%s", __func__);
     if (event_base == COMMON_BASE_EVENTS) {
-        time_t timestamp = time(nullptr);
         auto event = static_cast<EventData*>(event_data);
         switch (event_id) {
             case COMMON_EVENT_UPDATED_SENSOR: {
                 ESP_LOGV(TAG, "COMMON_EVENT_UPDATED_SENSOR");
-                auto payload = static_cast<float*>(event->data);
+                auto payload = static_cast<TelemetryData*>(event->data);
                 char send[128];
                 /** record:
                  * - unix timestamp in hex
@@ -25,15 +26,21 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
                  * - Presher (Fix 1)
                  * - Global radition (Fix 1)
                  **/
-                snprintf(send, sizeof(send), "0x%llx|%s|%.1f|0.0|%.1f|0.0|0.0",timestamp,uniqueName, payload[0], payload[1]);
+                snprintf(send, sizeof(send), "0x%llx|%s|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f",
+                         time(nullptr), uniqueName.data(),
+                         payload->air_temperature,
+                         payload->soile_temperature,
+                         payload->humidity,
+                         payload->pressure,
+                         payload->solar_level,
+                         payload->wind_speed
+                );
                 mqtt_publish("/client/telemetry", send);
             }
             break;
             case COMMON_EVENT_ACCEPT_SERVER_CONFIGURATION: {
                 ESP_LOGV(TAG, "COMMON_EVENT_ACCEPT_SERVER_CONFIGURATION");
-                auto segment = static_cast<uint8_t*>(event->data);
-                const std::vector<uint8_t> data(segment, segment + event->size);
-                if (!setConfiguration(&data)) {
+                if (!setConfiguration(static_cast<const char*>(event->data), event->size)) {
                     ESP_LOGE(TAG, "Failed to set configuration");
                 }
             }
@@ -46,15 +53,16 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
 
 void init_event_app_handle() {
     NvsConfig nvs;
-    nvs.getStr(CFG_NVS_KEY_DEVICE_UNIQUE,uniqueName,sizeof(uniqueName));
-    if ( strlen(uniqueName) < 1 ) {
-        memmove(uniqueName, "<NA>", 4);
+    nvs.getStr(CFG_NVS_KEY_DEVICE_UNIQUE, uniqueName.data(), uniqueName.size());
+    if (uniqueName[0] == 0) {
+        memmove(uniqueName.data(), "<NA>", 4);
+        memset(uniqueName.data() + 4, 0, uniqueName.size() - 4);
     }
     esp_event_handler_instance_register(
         COMMON_BASE_EVENTS,
         ESP_EVENT_ANY_ID,
         &cbCommonEventHandler,
-        NULL,
-        NULL
+        nullptr,
+        nullptr
     );
 }
