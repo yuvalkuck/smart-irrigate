@@ -83,8 +83,24 @@ static void init_gpio() {
             int pin_num = 0;
             auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), pin_num);
             if (ec == std::errc{}) {
-                valve_gpio_pins[parsed_valve_count] = static_cast<gpio_num_t>(pin_num);
-                parsed_valve_count++;
+                static constexpr gpio_num_t reserved_pins[] = {
+                    GPIO_LED, GPIO_CONFIG_MODE_PIN, GPIO_ONEWIRE_BUS, GPIO_WIND_EXPANSION,
+                    I2C_SDA_PIN, I2C_SCL_PIN
+                };
+                bool reserved = false;
+                for (auto reserved_pin : reserved_pins) {
+                    if (pin_num == reserved_pin) {
+                        reserved = true;
+                        break;
+                    }
+                }
+                if (reserved) {
+                    ESP_LOGE(TAG, "DYNAMIC_VALVE_GPIO_LIST: GPIO%d is reserved for another peripheral, skipping",
+                             pin_num);
+                } else {
+                    valve_gpio_pins[parsed_valve_count] = static_cast<gpio_num_t>(pin_num);
+                    parsed_valve_count++;
+                }
             }
         }
 
@@ -209,13 +225,19 @@ extern "C" [[noreturn]] void app_main(void) {
                 // SNTP
                 char buff[128] = {0};
                 if (hCfg.getStr(CFG_NVS_KEY_NTP_SERVER, buff, sizeof(buff))) {
-                    init_sntp(buff, continue_after_time_sync_cb);
+                    if ( init_sntp(buff, continue_after_time_sync_cb) != ESP_OK) {
+                        ESP_LOGE(TAG, "failed to init sntp");
+                    } else {
+                        if ( start_sntp() != ESP_OK) {
+                            ESP_LOGE(TAG, "failed to start sntp");
+                        }
+                    }
                 } else {
                     ESP_LOGE(TAG, "failed to get NTP server url from flash");
                 }
                 // MQTT
                 init_hmqtt();
-                start_sntp();
+
                 start_telemetry();
             } else {
                 initRegular = false;
