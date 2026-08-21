@@ -58,10 +58,16 @@ const constexpr float divider_ratio = XDB401_DIV_R2_OHM / (XDB401_DIV_R1_OHM + X
 bool SensorXDB4xx::read(TelemetryData& data) {
     if (!initialized_) {return false;}
     int raw_value = 0;
-    ESP_ERROR_CHECK(adc_oneshot_read(bus_handle, XDB401_ADC_CHANNEL, &raw_value));
+    if (adc_oneshot_read(bus_handle, XDB401_ADC_CHANNEL, &raw_value) != ESP_OK) {
+        ESP_LOGE(TAG, "ADC read failed");
+        return false;
+    }
 
     int voltage_mv = 0;
-    ESP_ERROR_CHECK(adc_cali_raw_to_voltage(dev_handle, raw_value, &voltage_mv));
+    if (adc_cali_raw_to_voltage(dev_handle, raw_value, &voltage_mv) != ESP_OK) {
+        ESP_LOGE(TAG, "ADC calibration conversion failed");
+        return false;
+    }
 
     float sensor_mv = (float)voltage_mv / divider_ratio;
 
@@ -70,8 +76,8 @@ bool SensorXDB4xx::read(TelemetryData& data) {
     if (sensor_mv > XDB401_V_MAX_MV) { sensor_mv = XDB401_V_MAX_MV; }
 
     // Convert sensor voltage to pressure
-    data.soile_temperature = ((sensor_mv - XDB401_V_MIN_MV) / (XDB401_V_MAX_MV - XDB401_V_MIN_MV)) * XDB401_P_MAX_MPA;
-    ESP_LOGI(TAG, "Soile Temperature: %.02f",data.soile_temperature);
+    data.water_pressure = ((sensor_mv - XDB401_V_MIN_MV) / (XDB401_V_MAX_MV - XDB401_V_MIN_MV)) * XDB401_P_MAX_MPA;
+    ESP_LOGI(TAG, "Water Pressure: %.02f",data.water_pressure);
     return true;
 }
 

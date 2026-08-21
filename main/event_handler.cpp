@@ -25,15 +25,17 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
                  * - humidity % (Fix 1)
                  * - Presher (Fix 1)
                  * - Global radition (Fix 1)
+                 * - Water line pressure MPa (Fix 1)
                  **/
-                snprintf(send, sizeof(send), "0x%llx|%s|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f",
+                snprintf(send, sizeof(send), "0x%llx|%s|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f",
                          time(nullptr), uniqueName.data(),
                          payload->air_temperature,
                          payload->soile_temperature,
                          payload->humidity,
                          payload->pressure,
                          payload->solar_level,
-                         payload->wind_speed
+                         payload->wind_speed,
+                         payload->water_pressure
                 );
                 mqtt_publish("/client/telemetry", send);
             }
