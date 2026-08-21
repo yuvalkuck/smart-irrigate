@@ -77,13 +77,18 @@ static esp_err_t post_handler(httpd_req_t* req) {
     // interface is mostly send config key and process it
     while (remaining > 0) {
         // Read the incoming data stream safely
-        if ((ret = httpd_req_recv(req, buf, MIN(remaining, sizeof(buf)))) <= 0) {
+        if ((ret = httpd_req_recv(req, buf, MIN(remaining, sizeof(buf) - 1))) <= 0) {
             if (ret == HTTPD_SOCK_ERR_TIMEOUT) continue;
             return ESP_FAIL;
         }
         remaining -= ret;
+        buf[ret] = '\0';
         auto key = buf;
         auto value = strchr(buf, '=');
+        if (value == nullptr) {
+            ESP_LOGW(TAG, "malformed body chunk, missing '='");
+            continue;
+        }
 
         *value = 0; value++;
         ESP_LOGI(TAG, "accept: %s=%s", key, value);

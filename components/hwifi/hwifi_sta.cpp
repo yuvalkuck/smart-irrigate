@@ -38,14 +38,6 @@ void init_wifi_sta() {
     wifi_init_config_t wifiInitCfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&wifiInitCfg));
 
-    // Register Event Handlers
-
-    // MQTT_EVENT_ANY = -1
-    ESP_ERROR_CHECK(
-        esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifiEventHandlerSTA, NULL, NULL));
-    ESP_ERROR_CHECK(
-        esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifiEventHandlerSTA, NULL, NULL));
-
     // 5. Configure Station Mode
     NvsConfig hCfg;
     wifi_config_t wifi_config = {};
@@ -62,6 +54,12 @@ void start_wifi() {
     // event group must be decalre because use int the event handler
     wifiEventGroup = xEventGroupCreate();
     configASSERT(wifiEventGroup);
+
+    // Register Event Handlers
+    ESP_ERROR_CHECK(
+        esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifiEventHandlerSTA, nullptr, nullptr));
+    ESP_ERROR_CHECK(
+        esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifiEventHandlerSTA, nullptr, nullptr));
 
     // Wait until connection is established
     xEventGroupWaitBits(wifiEventGroup, BIT0, pdFALSE, pdFALSE, portMAX_DELAY);

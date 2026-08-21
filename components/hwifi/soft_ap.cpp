@@ -20,13 +20,11 @@ static void wifiEventHandlerSoftAP(void* arg, esp_event_base_t event_base,
                                    int32_t event_id, void* event_data) {
     METHODTRACE
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_AP_STACONNECTED) {
-        esp_wifi_connect(); // Start connection once driver is ready
         server_instance = start_webserver();
     }
     else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_AP_STADISCONNECTED) {
         httpd_stop(server_instance);
-        esp_wifi_connect(); // Retry connection if dropped
-        ESP_LOGI(TAG, "Retrying connection to AP...");
+        ESP_LOGI(TAG, "Station disconnected from AP.");
     }
 }
 
