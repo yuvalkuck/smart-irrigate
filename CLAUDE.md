@@ -8,9 +8,9 @@ Smart Irrigate is an ESP-IDF (v6.0) firmware project for an **ESP32-C6** (FireBe
 controller. It monitors ambient/soil sensors, computes irrigation demand from macro-environmental
 data (rather than local soil-moisture probes), and drives up to 6 relay-controlled water valves. It
 talks to the outside world via MQTT (telemetry out / commands in) and is provisioned over a
-temporary SoftAP + raw TCP server. See `README.md` for the full design rationale (evapotranspiration
-model, hydraulic zero-pressure handling, valve scheduling) and `doc/stractures.md` / `doc/FUTURE.md`
-for the wire protocol design (current vs. planned).
+temporary SoftAP + HTTP server. See `README.md` for the full design rationale (evapotranspiration
+model, hydraulic zero-pressure handling, valve scheduling) and `doc/stractures.md` for the
+currently-implemented wire protocol design.
 
 ## Build
 
@@ -47,8 +47,9 @@ option — pins are compiled in.
 
 Fixed (non-Kconfig) pin assignments live in `components/common/include/gpio_declaraion.h`
 (status LED, config-mode boot switch, 1-Wire bus, I2C SDA/SCL) — cross-check against the wiring
-tables in `README.md` §4.1 before touching hardware, since the README documents a pin *rewire* that
-supersedes the original table (e.g. config switch moved to GPIO 23, DS18B20 to GPIO 4).
+table in the README's "Hardware Pin Configurations" section before touching hardware, since it
+documents a pin *rewire* that supersedes the original table (e.g. config switch moved to GPIO 23,
+DS18B20 to GPIO 4).
 
 ## Host-side test tooling (not firmware)
 
@@ -85,10 +86,10 @@ flashing, and observing serial logs / MQTT traffic.
 speed channels) first, then branches on `GPIO_CONFIG_MODE_PIN` (GPIO 23) read at boot **and** whether
 Wi-Fi credentials exist in NVS:
 
-- **Configuration Mode** (button held low at boot, or no stored Wi-Fi SSID): starts a SoftAP +
-  webserver/TCP listener (`components/hwifi/soft_ap.cpp`, `ap_webserver.cpp`) so a companion app can
-  push Wi-Fi/MQTT credentials into the `setup` NVS partition. No sensors/MQTT are started in this
-  mode.
+- **Configuration Mode** (button held low at boot, or no stored Wi-Fi SSID): starts a SoftAP + HTTP
+  server (`components/hwifi/soft_ap.cpp`, `ap_webserver.cpp`, built on ESP-IDF's `esp_http_server`)
+  so a companion app can push Wi-Fi/MQTT credentials into the `setup` NVS partition. No sensors/MQTT
+  are started in this mode.
 - **Operational Mode**: registers the app event handler, brings up telemetry, connects Wi-Fi STA,
   starts SNTP (MQTT is only started from the SNTP time-sync callback,
   `continue_after_time_sync_cb`, so the device has a valid clock before it publishes/subscribes),
@@ -122,9 +123,8 @@ generally flows `main → {flash, hwifi, hmqtt, hsntp, telemetry, protocol} → 
   (`getPayloadCommand`, `setConfiguration`, `getConfiguration`). Structs are `#pragma pack`ed and
   guarded with `#if !defined(TESTER)` so the same headers compile both on-device and in the host
   `test/genpaylaod` tool. **The wire format here is actively evolving** — `doc/stractures.md`
-  documents the currently-implemented `Command`/`Configuration` layout; `doc/FUTURE.md` is a design
-  scratchpad for the next revision (start/stop commands, repeat rules, environment-conditioned
-  triggers) and is not yet implemented — don't treat it as current behavior.
+  documents the currently-implemented `Command`/`Configuration` layout; treat anything not reflected
+  there as not yet implemented.
 - **`bmp5api`** — vendored Bosch BMP5xx sensor API (upstream driver, avoid modifying — see its own
   `README.md`/`LICENSE` under `components/bmp5api/1.5.0/`).
 
