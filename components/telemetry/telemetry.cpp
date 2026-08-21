@@ -112,7 +112,7 @@ esp_err_t init_telemetry() {
 }
 
 [[noreturn]] static void cbTelemetryTask(void*) {
-    TelemetryData telemetryPayload = {0};
+    TelemetryData telemetryPayload = {};
     EventData event = {sizeof(TelemetryData), &telemetryPayload};
     while (1) {
         sensorSHT.read(telemetryPayload);

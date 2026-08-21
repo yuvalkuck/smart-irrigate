@@ -7,6 +7,6 @@ idf_component_register(SRCS "telemetry.cpp"
 )
 SET(CMAKE_C_STANDARD 99)
 SET(CMAKE_C_STANDARD_REQUIRED ON)
-target_compile_options(${COMPONENT_LIB} PRIVATE -std=gnu++20 -fno-exceptions -fno-rtti)
+target_compile_options(${COMPONENT_LIB} PRIVATE -std=gnu++20 -fno-exceptions -fno-rtti -Wno-missing-field-initializers)
 
 # "src/sensor_tsl2591.cpp" # tsl2591
