@@ -104,7 +104,7 @@ esp_err_t init_telemetry() {
     INIT_SENSOR(master_bus_handler,sensorSHT,SHT41)
     INIT_SENSOR(master_bus_handler,sensorBMP,BMP581)
     // INIT_SENSOR(master_bus_handler,sensorTSL25xx,TSL2591) - Disable until driver will be available
-    // INIT_SENSOR(onewire_bus_handle,sensorDS18B20,DS18B20)
+    INIT_SENSOR(onewire_bus_handle,sensorDS18B20,DS18B20)
     INIT_SENSOR(adc_handle,sensorXDB4xx,XDB401)
     INIT_SENSOR(adc_handle,sensorWind,WindSpeed)
 
@@ -112,7 +112,7 @@ esp_err_t init_telemetry() {
 }
 
 [[noreturn]] static void cbTelemetryTask(void*) {
-    TelemetryData telemetryPayload = {0};
+    TelemetryData telemetryPayload = {};
     EventData event = {sizeof(TelemetryData), &telemetryPayload};
     while (1) {
         sensorSHT.read(telemetryPayload);

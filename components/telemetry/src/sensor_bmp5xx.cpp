@@ -156,8 +156,8 @@ bool SensorBMP5xx::read(TelemetryData& data) {
     bmp5_sensor_data prob = {};
     auto rc = bmp5_get_sensor_data(&prob, &osr_odr_cfg, &bmp5_sensor);
     if (rc == BMP5_OK) {
-        ESP_LOGI(TAG, "Pressure: %.2f Pa | Temp: %.2f °C\n", prob.pressure, prob.temperature);
-        data.pressure = prob.pressure;
+        LOGTRACE(TAG, "Pressure: %.2f Pa | Temp: %.2f °C not used", prob.pressure, prob.temperature);
+        data.air_pressure = prob.pressure;
         return true;
     }
     return false;

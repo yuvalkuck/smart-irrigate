@@ -18,9 +18,10 @@ struct EventData {
 };
 
 struct TelemetryData {
-    float air_temperature;    //!< temperature in degree C
-    float humidity;       //!< relative humidity in %
-    float pressure;
+    float air_temperature;
+    float air_humidity;
+    float air_pressure;
+    float water_pressure;
     float soile_temperature;
     float solar_level;
     float wind_speed;

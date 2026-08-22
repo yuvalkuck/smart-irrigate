@@ -20,20 +20,21 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
                 /** record:
                  * - unix timestamp in hex
                  * - station uniqeName
-                 * - temperature C (Fix 1)
-                 * - Groud Temperature C (Fix 1)
-                 * - humidity % (Fix 1)
-                 * - Presher (Fix 1)
-                 * - Global radition (Fix 1)
+                 * - air temperature C (Fix 1)
+                 * - air humidity % (Fix 1)
+                 * - air pressure (Fix 1)
+                 * - soile temperature C (Fix 1)
+                 * - wind speed (Fix 1)
+                 * - solar level (Fix 1)
                  **/
                 snprintf(send, sizeof(send), "0x%llx|%s|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f",
                          time(nullptr), uniqueName.data(),
                          payload->air_temperature,
+                         payload->air_humidity,
+                         payload->air_pressure,
                          payload->soile_temperature,
-                         payload->humidity,
-                         payload->pressure,
-                         payload->solar_level,
-                         payload->wind_speed
+                         payload->wind_speed,
+                         payload->solar_level
                 );
                 mqtt_publish("/client/telemetry", send);
             }

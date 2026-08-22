@@ -68,7 +68,7 @@ bool SensorWind::read(TelemetryData& data) {
     if (sensor_mv > WIND_V_MAX_MV) { sensor_mv = WIND_V_MAX_MV; }
 
     data.wind_speed = ((sensor_mv - WIND_V_MIN_MV) / (WIND_V_MAX_MV - WIND_V_MIN_MV)) * WIND_SPEED_MAX_MS;
-    ESP_LOGI(TAG, "Wind Speed:%.02f",data.wind_speed);
+    LOGTRACE(TAG, "Wind Speed:%.02f",data.wind_speed);
     return true;
 }
 

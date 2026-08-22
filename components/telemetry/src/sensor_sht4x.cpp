@@ -23,10 +23,10 @@ esp_err_t SensorSHT4x::init(i2c_master_bus_handle_t master_bus_handler) {
 
 bool SensorSHT4x::read(TelemetryData& data) {
     if (!initialized_) {return false;}
-    auto res = sht4x_get_measurement(sht41_handle, &data.air_temperature, &data.humidity);
+    auto res = sht4x_get_measurement(sht41_handle, &data.air_temperature, &data.air_humidity);
     if (res == ESP_OK) {
-        ESP_LOGI(TAG, "Temperature: %.2f °C | Humidity: %.2f %%", data.air_temperature,
-                 data.humidity);
+        LOGTRACE(TAG, "Temperature: %.2f °C | Humidity: %.2f %%", data.air_temperature,
+                 data.air_humidity);
         return true;
     }
     return false;

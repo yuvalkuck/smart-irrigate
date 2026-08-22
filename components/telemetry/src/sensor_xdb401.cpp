@@ -70,8 +70,8 @@ bool SensorXDB4xx::read(TelemetryData& data) {
     if (sensor_mv > XDB401_V_MAX_MV) { sensor_mv = XDB401_V_MAX_MV; }
 
     // Convert sensor voltage to pressure
-    data.soile_temperature = ((sensor_mv - XDB401_V_MIN_MV) / (XDB401_V_MAX_MV - XDB401_V_MIN_MV)) * XDB401_P_MAX_MPA;
-    ESP_LOGI(TAG, "Soile Temperature: %.02f",data.soile_temperature);
+    data.water_pressure = ((sensor_mv - XDB401_V_MIN_MV) / (XDB401_V_MAX_MV - XDB401_V_MIN_MV)) * XDB401_P_MAX_MPA;
+    LOGTRACE(TAG, "Water Pressure : %.02f",data.water_pressure);
     return true;
 }
 

@@ -11,6 +11,7 @@ static ds18b20_device_handle_t dev_handle = nullptr;
 #define DS18B20_FAMILY_CODE 0x28
 
 esp_err_t SensorDS18B20::init(onewire_bus_handle_t bus) {
+    METHODTRACE
     // find device configuration by scanning current connected devices
     onewire_device_iter_handle_t iter = nullptr;
     ESP_ERROR_CHECK(onewire_new_device_iter(bus, &iter));
@@ -18,8 +19,8 @@ esp_err_t SensorDS18B20::init(onewire_bus_handle_t bus) {
     bool found = false;
     esp_err_t rc;
     // ESP_ERR_NOT_FOUND is how the driver signals "search complete", not a fault.
-    while ((rc = onewire_device_iter_get_next(iter, &dev)) == ESP_OK) {
-        ESP_LOGD(TAG, "device add: 0x%016" PRIX64, dev.address);
+    while (onewire_device_iter_get_next(iter, &dev) == ESP_OK) {
+        LOGTRACE(TAG, "device add: 0x%016" PRIX64, dev.address);
         if ((uint8_t)(dev.address & 0xFF) == DS18B20_FAMILY_CODE) {
             found = true;
             break;
@@ -42,7 +43,7 @@ esp_err_t SensorDS18B20::init(onewire_bus_handle_t bus) {
     // Optional: set resolution (9-12 bit, default is usually 12-bit)
     ds18b20_set_resolution(dev_handle, DS18B20_RESOLUTION_12B);
 
-    ESP_LOGI(TAG, "DS18B20 initialized, ROM 0x%016" PRIX64, dev.address);
+    LOGTRACE(TAG, "initialized, ROM 0x%016" PRIX64, dev.address);
     initialized_ = true;
     return ESP_OK;
 }
@@ -57,10 +58,10 @@ bool SensorDS18B20::read(TelemetryData& data) {
 
     err = ds18b20_get_temperature(dev_handle, &data.soile_temperature);
     if (err == ESP_OK) {
-        ESP_LOGI(TAG, "Soil Temperature:%.02f",data.soile_temperature);
+        LOGTRACE(TAG, "Soil Temperature:%.02f",data.soile_temperature);
         return true;
     }
-    ESP_LOGE(TAG, "temperature read failed: %s", esp_err_to_name(err));
+    ESP_LOGE(TAG, "soil temperature read failed: %s", esp_err_to_name(err));
     return false;
 }
 
