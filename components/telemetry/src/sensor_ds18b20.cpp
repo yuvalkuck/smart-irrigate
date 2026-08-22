@@ -13,20 +13,30 @@ static ds18b20_device_handle_t dev_handle = nullptr;
 esp_err_t SensorDS18B20::init(onewire_bus_handle_t bus) {
     METHODTRACE
     // find device configuration by scanning current connected devices
-    onewire_device_iter_handle_t iter = nullptr;
-    ESP_ERROR_CHECK(onewire_new_device_iter(bus, &iter));
+    constexpr int kMaxScanRetries = 5;
     onewire_device_t dev;
     bool found = false;
-    esp_err_t rc;
-    // ESP_ERR_NOT_FOUND is how the driver signals "search complete", not a fault.
-    while (onewire_device_iter_get_next(iter, &dev) == ESP_OK) {
-        LOGTRACE(TAG, "device add: 0x%016" PRIX64, dev.address);
-        if ((uint8_t)(dev.address & 0xFF) == DS18B20_FAMILY_CODE) {
-            found = true;
-            break;
+    esp_err_t rc = ESP_OK;
+    for (int attempt = 1; !found && attempt <= kMaxScanRetries; attempt++) {
+        onewire_device_iter_handle_t iter = nullptr;
+        ESP_ERROR_CHECK(onewire_new_device_iter(bus, &iter));
+        // ESP_ERR_NOT_FOUND is how the driver signals "search complete", not a fault.
+        // ESP_ERR_INVALID_CRC means bus noise corrupted a bit mid-search (the long
+        // 1-Wire run is noise-prone, see GPIO_ONEWIRE_BUS comment) -- retry the scan
+        // rather than treating it the same as "no device present".
+        while ((rc = onewire_device_iter_get_next(iter, &dev)) == ESP_OK) {
+            LOGTRACE(TAG, "device add: 0x%016" PRIX64, dev.address);
+            if ((uint8_t)(dev.address & 0xFF) == DS18B20_FAMILY_CODE) {
+                found = true;
+                break;
+            }
+        }
+        onewire_del_device_iter(iter);
+
+        if (rc == ESP_ERR_INVALID_CRC) {
+            ESP_LOGW(TAG, "ROM search CRC error (attempt %d/%d), retrying", attempt, kMaxScanRetries);
         }
     }
-    onewire_del_device_iter(iter);
 
     if (!found) {
         ESP_LOGE(TAG, "No DS18B20 found on bus");
