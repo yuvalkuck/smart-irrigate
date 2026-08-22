@@ -8,10 +8,10 @@ menu "Device Scale Configuration"
 
     config DYNAMIC_VALVE_GPIO_LIST
             string "Comma-separated list of Valve GPIOs"
-            default "4,5,6,7,8,9"
+            default "10,11,14,16,17,18"
             help
                 Enter a comma-separated list of exactly 6 GPIO pin numbers for your valves.
-                Example: "4,5,6,7,8,9" or "2,4,12,13,14,15". No spaces allowed.
+                Example: "14,16,17,18,21,22". No spaces allowed.
 
     config DEVICE_MAX_VALVE_CONFIG
         int "Maximum single valve setups"
