@@ -17,7 +17,7 @@ httpd_handle_t start_webserver() {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 
     // Memory optimizations for ESP-IDF 6.x
-    config.stack_size = 3072; // Down from 4096 (minimum safe stack)
+    config.stack_size = 4096; // Down from 4096 (minimum safe stack)
     config.max_open_sockets = 2; // Down from 7 (limits concurrent clients)
     config.max_uri_handlers = 4; // Allocate only what you need
     config.recv_wait_timeout = 2; // Low timeout frees sockets faster
@@ -32,11 +32,11 @@ httpd_handle_t start_webserver() {
     return NULL;
 }
 
+const static auto *noUserInterface = R"(<html><header/><body>NoUserInterface</body></html>)";
 // 1. Define the GET Handler Function
 static esp_err_t get_rootpage(httpd_req_t* req) {
     METHODTRACE
-    httpd_resp_send(req, R"(<html><header/><body>NoUserInterface</body></html>)",
-                    HTTPD_RESP_USE_STRLEN);
+    httpd_resp_send(req, noUserInterface, sizeof(noUserInterface));
     return ESP_OK;
 }
 static esp_err_t get_command_restart(httpd_req_t* req) {
