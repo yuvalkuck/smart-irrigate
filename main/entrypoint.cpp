@@ -24,10 +24,10 @@
 #endif
 enum blinkPattern_t {
     AllGood = 0,
-    Error = 1,
-    SetupMode = 2
+    SetupMode = 1,
+    Error = 2,
 };
-const uint16_t blinkPattern[] = {1000,200,100};
+const uint16_t blinkPattern[] = {1000,300,100};
 static constexpr auto TAG = "App:";
 
 void init_event_app_handle();
