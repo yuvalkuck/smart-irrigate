@@ -1,4 +1,5 @@
 # IrrigateConnect
+* Code build by ClodeCode
 
 Android companion app for the Smart Irrigate controller. When the device is in
 Configuration Mode it starts a SoftAP + local HTTP API; IrrigateConnect connects to that AP and
