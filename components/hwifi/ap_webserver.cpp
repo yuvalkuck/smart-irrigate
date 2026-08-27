@@ -8,6 +8,8 @@
 #include <logger.h>
 #include <fmt/core.h>
 
+#include "default_initiate.h"
+
 static const char* TAG = "WebServer";
 #include <esp_http_server.h>
 static void register_routes(httpd_handle_t server);
@@ -23,22 +25,31 @@ httpd_handle_t start_webserver() {
     config.recv_wait_timeout = 2; // Low timeout frees sockets faster
     config.send_wait_timeout = 2;
 
-    httpd_handle_t server = NULL;
+    httpd_handle_t server = nullptr;
     if (httpd_start(&server, &config) == ESP_OK) {
         register_routes(server);
         // Register URI handlers here
         return server;
     }
-    return NULL;
+    return nullptr;
 }
 
-const static auto *noUserInterface = R"(<html><header/><body>NoUserInterface</body></html>)";
+
 // 1. Define the GET Handler Function
 static esp_err_t get_rootpage(httpd_req_t* req) {
     METHODTRACE
-    httpd_resp_send(req, noUserInterface, sizeof(noUserInterface));
     return ESP_OK;
 }
+static esp_err_t get_version_handler(httpd_req_t* req) {
+    METHODTRACE
+    char payload[1024] = {0};
+    fmt::format_to_n(payload, sizeof(payload), R"({{"{}"="{}","{}"="{}"}})",
+                         "device", CONST_PROJECT_VERSION,
+                         "esp-idf", esp_get_idf_version());
+    httpd_resp_send(req, payload, HTTPD_RESP_USE_STRLEN);
+    return ESP_OK;
+}
+
 static esp_err_t get_command_restart(httpd_req_t* req) {
     METHODTRACE
     esp_restart();
@@ -130,6 +141,16 @@ static void register_routes(httpd_handle_t server) {
         };
         httpd_register_uri_handler(server, &get_uri);
     }
+    {
+        httpd_uri_t get_uri = {
+            .uri = "/api",
+            .method = HTTP_GET,
+            .handler = get_version_handler,
+            .user_ctx = NULL
+        };
+        httpd_register_uri_handler(server, &get_uri);
+    }
+
     {
         httpd_uri_t get_uri = {
             .uri = "/api/restart",

@@ -7,6 +7,7 @@ IF ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 ENDIF ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(smart-irrigate
+        VERSION 1.0.0.0
         LANGUAGES C CXX
 )
 SET(INITIATE_WIFI_SSID "$ENV{INITIATE_WIFI_SSID}")

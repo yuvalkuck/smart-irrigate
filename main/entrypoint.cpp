@@ -18,6 +18,7 @@
 #include "time.h"
 #include "gpio_declaraion.h"
 #include "onewire_bus.h"
+#include "esp_idf_version.h"
 #if defined(ESP32S3_UART)
 #include "driver/uart.h"
 #endif
