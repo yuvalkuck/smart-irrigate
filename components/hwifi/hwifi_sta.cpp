@@ -54,16 +54,27 @@ void init_wifi_sta() {
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
 }
-
-void start_wifi() {
-    METHODTRACE
-    // 6. Start Wi-Fi
-    ESP_ERROR_CHECK(esp_wifi_start());
+static void vEventResponderTask(void *arg) {
     // event group must be decalre because use int the event handler
     wifiEventGroup = xEventGroupCreate();
     configASSERT(wifiEventGroup);
 
     // Wait until connection is established
     xEventGroupWaitBits(wifiEventGroup, BIT0, pdFALSE, pdFALSE, portMAX_DELAY);
+}
+void start_wifi() {
+    METHODTRACE
+    // 6. Start Wi-Fi
+    ESP_ERROR_CHECK(esp_wifi_start());
+    xTaskCreate(
+                vEventResponderTask,     // Task function
+                "EventResponder",        // Task name
+                2048,                    // Stack size (bytes/words depending on MCU)
+                nullptr,                    // Task parameters
+                tskIDLE_PRIORITY + 1,    // Task priority
+                nullptr                     // Task handle
+            );
+
     ESP_LOGI(TAG, "WiFi setup complete.");
 }
+
