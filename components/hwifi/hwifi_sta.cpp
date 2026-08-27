@@ -21,7 +21,7 @@ static void wifiEventHandlerSTA(void* arg, esp_event_base_t event_base,
         ESP_LOGI(TAG, "Retrying connection to AP...");
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        ip_event_got_ip_t* event = (ip_event_got_ip_t*)event_data;
+        auto* event = (ip_event_got_ip_t*)event_data;
         ESP_LOGI(TAG, "Connected! IP: " IPSTR, IP2STR(&event->ip_info.ip));
         xEventGroupSetBits(wifiEventGroup, BIT0);
     }

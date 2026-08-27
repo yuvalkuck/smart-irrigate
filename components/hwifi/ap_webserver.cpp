@@ -70,27 +70,46 @@ static esp_err_t get_status_handler(httpd_req_t* req) {
 }
 
 // 2. Define the POST Handler Function
+// Body is an ini-style payload: optional "[section]" header lines (ignored)
+// followed by "key=value" lines, e.g.:
+//   [setup]
+//   wifi_ssid=MySSID
+//   wifi_password=secret
 static esp_err_t post_handler(httpd_req_t* req) {
     METHODTRACE
-    char buf[256]; // Keep small to save stack memory
-    int ret, remaining = req->content_len;
-    // interface is mostly send config key and process it
-    while (remaining > 0) {
-        // Read the incoming data stream safely
-        if ((ret = httpd_req_recv(req, buf, MIN(remaining, (int)sizeof(buf) - 1))) <= 0) {
+    int remaining = req->content_len;
+    ESP_LOGI(TAG, "content_len: %d", remaining);
+    if (remaining <= 0 || remaining >= 1024) {
+        return ESP_FAIL;
+    }
+
+    char body[1024];
+    int received = 0;
+    while (received < remaining) {
+        int ret = httpd_req_recv(req, body + received, remaining - received);
+        if (ret <= 0) {
             if (ret == HTTPD_SOCK_ERR_TIMEOUT) continue;
             return ESP_FAIL;
         }
-        remaining -= ret;
-        buf[ret] = 0;
-        auto key = buf;
-        auto value = strchr(buf, '=');
-        if (!value) continue;
+        received += ret;
+    }
+    body[received] = 0;
 
+    NvsConfig hCfg;
+    char* saveptr = nullptr;
+    char* line = strtok_r(body, "\r\n", &saveptr);
+    while (line) {
+        if (line[0] != '[') {
+            auto value = strchr(line, '=');
+        if (!value) {
+                ESP_LOGW(TAG, "no '=' in line: %s", line);
+            } else {
         *value = 0; value++;
-        ESP_LOGI(TAG, "accept: %s=%s", key, value);
-        NvsConfig hCfg;
-        hCfg.setStr(key, value);
+                ESP_LOGI(TAG, "accept: %s=%s", line, value);
+                hCfg.setStr(line, value);
+            }
+        }
+        line = strtok_r(nullptr, "\r\n", &saveptr);
     }
 
     httpd_resp_send_chunk(req, NULL, 0); // End response
