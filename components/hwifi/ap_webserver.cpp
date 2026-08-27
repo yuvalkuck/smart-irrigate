@@ -133,7 +133,7 @@ static void register_routes(httpd_handle_t server) {
     {
         httpd_uri_t get_uri = {
             .uri = "/api/restart",
-            .method = HTTP_GET,
+            .method = HTTP_POST,
             .handler = get_command_restart,
             .user_ctx = NULL
         };
