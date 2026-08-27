@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,16 +16,26 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,14 +72,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             IrrigateConnectTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MainScreen(modifier = Modifier.padding(innerPadding))
-                }
+                MainScreen()
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(modifier: Modifier = Modifier) {
     val host = BuildConfig.DEVICE_HOST
@@ -75,10 +86,14 @@ fun MainScreen(modifier: Modifier = Modifier) {
     var fields by remember { mutableStateOf<List<ConfigField>>(emptyList()) }
     // Baseline snapshot from the device, used to detect which fields the user has edited.
     var baseline by remember { mutableStateOf<Map<String, ConfigValue>>(emptyMap()) }
+    // Static device details from /api (firmware/esp-idf version, ...), shown read-only.
+    var deviceInfo by remember { mutableStateOf<List<ConfigField>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
     var statusMessage by remember { mutableStateOf<String?>(null) }
     var isError by remember { mutableStateOf(false) }
     var restartOnApply by remember { mutableStateOf(true) }
+    var menuExpanded by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
 
@@ -151,64 +166,152 @@ fun MainScreen(modifier: Modifier = Modifier) {
         fields = fields.map { if (it.key == key) it.copy(value = newValue) else it }
     }
 
+    fun fetchDeviceInfo() {
+        scope.launch {
+            try {
+                deviceInfo = DeviceApi.fetchInfo(baseUrl()).toConfigFields()
+            } catch (e: Exception) {
+                // Best-effort: device details are a nice-to-have, don't surface an error for this.
+            }
+        }
+    }
+
     // Probe the device once on launch; if it's not reachable we just fall back to the button.
-    LaunchedEffect(Unit) { connect(silent = true) }
+    LaunchedEffect(Unit) {
+        connect(silent = true)
+        fetchDeviceInfo()
+    }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        item {
-            Text("Device connection", style = MaterialTheme.typography.titleMedium)
-        }
-        item {
-            Text("$host:$port", style = MaterialTheme.typography.bodyLarge)
-        }
-        item {
-            Button(onClick = { connect() }, enabled = !isLoading) {
-                Text(if (fields.isEmpty()) "connect to device" else "Refresh")
-            }
-        }
-
-        if (fields.isNotEmpty()) {
-            item { HorizontalDivider() }
-            item { Text("Settings", style = MaterialTheme.typography.titleMedium) }
-            items(fields, key = { it.key }) { field ->
-                ConfigFieldRow(
-                    field = field,
-                    isModified = baseline[field.key] != field.value,
-                    onValueChange = { updateField(field.key, it) },
-                )
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text("IrrigateConnect") },
+                actions = {
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false },
+                        ) {
+                            // TODO: add "Settings" here once there's device-wide config to expose.
+                            DropdownMenuItem(
+                                text = { Text("About") },
+                                onClick = {
+                                    menuExpanded = false
+                                    showAboutDialog = true
+                                },
+                            )
+                        }
+                    }
+                },
+            )
+        },
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            item {
+                Text("Device connection", style = MaterialTheme.typography.titleMedium)
             }
             item {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(
-                        checked = restartOnApply,
-                        onCheckedChange = { restartOnApply = it },
+                Text("$host:$port", style = MaterialTheme.typography.bodyLarge)
+            }
+            item {
+                Button(onClick = { connect() }, enabled = !isLoading) {
+                    Text(if (fields.isEmpty()) "connect to device" else "Refresh")
+                }
+            }
+
+            if (fields.isNotEmpty()) {
+                item { HorizontalDivider() }
+                item { Text("Settings", style = MaterialTheme.typography.titleMedium) }
+                items(fields, key = { it.key }) { field ->
+                    ConfigFieldRow(
+                        field = field,
+                        isModified = baseline[field.key] != field.value,
+                        onValueChange = { updateField(field.key, it) },
                     )
-                    Text("Restart device on apply")
+                }
+                item {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = restartOnApply,
+                            onCheckedChange = { restartOnApply = it },
+                        )
+                        Text("Restart device on apply")
+                    }
+                }
+                item {
+                    Button(onClick = { set() }, enabled = !isLoading) {
+                        Text("Apply")
+                    }
                 }
             }
-            item {
-                Button(onClick = { set() }, enabled = !isLoading) {
-                    Text("Apply")
-                }
-            }
-        }
 
-        item {
-            if (isLoading) {
-                CircularProgressIndicator()
-            }
-            statusMessage?.let {
-                Text(
-                    it,
-                    color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                )
+            item {
+                if (isLoading) {
+                    CircularProgressIndicator()
+                }
+                statusMessage?.let {
+                    Text(
+                        it,
+                        color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                    )
+                }
             }
         }
+    }
+
+    if (showAboutDialog) {
+        AboutDialog(deviceInfo = deviceInfo, onDismiss = { showAboutDialog = false })
+    }
+}
+
+@Composable
+private fun AboutDialog(deviceInfo: List<ConfigField>, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("About") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                DeviceInfoRow(ConfigField("app", ConfigValue.Text("${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")))
+                if (deviceInfo.isEmpty()) {
+                    Text("No device details available.")
+                } else {
+                    deviceInfo.forEach { field -> DeviceInfoRow(field) }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Close") }
+        },
+    )
+}
+
+/** Read-only row for a static device detail (e.g. firmware/esp-idf version) reported by /api. */
+@Composable
+private fun DeviceInfoRow(field: ConfigField) {
+    val value = when (val v = field.value) {
+        is ConfigValue.Text -> v.value
+        is ConfigValue.Number -> v.value
+        is ConfigValue.Bool -> v.value.toString()
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(FieldBackgroundColor, RoundedCornerShape(8.dp))
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(field.key, color = UnmodifiedTextColor)
+        Text(value, color = UnmodifiedTextColor)
     }
 }
 

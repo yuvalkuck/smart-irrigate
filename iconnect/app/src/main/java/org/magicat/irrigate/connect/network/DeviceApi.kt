@@ -25,6 +25,21 @@ object DeviceApi {
         }
     }
 
+    /** Static, non-editable device details (firmware/esp-idf version, ...), same JSON shape as [fetchStatus]. */
+    suspend fun fetchInfo(baseUrl: String): JSONObject = withContext(Dispatchers.IO) {
+        val connection = (URL("$baseUrl/api").openConnection() as HttpURLConnection)
+        try {
+            connection.requestMethod = "GET"
+            connection.connectTimeout = TIMEOUT_MS
+            connection.readTimeout = TIMEOUT_MS
+            checkSuccess(connection)
+            val body = connection.inputStream.bufferedReader().use { it.readText() }
+            JSONObject(body)
+        } finally {
+            connection.disconnect()
+        }
+    }
+
     /** [payload] is an INI document, e.g. "[setup]\nkey=value\n...". */
     suspend fun pushStatus(baseUrl: String, payload: String) = withContext(Dispatchers.IO) {
         val connection = (URL("$baseUrl/api/set").openConnection() as HttpURLConnection)
