@@ -21,7 +21,12 @@
 #if defined(ESP32S3_UART)
 #include "driver/uart.h"
 #endif
-
+enum blinkPattern_t {
+    AllGood = 0,
+    Error = 1,
+    SetupMode = 2
+};
+const uint16_t blinkPattern[] = {1000,200,100};
 static constexpr auto TAG = "App:";
 
 void init_event_app_handle();
@@ -185,6 +190,7 @@ extern "C" [[noreturn]] void app_main(void) {
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     setLedState(true);
+    blinkPattern_t initModePattern = AllGood;
     // test if we have wifi config
     { // block to release hCfg when not use anymore
 
@@ -197,7 +203,7 @@ extern "C" [[noreturn]] void app_main(void) {
             ESP_LOGI(TAG, "Start wifi configuration state");
             init_wifi_softap();
             start_wifi();
-            initRegular = false;
+            initModePattern = SetupMode;
             ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
         } else {
             ESP_LOGI(TAG, "Start Regular Load");
@@ -218,12 +224,12 @@ extern "C" [[noreturn]] void app_main(void) {
                 start_sntp();
                 start_telemetry();
             } else {
-                initRegular = false;
+                initModePattern = Error;
             }
         }
     }
     ESP_LOGI(TAG, "working stage");
-    auto ticker = (initRegular ? 2000 : 250);
+    auto ticker = blinkPattern[initModePattern];
     int ledFlip = 1;
     for (;;) {
         --ledFlip;
