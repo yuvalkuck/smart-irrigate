@@ -131,7 +131,7 @@ dependencies:
   idf:
     source:
       type: idf
-    version: 6.0.1
+    version: 6.1.0
   k0i05/esp_sht4x:
     component_hash: 5a00f42596dd048c1a5db8e32411a1aa94f7d9aa0e30dd7bc1c19f3c036b840c
     dependencies:
