@@ -3,6 +3,7 @@
 #include <charconv>
 
 #include "protocol.h"
+#include "irrigation.h"
 #include "telemetry.h"
 #include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
@@ -46,6 +47,7 @@ void continue_after_time_sync_cb(struct timeval* tv) {
         tzset();
         ESP_LOGI(TAG, "set TimeZone to: %s", buff);
         start_hmqtt();
+        irrigation_recheck();
     } else {
         ESP_LOGE(TAG, "failed to set timezone from fkasg");
     }
@@ -54,6 +56,7 @@ void continue_after_time_sync_cb(struct timeval* tv) {
 // Flexible Valve Pin Mapping Structure
 // Instantiates size allocation from Kconfig dynamic targets
 std::array<gpio_num_t, CONFIG_DEVICE_MAX_VALVES> valve_gpio_pins{};
+size_t parsed_valve_count = 0;
 
 // ====================================================================
 // INITIALIZATION METHOD
@@ -77,7 +80,6 @@ static void init_gpio() {
 
     // === 2. Parse Kconfig String via Zero-Allocation C++17 string_view ===
     std::string_view pin_list_view{CONFIG_DYNAMIC_VALVE_GPIO_LIST};
-    size_t parsed_valve_count = 0;
 
     while (!pin_list_view.empty() && parsed_valve_count < CONFIG_DEVICE_MAX_VALVES) {
         const size_t comma_pos = pin_list_view.find(',');
@@ -224,6 +226,7 @@ extern "C" [[noreturn]] void app_main(void) {
                 init_hmqtt();
                 start_sntp();
                 start_telemetry();
+                start_irrigation(valve_gpio_pins.data(), parsed_valve_count);
             } else {
                 initModePattern = Error;
             }
