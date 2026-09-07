@@ -1,3 +1,5 @@
+#if !defined(CONFIGURATION_H)
+#define CONFIGURATION_H
 #include "base_command.h"
 
 #pragma pack(push, 4)
@@ -13,8 +15,10 @@ extern "C" {
             |--- program
                 |--- task
 */
-#define ProgramTyNormal = 0x01
-#define ProgramTyEmergency = 0x02
+typedef enum ProgramType_t {
+    ProgramTyNormal = 0x01,
+    ProgramTyEmergency = 0x02
+} ProgramType;
 
 typedef struct {
     uint8_t hours; // 0-23
@@ -52,3 +56,4 @@ typedef struct {
 using ConfigurationContainer = std::unique_ptr<const void, UnmapperPartitionDMA>;
 #endif
 #pragma pack(pop)
+#endif

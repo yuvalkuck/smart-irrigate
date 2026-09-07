@@ -2,6 +2,7 @@
 #include <hmqtt.h>
 #include <protocol.h>
 #include <common_event.h>
+#include <irrigation.h>
 #include "flash.h"
 #include <array>
 static constexpr auto TAG = "AppEvent:";
@@ -41,7 +42,9 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
             break;
             case COMMON_EVENT_ACCEPT_SERVER_CONFIGURATION: {
                 ESP_LOGV(TAG, "COMMON_EVENT_ACCEPT_SERVER_CONFIGURATION");
-                if (!setConfiguration(static_cast<const char*>(event->data), event->size)) {
+                if (setConfiguration(static_cast<const char*>(event->data), event->size)) {
+                    irrigation_reload();
+                } else {
                     ESP_LOGE(TAG, "Failed to set configuration");
                 }
             }
