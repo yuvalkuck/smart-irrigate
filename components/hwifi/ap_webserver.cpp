@@ -7,7 +7,7 @@
 #include <esp_http_server.h>
 #include <logger.h>
 #include <fmt/core.h>
-
+#include "sdkconfig.h"
 #include "default_initiate.h"
 
 static const char* TAG = "WebServer";
@@ -42,10 +42,11 @@ static esp_err_t get_rootpage(httpd_req_t* req) {
 
 static esp_err_t get_version_handler(httpd_req_t* req) {
     METHODTRACE
-    char payload[1024] = {0};
-    fmt::format_to_n(payload, sizeof(payload), R"({{"{}"="{}","{}"="{}"}})",
+    char payload[512] = {0};
+    fmt::format_to_n(payload, sizeof(payload), R"({{"{}"="{}","{}"="{}","{}"="{}"}})",
                      "device", CONST_PROJECT_VERSION,
-                     "esp-idf", esp_get_idf_version());
+                     "esp-idf", esp_get_idf_version(),
+                     "valves pgio", CONFIG_DYNAMIC_VALVE_GPIO_LIST);
     httpd_resp_send(req, payload, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
