@@ -34,18 +34,18 @@ httpd_handle_t start_webserver() {
     return nullptr;
 }
 
-
 // 1. Define the GET Handler Function
 static esp_err_t get_rootpage(httpd_req_t* req) {
     METHODTRACE
     return ESP_OK;
 }
+
 static esp_err_t get_version_handler(httpd_req_t* req) {
     METHODTRACE
     char payload[1024] = {0};
     fmt::format_to_n(payload, sizeof(payload), R"({{"{}"="{}","{}"="{}"}})",
-                         "device", CONST_PROJECT_VERSION,
-                         "esp-idf", esp_get_idf_version());
+                     "device", CONST_PROJECT_VERSION,
+                     "esp-idf", esp_get_idf_version());
     httpd_resp_send(req, payload, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
@@ -56,20 +56,22 @@ static esp_err_t get_command_restart(httpd_req_t* req) {
     return ESP_OK;
 }
 
-
 #define MAX_STRING_LENGTH 128
 
 static esp_err_t get_status_handler(httpd_req_t* req) {
     METHODTRACE
-    std::array<char[MAX_STRING_LENGTH], 5> strCache = {};
+    std::array<char[MAX_STRING_LENGTH], 6> strCache = {};
     NvsConfig hCfg;
     hCfg.getStr(CFG_NVS_KEY_WIFI_SSID, strCache[0],MAX_STRING_LENGTH);
     hCfg.getStr(CFG_NVS_KEY_WIFI_PASSWORD, strCache[1],MAX_STRING_LENGTH);
     hCfg.getStr(CFG_NVS_KEY_MQTT_URL, strCache[2],MAX_STRING_LENGTH);
     hCfg.getStr(CFG_NVS_KEY_MQTT_USERNAME, strCache[3],MAX_STRING_LENGTH);
     hCfg.getStr(CFG_NVS_KEY_MQTT_PASSWORD, strCache[4],MAX_STRING_LENGTH);
+    hCfg.getStr(CFG_NVS_KEY_ONPREM, strCache[5],MAX_STRING_LENGTH);
+
     char payload[1024] = {0};
-    fmt::format_to_n(payload, sizeof(payload), R"({{"{}"="{}","{}"="{}","{}"="{}","{}"="{}","{}"="{}"}})",
+    fmt::format_to_n(payload, sizeof(payload), R"({{"{}"="{}","{}"="{}","{}"="{}","{}"="{}","{}"="{}","{}"="{}"}})",
+                     CFG_NVS_KEY_ONPREM, strCache[5],
                      CFG_NVS_KEY_WIFI_SSID, strCache[0],
                      CFG_NVS_KEY_WIFI_PASSWORD, strCache[1],
                      CFG_NVS_KEY_MQTT_URL, strCache[2],
@@ -112,10 +114,11 @@ static esp_err_t post_handler(httpd_req_t* req) {
     while (line) {
         if (line[0] != '[') {
             auto value = strchr(line, '=');
-        if (!value) {
+            if (!value) {
                 ESP_LOGW(TAG, "no '=' in line: %s", line);
             } else {
-        *value = 0; value++;
+                *value = 0;
+                value++;
                 ESP_LOGI(TAG, "accept: %s=%s", line, value);
                 hCfg.setStr(line, value);
             }
@@ -126,7 +129,6 @@ static esp_err_t post_handler(httpd_req_t* req) {
     httpd_resp_send_chunk(req, NULL, 0); // End response
     return ESP_OK;
 }
-
 
 // 3. Registering the Handlers inside your server initialization
 static void register_routes(httpd_handle_t server) {

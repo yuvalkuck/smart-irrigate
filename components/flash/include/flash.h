@@ -16,6 +16,7 @@ static constexpr const char* CFG_NVS_KEY_MQTT_USERNAME = "mqtt_uname";
 static constexpr const char* CFG_NVS_KEY_MQTT_PASSWORD = "mqtt_pword";
 static constexpr const char* CFG_NVS_KEY_NTP_SERVER = "ntp_server";
 static constexpr const char* CFG_NVS_KEY_LOCALE_TZ = "locale_tz";
+static constexpr const char* CFG_NVS_KEY_ONPREM = "on-premises";
 
 esp_err_t init_flash(void);
 /* use C++ for handler container */
