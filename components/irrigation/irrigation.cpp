@@ -4,11 +4,10 @@
 #include "esp_log.h"
 #include "esp_timer.h"
 #include <ctime>
-#include <optional>
 
 static constexpr auto TAG = "Irrigation:";
 
-static std::optional<ConfigurationContainer> s_config;
+static ConfigurationContainer s_config;
 static const gpio_num_t *s_valvePins = nullptr;
 static size_t s_valveCount = 0;
 static esp_timer_handle_t s_timer = nullptr;
@@ -48,7 +47,7 @@ static void evaluate_and_reschedule() {
     if (!s_config) {
         return;
     }
-    const auto *config = static_cast<const Configuration *>(s_config->get());
+    const auto *config = static_cast<const Configuration *>(s_config.get());
 
     const time_t now = time(nullptr);
     struct tm timeInfo{};
@@ -109,15 +108,15 @@ void irrigation_set_active_program(ProgramType type) {
 }
 
 // Replaces s_config with a fresh mmap of the "config" partition. The old
-// mapping (if any) is unmapped as a side effect of the std::optional/
-// unique_ptr assignment below.
+// mapping (if any) is unmapped as a side effect of the unique_ptr
+// assignment below.
 static bool reload_configuration_from_flash() {
     auto config = getConfiguration();
     if (!config) {
         ESP_LOGE(TAG, "No stored configuration found; valves will stay closed");
         return false;
     }
-    const auto *header = static_cast<const Configuration *>(config->get());
+    const auto *header = static_cast<const Configuration *>(config.get());
     if (header->command.command != CommandConfiguration) {
         ESP_LOGE(TAG, "Stored configuration is not initialized; valves will stay closed");
         return false;

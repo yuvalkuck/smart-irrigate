@@ -8,7 +8,7 @@
 
 static const char* TAG = "ExProtocol:";
 #define PARTITION_CONFIG_NAME "config"
-std::optional<ConfigurationContainer> getConfiguration() {
+ConfigurationContainer getConfiguration() {
     const esp_partition_t *partition = esp_partition_find_first(
             ESP_PARTITION_TYPE_DATA,
             ESP_PARTITION_SUBTYPE_DATA_UNDEFINED,
@@ -17,7 +17,7 @@ std::optional<ConfigurationContainer> getConfiguration() {
 
     if (partition == nullptr) {
         ESP_LOGE(TAG, "Partition '%s' not found.", PARTITION_CONFIG_NAME);
-        return std::nullopt;
+        return {};
     }
 
     const void* mapped_ptr = nullptr;
@@ -35,21 +35,14 @@ std::optional<ConfigurationContainer> getConfiguration() {
 
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Mapping failed with error: %s", esp_err_to_name(err));
-        return std::nullopt;
+        return {};
     }
 
     // --- ZERO HEAP ACCESS ---
     // You can now read from s_mapped_ptr as if it were a local array
     return ConfigurationContainer(mapped_ptr, UnmapperPartitionDMA{map_handle});
 }
-static std::vector<uint8_t> init_buff;
-static std::vector<uint8_t> *createEmptyConfiguration() {
-    Configuration empty{};
-    ESP_LOGI(TAG, "Create empty configuration");
-    empty.command.command = CommandConfiguration;
-    init_buff.assign((uint8_t*)&empty, (uint8_t*)&empty + sizeof(empty));
-    return &init_buff;
-}
+
 Command getPayloadCommand(std::vector<uint8_t> *payload) {
     auto *cmd = reinterpret_cast<BaseCommand*>(payload->data());
     return static_cast<Command>(cmd->command);
