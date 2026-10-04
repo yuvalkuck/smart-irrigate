@@ -3,6 +3,29 @@
 ---
 * Project state: ***construction & sandbox***
  
+## Table of Contents
+
+* [Project Description](#project-description)
+  * [System Tiers](#system-tiers)
+  * [Setup & Operational Mode](#setup--operational-mode)
+* [High-Level Operational Logic Diagram](#high-level-operational-logic-diagram)
+* [Core Concepts & Operational Logic](#core-concepts--operational-logic)
+  * [Predictive & Macro-Environmental Irrigation Control](#predictive--macro-environmental-irrigation-control)
+  * [Hydraulic Feedback & Healing (Zero-Pressure Handling)](#hydraulic-feedback--healing-zero-pressure-handling)
+  * [Multi-Valve Scheduling & Compile-Time Constraints](#multi-valve-scheduling--compile-time-constraints)
+* [Power Architecture](#power-architecture)
+  * [Power paths](#power-paths)
+  * [Behaviour by state](#behaviour-by-state)
+  * [Parts and where they are used](#parts-and-where-they-are-used)
+  * [Estimated power (battery side)](#estimated-power-battery-side)
+  * [Open decisions](#open-decisions)
+* [Physical Placement: Separate Enclosures](#physical-placement-separate-enclosures)
+  * [Connection overview](#connection-overview)
+* [Project Configuration](#project-configuration)
+  * [Hardware Pin Configurations](#hardware-pin-configurations)
+  * [Network & Protocol Configurations](#network--protocol-configurations)
+  * [Storage & Partition Layout Architecture](#storage--partition-layout-architecture)
+
 ## Project Description
 **Smart Irrigate** is an automated, low-power irrigation controller engineered for the **ESP-IDF 6.0 framework** running on the ESP32-C6 FireBeetle 2 platform. The device acts as an intelligent edge-computing node that monitors microclimate variables, tracks live hydraulic line pressure data, and manages a matrix of physical AC water valves using an external relay array.
 
