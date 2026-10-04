@@ -40,21 +40,21 @@ graph TD
    
 ### Setup & Operational Mode 
 The software architecture leverages ESP-IDF 6.0 optimizations—such as the memory-efficient **Picolibc standard library**—to run proactive edge-logic routines. Smart Irrigate transitions between two software-controlled lifecycles evaluated at boot time:
-* **Setup Mode:** Triggered manually by holding down a physical button interface during boot. The device suspends monitoring and spins up a native local Wi-Fi Access Point (SoftAP) alongside a raw **TCP socket listening server**. A dedicated Android app connects directly to this host network, exchanging structured string payloads to populate network credentials and MQTT infrastructure layouts. The TCP server parses these properties, commits them into a dedicated Non-Volatile Storage (NVS) communication partition, and issues a hardware system restart.
+* **Setup Mode:** Triggered manually by holding down a physical button interface during boot. The device suspends monitoring and spins up a native local Wi-Fi Access Point (SoftAP) alongside an **HTTP server** (`esp_http_server`). A dedicated Android app connects directly to this host network, exchanging structured string payloads to populate network credentials and MQTT infrastructure layouts. The HTTP server parses these properties, commits them into a dedicated Non-Volatile Storage (NVS) communication partition, and issues a hardware system restart.
 * **Operational Mode:** The standard execution pathway. The device extracts connection profiles from the communication NVS partition, connects to the network via Wi-Fi Station mode, updates its clock via SNTP, and establishes a persistent, secure session with an upstream MQTT broker. A real-time engine concurrently samples physical data from the sensor array, packages the values, and streams them to the broker. Concurrently, the system acts upon incoming remote valve command structures, logging execution timelines and tracking irrigation events in real time.
 
 ## High-Level Operational Logic Diagram
 
 ```mermaid
 graph TD
-    A[Power On] --> B{Is GPIO 17 Grounded?<br>Low State}
+    A[Power On] --> B{Is GPIO 23 Grounded?<br>Low State}
     
     B -- YES --> C[CONFIGURATION MODE]
     B -- NO  --> D[OPERATIONAL PIPELINE]
     
     subgraph Configuration Mode
         C --> C1[Launch SoftAP]
-        C1 --> C2[Start TCP Server]
+        C1 --> C2[Start HTTP Server]
         C2 --> C3[Listen for Android Connection]
         C3 --> C4[Ingest Network & MQTT Credentials]
         C4 --> C5[Save to setup Partition]
@@ -65,7 +65,7 @@ graph TD
         D --> D1[Load Connection Profiles from setup]
         D1 --> D2[Connect Wi-Fi Station]
         D2 --> D3[Sync System Clock via SNTP]
-        D4 --> D4[Initialize Client Core & Secure MQTT Connection]
+        D3 --> D4[Initialize Client Core & Secure MQTT Connection]
         D4 --> D5[Fetch Baseline Profiles from config Partition]
         D5 --> D6[Spawn High-Priority Sensor Engine Task]
         D6 --> D7[Execute Proactive Valve Relay Controls]
@@ -95,6 +95,108 @@ The device natively manages a matrix of **6 independent physical water valves**,
 
 ---
 
+## Power Architecture
+
+> **Status: design under evaluation.** Nothing here is built yet. Power figures are datasheet-typical estimates, not measurements. Items marked **TBD** are open decisions.
+
+The valves are **24 VAC Galcon solenoids** (0.30 A inrush, 0.19 A holding, ~2.1 W real power, 7.2 VA inrush / 4.6 VA holding). They must keep watering when mains is lost, so the whole system runs from a single **24 V DC bus** that a mains PSU feeds and a battery backs up. A DC-to-AC converter (part not selected yet) turns the bus into the 50 Hz 24 VAC the valves need. No 230 V-to-24 V transformer and no 230 V inverter is used.
+
+### Power paths
+
+**Mains present (non-battery state)**
+
+```mermaid
+graph LR
+    M[230 V mains] --> PSU[27.6 V 2 A PSU]
+    PSU --> BUS[24 V bus]
+    BAT[2 x 12 V SLA in series<br/>floating, charging] --- BUS
+    BUS --> BUCK5[Buck 24 V to 5 V]
+    BUCK5 --> LOGIC[C6, S3, relays, sensors, LCD]
+    BUS --> BUCK24[Voltage regulation, if needed]
+    BUCK24 --> EN[Relay IN7: converter enable]
+    EN --> ACB[24 VAC converter, 50 Hz]
+    ACB --> SNUB[RC snubber]
+    SNUB --> RELAYS[8-ch relay board]
+    RELAYS --> V[Galcon valves]
+```
+
+**Battery (mains lost)**
+
+```mermaid
+graph LR
+    BAT[2 x 12 V SLA in series] --> BUS[24 V bus]
+    BUS --> BUCK5[Buck 24 V to 5 V]
+    BUCK5 --> LOGIC[C6 Wi-Fi off, relays, sensors]
+    BUS --> BUCK24[Voltage regulation, if needed]
+    BUCK24 --> EN[Relay IN7: converter enable]
+    EN --> ACB[24 VAC converter, 50 Hz]
+    ACB --> SNUB[RC snubber]
+    SNUB --> RELAYS[8-ch relay board]
+    RELAYS --> V[One Galcon valve at a time]
+```
+
+The battery floats across the bus at all times, so a mains loss causes no switch-over: the loads simply keep drawing from the battery.
+
+### Behaviour by state
+
+| | Mains present | Battery |
+|---|---|---|
+| Wi-Fi / SNTP / MQTT | On | **Off** (local schedule from the `config` partition, RTC clock) |
+| ESP32-S3 companion | On | **Off** |
+| Valves open at once | set by `DEVICE_MAX_SIMULTANEOUS_OPEN_VALVES` (menuconfig under "Main Power ON", default 2, range 2-16; design range 2-4), starts staggered ~0.5 s | **1**, time-sliced round robin: each valve gets a slice of at most `DEVICE_MAX_ROUND_ROBIN_TIME_MINI` minutes (menuconfig under "Main Battery ON", default 10, range 5-30), then the next valve with remaining time, until all counters reach zero |
+| Valve switch order | Close old, wait ~1 s, open next (one-valve mode) | Same |
+| LCD2004 | Wakes on button, off after N minutes | **Off** |
+| Status LED (`GPIO_LED`) | Startup errors only | Startup errors only |
+| Battery indicator | Off | Slow-blink LED (pin **TBD**) |
+| 24 VAC converter | Enabled only while a valve is open | Enabled only while a valve is open |
+
+### Parts and where they are used
+
+| Part | Role | Mains | Battery |
+|---|---|---|---|
+| FireBeetle 2 ESP32-C6 | Main controller | Yes | Yes (Wi-Fi off) |
+| ESP32-S3 DevKitC-1 | Companion AI module | Yes | **No** |
+| 8-channel 5 V relay module | Valve switching (6 used), IN7 = converter enable, IN8 spare | Yes | Yes |
+| 6 x Galcon 24 VAC solenoid valves | Water valves | Yes | Yes (1 at a time) |
+| 230 V to 27.6 V, 2 A PSU | Feeds the bus, charges the battery | Yes | **No** (absent) |
+| 2 x 12 V SLA battery in series | Backup (24 V) | Yes (floating) | Yes (sole source) |
+| Battery fuse and low-voltage disconnect (~21 V) | Protection | Yes | Yes |
+| Buck converter 24 V to 5 V (35 V rated) | Logic supply | Yes | Yes |
+| Voltage regulation stage (needed only if the converter output follows its input) | Holds valve voltage at 24 Vrms from the 27.6 V bus | Yes | Yes (bus <= 25.6 V; must not drop below ~21 Vrms at the valves) |
+| 24 VAC converter (DC-to-AC, part not selected) | Makes 50 Hz 24 VAC for the valves. Requirements: input range covers the 21-27.6 V bus, 24 Vrms output, 1 A continuous (4 valves holding), 2 A peak (inrush), enable input or switchable supply, short-circuit protection | Yes | Yes |
+| RC snubber (~0.1 uF + 47-100 ohm), shared | Edge softening, relay contact protection | Yes | Yes |
+| Fuses (converter input, 24 V side) | Protection | Yes | Yes |
+| Mains-detect input (PSU DC-OK or optocoupler) | Selects the mode | Yes | Yes |
+| Battery-voltage sense (ADC divider) | Low-battery warning | Yes | Yes |
+| BMP581, SHT41, TSL2591 (I2C) | Weather sensors | Yes | Yes |
+| DS18B20 (1-Wire) | Soil temperature | Yes | Yes |
+| XDB401 pressure transmitter | Line pressure and no-water check | Yes | Yes |
+| Wind sensor (0-5 V) | Wind speed | Yes | Yes |
+| LCD2004 with I2C backpack | Local display | Yes (on request) | **No** |
+| LCD wake button, LCD power switch | Display control | Yes | No |
+| Status LED (`GPIO_LED`) | Startup error indicator | Yes | Yes (errors only) |
+| Battery-state LED (slow blink) | Shows battery mode | No | Yes |
+| Config switch (GPIO 23) | Boot into Configuration Mode | Boot only | **Ignored** |
+
+**Not used in either path:** a 230 V to 24 VAC transformer, a 12 V to 230 V inverter, a mains/inverter changeover relay, a series DC-blocking capacitor, and the FireBeetle's own Li-ion charger (it only handles a single 3.7 V cell).
+
+### Estimated power (battery side)
+
+| State | Draw |
+|---|---|
+| Battery idle (Wi-Fi off, LCD off, converter off) | ~0.4 W |
+| Battery, one valve open | ~3-4 W (valve ~2.1 W plus converter and relay losses) |
+| Mains, 2-4 valves open, electronics on | PSU needs ~2 A at 27.6 V including recharge |
+
+Battery sizing for 12 h idle plus 3 h of one valve is about 13 Wh usable, so two 12 V 4 Ah batteries in series leave generous margin.
+
+### Open decisions
+* **TBD:** how the 24 VAC converter regulates the valve voltage (built into the converter, or a separate stage).
+* **TBD:** select the 24 VAC converter. It must produce an acceptable waveform and voltage for the Galcon valves (run cool and quiet) and have an enable control. A square wave is acceptable if the valves tolerate it; otherwise use a sine-modulated H-bridge on a 36-42 V bus, or a 12 V sine inverter feeding a 24 V transformer.
+* **TBD:** GPIOs for the mains-detect input, battery sense, LCD wake button, LCD power switch and battery LED. Used pins: 2 and 3 (ADC), 4, 5, 6, 7, 10, 11, 14, 15, 16, 17, 18, 19, 20, 23. Check the board's available pins before choosing.
+
+---
+
 ## Project Configuration
 
 ### Hardware Pin Configurations
@@ -114,10 +216,10 @@ The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time
 
 ### Network & Protocol Configurations
 The network architecture is configured natively under the revised ESP-IDF 6.0 components using the following specifications:
-* **Wi-Fi Subsystem:** Tailored to exploit the ESP32-C6 radio. It hooks into the global `esp_event` loop framework to transition automatically between the SoftAP + TCP server configuration topology and the automated Station network connector profile.
+* **Wi-Fi Subsystem:** Tailored to exploit the ESP32-C6 radio. It hooks into the global `esp_event` loop framework to transition automatically between the SoftAP + HTTP server configuration topology and the automated Station network connector profile.
 * **Internet Time Synchronization (SNTP):** Utilizing the native **`esp_netif_sntp` framework** optimized in ESP-IDF 6.0. Upon establishing an active station connection in Operational Mode, the system queries public Network Time Protocol (NTP) pools via network sockets to configure and adjust the internal hardware Real-Time Clock (RTC). This guarantees millisecond-accurate scheduling logs and execution timestamps for all 36 optional irrigation events without needing a local hardware RTC battery module.
-* **MQTT Client Configuration: Powered by the core communication component, it parses data over two primary pipelines:
-    * *Telemetry & Event Topic (Outbound):* A target path used to broadcast serialized data detailing live water pressure, wind speed in meters per second from GPIO 1, ambient temperature, humidity, and immediate valve state event logs.
+* **MQTT Client Configuration:** Powered by the core communication component, it parses data over two primary pipelines:
+    * *Telemetry & Event Topic (Outbound):* A target path used to broadcast serialized data detailing live water pressure, wind speed in meters per second from GPIO 3, ambient temperature, humidity, and immediate valve state event logs.
     * *Command/Configuration Topic (Inbound):* A real-time subscription pathway that intercepts remote instructions, environmental baseline thresholds, historical seasonal data packets, and the 6-event scheduler layouts for each of the 6 compiled valves.
 
 ### Storage & Partition Layout Architecture

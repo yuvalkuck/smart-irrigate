@@ -998,6 +998,22 @@ CONFIG_DEVICE_MAX_VALVES=6
 CONFIG_DYNAMIC_VALVE_GPIO_LIST="10,11,14,16,17,18"
 # default:
 CONFIG_DEVICE_MAX_VALVE_CONFIG=4
+# default:
+CONFIG_DEVICE_LCD_ENABLE=0
+
+#
+# Main Power ON
+#
+# default:
+CONFIG_DEVICE_MAX_SIMULTANEOUS_OPEN_VALVES=2
+# end of Main Power ON
+
+#
+# Main Battery ON
+#
+# default:
+CONFIG_DEVICE_MAX_ROUND_ROBIN_TIME_MINI=10
+# end of Main Battery ON
 # end of Device Scale Configuration
 
 #

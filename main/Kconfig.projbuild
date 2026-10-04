@@ -18,6 +18,33 @@ menu "Device Scale Configuration"
         default 4
         help
             The maximum number of setups a valve can handle.
+
+    config DEVICE_LCD_ENABLE
+        int "Is LCD available"
+        default 0
+        range 0 1
+        help
+            Is LDD available to use
+
+    menu "Main Power ON"
+        config DEVICE_MAX_SIMULTANEOUS_OPEN_VALVES
+        int "maximum simultaneous valves"
+        default 2
+        range 2 6
+        help
+            maximum simultaneous open valves
+
+    endmenu
+    menu "Main Battery ON"
+        config DEVICE_MAX_ROUND_ROBIN_TIME_MINI
+        int "maximum time for round robin time slice in minutes"
+        default 10
+        range 5 30
+        help
+            maximum minutes spend for each values in round robin
+
+    endmenu
+
 endmenu
 
 menu "Wifi Configuration"
