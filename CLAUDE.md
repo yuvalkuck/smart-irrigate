@@ -41,9 +41,16 @@ they configure_file to empty strings and provisioning happens entirely at runtim
 
 Run `idf.py menuconfig` to adjust project-specific settings defined in `main/Kconfig.projbuild`:
 valve count (`DEVICE_MAX_VALVES`), the valve GPIO list (`DYNAMIC_VALVE_GPIO_LIST`, comma-separated,
-parsed at boot in `main/entrypoint.cpp`), max programs per valve, and SoftAP provisioning defaults
-(password, gateway/mask, SSID suffix). Changing valve GPIOs is a firmware rebuild, not a runtime
-option — pins are compiled in.
+parsed at boot in `main/entrypoint.cpp`), max programs per valve (`DEVICE_MAX_VALVE_CONFIG`), LCD
+presence (`DEVICE_LCD_ENABLE`), power-state valve limits (`DEVICE_MAX_SIMULTANEOUS_OPEN_VALVES` under
+"Main Power ON", `DEVICE_MAX_ROUND_ROBIN_TIME_MINI` slice minutes under "Main Battery ON"), and SoftAP
+provisioning defaults (password, gateway/mask, SSID suffix). Changing valve GPIOs is a firmware
+rebuild, not a runtime option — pins are compiled in.
+
+The mains/battery options are defined in Kconfig but no firmware code reads them yet — the
+power-path behaviour is a design in the README's "Power Architecture" and "Physical Placement"
+sections (24 V DC bus, battery backup, one valve at a time on battery with Wi-Fi and the ESP32-S3
+off), not implemented. Treat those README sections as design intent, not current behaviour.
 
 Fixed (non-Kconfig) pin assignments live in `components/common/include/gpio_declaraion.h`
 (status LED, config-mode boot switch, 1-Wire bus, I2C SDA/SCL) — cross-check against the wiring

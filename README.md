@@ -195,6 +195,82 @@ Battery sizing for 12 h idle plus 3 h of one valve is about 13 Wh usable, so two
 * **TBD:** select the 24 VAC converter. It must produce an acceptable waveform and voltage for the Galcon valves (run cool and quiet) and have an enable control. A square wave is acceptable if the valves tolerate it; otherwise use a sine-modulated H-bridge on a 36-42 V bus, or a 12 V sine inverter feeding a 24 V transformer.
 * **TBD:** GPIOs for the mains-detect input, battery sense, LCD wake button, LCD power switch and battery LED. Used pins: 2 and 3 (ADC), 4, 5, 6, 7, 10, 11, 14, 15, 16, 17, 18, 19, 20, 23. Check the board's available pins before choosing.
 
+## Physical Placement: Separate Enclosures
+
+The components do not share one box. Placement is decided by what each part can survive outdoors (heat, rain, cold), and by what it needs to measure correctly. Parts that are not weatherproof go in a protected box, parts that must be outside to measure correctly get their own housing, and parts that are weatherproof as bought are mounted outside with no box.
+
+| Box | Contents | Location | Housing and notes |
+|---|---|---|---|
+| **Main box** | ESP32-C6, ESP32-S3, BMP581, 8-channel relay board, 27.6 V PSU, buck converter to 5 V, 24 VAC converter, fuses | Indoors or a sheltered spot | Sealed. 230 V side kept apart from the low-voltage side. BMP581 needs a small vent to outside air. |
+| **Battery box** | 2 x 12 V batteries (series) | Next to the main box | Vented to open air, shaded and cool. Short fused cable to the main box through a gland. Lead-acid gives off hydrogen when charging, so keep it out of the main box. |
+| **Sensor mast** | TSL2591 (top, sealed dome facing up), SHT41 (lower, ventilated radiation shield) | Outdoors, at least 1 m above the roof, clear sky view | Housings at least 30 cm apart. One short shared I2C cable. SHT41 in shade with free airflow. |
+| **Roof mast (no box)** | Wind sensor | Roof, 1-2 m above the ridge, clear of the other housings | Weatherproof as bought. Pole mounted, level, with a drip loop in the cable. |
+| **Soil (no box)** | DS18B20 | Irrigated zone, 5-10 cm deep | Waterproof probe in a sealed sleeve. Strain relief at the surface. |
+| **Water line (no box)** | XDB401 | Tee near the manifold | Threaded fitting, upright or sideways. Add an isolation valve. |
+
+### Connection overview
+
+```mermaid
+graph LR
+    MAINS[230 V mains]
+
+    subgraph MAIN["Main box"]
+        PSU[27.6 V PSU]
+        BUCK5[Buck 24 V to 5 V]
+        CONV[24 VAC converter]
+        C6[ESP32-C6]
+        S3[ESP32-S3]
+        BMP[BMP581]
+        RELAY[8-channel relay board]
+    end
+
+    subgraph BATBOX["Battery box"]
+        BAT[2 x 12 V batteries]
+    end
+
+    subgraph MAST["Sensor mast"]
+        TSL[TSL2591]
+        SHT[SHT41]
+    end
+
+    subgraph ROOF["Roof mast"]
+        WIND[Wind sensor]
+    end
+
+    subgraph SOIL["Soil"]
+        DS[DS18B20]
+    end
+
+    subgraph PIPE["Water line"]
+        XDB[XDB401]
+    end
+
+    subgraph MANIFOLD["Valve manifold"]
+        VALVES[6 x Galcon 24 VAC valves]
+    end
+
+    MAINS --> PSU
+    PSU -- 24 V bus --> BUCK5
+    PSU -- 24 V bus --> CONV
+    BAT <-- "fused cable, 24 V bus" --> PSU
+    BUCK5 -- 5 V --> C6
+    BUCK5 -- 5 V --> S3
+    BUCK5 -- 5 V --> RELAY
+    C6 <-- "UART GPIO 6 and 7" --> S3
+    C6 <-- "I2C GPIO 19 and 20" --> BMP
+    C6 <-- "I2C GPIO 19 and 20" --> TSL
+    C6 <-- "I2C GPIO 19 and 20" --> SHT
+    WIND -- "analog GPIO 3" --> C6
+    XDB -- "analog GPIO 2" --> C6
+    DS <-- "1-Wire GPIO 4" --> C6
+    C6 -- "valve GPIOs 10 11 14 16 17 18" --> RELAY
+    RELAY -- "IN7 enable" --> CONV
+    CONV -- "24 VAC, 50 Hz" --> RELAY
+    RELAY -- "24 VAC, 7 conductors: 1 common + 6" --> VALVES
+```
+
+The 24 V bus carries power from the PSU to the battery, and from the battery to the loads during an outage (see "Power Architecture"). The relay board switches the 24 VAC from the converter to each valve.
+
 ---
 
 ## Project Configuration
