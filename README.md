@@ -21,6 +21,8 @@
   * [Open decisions](#open-decisions)
 * [Physical Placement: Separate Enclosures](#physical-placement-separate-enclosures)
   * [Connection overview](#connection-overview)
+* [Project Progress Plan](#project-progress-plan)
+* [Heat and Environment](#heat-and-environment)
 * [Project Configuration](#project-configuration)
   * [Hardware Pin Configurations](#hardware-pin-configurations)
   * [Network & Protocol Configurations](#network--protocol-configurations)
@@ -293,6 +295,40 @@ graph LR
 ```
 
 The 24 V bus carries power from the PSU to the battery, and from the battery to the loads during an outage (see "Power Architecture"). The relay board switches the 24 VAC from the converter to each valve.
+
+## Project Progress Plan
+
+**Current status:** a half-working prototype on a breadboard, built from off-the-shelf modules.
+
+| Stage | Goal | Tasks |
+|---|---|---|
+| **1. Breadboard** (now) | Prove the sensors and the valve control | Finish the breadboard prototype. Pick and test the 24 VAC converter with a real valve (coil heat, buzz). |
+| **2. Firmware for the power design** | Implement what the Power Architecture describes | Mains-detect and battery mode, the mains valve limit, the battery round robin, Wi-Fi and S3 off on battery, a maximum open time per valve. |
+| **3. Boxes** | Move into the real enclosures | Main box, battery box, sensor mast, roof mast, soil probe and water-line fitting (see "Physical Placement"). Fuses, an RCD on the mains side, correctly rated enclosures, a manual shutoff valve on the water line. |
+| **4. Live test run** | Run the system for real, even without the large battery | Failure tests: power cut, Wi-Fi loss, no water pressure, a dead sensor, a reboot mid-watering (the valves must close in every case). Measure the real power draw to check the estimates, then size the battery. Confirm OTA updates or serial access with the boxes closed. |
+| **5. Outdoor soak test** | Find weather and drift problems | A few weeks outdoors: condensation, heat in the main box, UV on the cables. Calibrate the wind and pressure sensors. |
+| **6. PCB** | Replace the modules with a custom board | Freeze the design first. Version 1: a main board with ESP32 WROOM modules, relays, power conversion and connectors for the remote sensors, plus a small satellite board for the SHT41 and TSL2591 on the mast. Keep the 230 V PSU a separate module. |
+
+## Heat and Environment
+
+Summer here can reach 36 C ambient with humidity as low as 30%. A box in direct sun can reach 55-65 C inside, so the boxes and components must stand that load. The ratings below are typical datasheet figures; check them against the exact parts used.
+
+| Part | Typical limit | Heat risk | Action |
+|---|---|---|---|
+| Lead-acid batteries | Best at 20-25 C | Life roughly halves for every 8-10 C above that | Shaded, ventilated battery box, never in the sun |
+| ESP32-C6 and ESP32-S3 modules | About 85 C | Low, but Wi-Fi activity adds a few degrees | Ventilate the main box |
+| PSU and converters | Often rated 40-50 C at full load | They derate, and run hot in a closed box | Size at 50% load or less, keep them away from other heat sources |
+| 8-channel relay board | About 70-85 C | Coils add heat, and contacts age faster when hot | Mount low in the box with airflow |
+| LCD2004 | About 0-50 C, some -20 to 70 C | Washes out or fails first | Keep it in the shade, and off when not in use |
+| SHT41, BMP581, TSL2591, DS18B20 | 80-125 C or more | Wrong readings, not damage | Radiation shield, away from walls |
+
+Low humidity is easy on the electronics, but dry air raises the static risk, so ground the metal parts and avoid plastic rubbing against plastic near the boards. Condensation can still form when the boxes cool at night.
+
+**Measures**
+* Light-coloured enclosures in the shade, or a sun shield about 5 cm above each box.
+* Vents with insect and dust filters, and a small fan if the main box still passes about 50 C.
+* A temperature sensor inside the main box, so the firmware can warn and reduce load.
+* A heat test during the live run (see "Project Progress Plan").
 
 ---
 
