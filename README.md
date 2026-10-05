@@ -114,8 +114,8 @@ Smart Irrigate explicitly avoids relying on a high density of localized ground m
 * The system then automatically defers the irrigation cycle, constantly or periodically polling the line until water pressure is detected again, at which point it safely resumes the deferred watering routine later on.
 
 ### Multi-Valve Scheduling & Compile-Time Constraints
-The device natively manages a matrix of **6 independent physical water valves**, each governed by its own independent logic pathway:
-* **Independent Water Events:** The system tracks up to **6 distinct optional water events per valve** (totaling up to 36 distinct schedulable runtime blocks across the device). Each event is evaluated against incoming MQTT operational profiles and adjusted by the macro-environmental compensation engine.
+The device natively manages a matrix of **8 independent physical water valves** (one per channel of the 8-channel relay board), each governed by its own independent logic pathway:
+* **Independent Water Events:** The system tracks up to **6 distinct optional water events per valve** (totaling up to 48 distinct schedulable runtime blocks across the device). Each event is evaluated against incoming MQTT operational profiles and adjusted by the macro-environmental compensation engine.
 * **Compile-Time Hardware Constraints:** Because the hardware layout binds each independent valve relay to a dedicated physical microcontroller pin, the GPIO mapping is rigidly locked into the project's compilation layer using **ESP-IDF Kconfig (`Kconfig.projbuild`)**. Modifying or shifting these pin allocations requires rebuilding the firmware via the build system, safeguarding the running application from runtime pin conflicts or accidental software rewires.
 
 ---
@@ -138,7 +138,7 @@ graph LR
     BUS --> BUCK5[Buck 24 V to 5 V]
     BUCK5 --> LOGIC[C6, S3, relays, sensors, LCD]
     BUS --> BUCK24[Voltage regulation, if needed]
-    BUCK24 --> EN[Relay IN7: converter enable]
+    BUCK24 --> EN[Converter enable, pin TBD]
     EN --> ACB[24 VAC converter, 50 Hz]
     ACB --> SNUB[RC snubber]
     SNUB --> RELAYS[8-ch relay board]
@@ -153,7 +153,7 @@ graph LR
     BUS --> BUCK5[Buck 24 V to 5 V]
     BUCK5 --> LOGIC[C6 Wi-Fi off, relays, sensors]
     BUS --> BUCK24[Voltage regulation, if needed]
-    BUCK24 --> EN[Relay IN7: converter enable]
+    BUCK24 --> EN[Converter enable, pin TBD]
     EN --> ACB[24 VAC converter, 50 Hz]
     ACB --> SNUB[RC snubber]
     SNUB --> RELAYS[8-ch relay board]
@@ -181,8 +181,8 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 |---|---|---|---|
 | FireBeetle 2 ESP32-C6 | Main controller | Yes | Yes (Wi-Fi off) |
 | ESP32-S3 DevKitC-1 | Companion AI module | Yes | **No** |
-| 8-channel 5 V relay module | Valve switching (6 used), IN7 = converter enable, IN8 spare | Yes | Yes |
-| 6 x Galcon 24 VAC solenoid valves | Water valves | Yes | Yes (1 at a time) |
+| 8-channel 5 V relay module | Valve switching, all 8 channels used (IN1-IN8 = valves 1-8) | Yes | Yes |
+| 8 x Galcon 24 VAC solenoid valves | Water valves | Yes | Yes (1 at a time) |
 | 230 V to 27.6 V, 2 A PSU | Feeds the bus, charges the battery | Yes | **No** (absent) |
 | 2 x 12 V SLA battery in series | Backup (24 V) | Yes (floating) | Yes (sole source) |
 | Battery fuse and low-voltage disconnect (~21 V) | Protection | Yes | Yes |
@@ -218,7 +218,7 @@ Battery sizing for 12 h idle plus 3 h of one valve is about 13 Wh usable, so two
 ### Open decisions
 * **TBD:** how the 24 VAC converter regulates the valve voltage (built into the converter, or a separate stage).
 * **TBD:** select the 24 VAC converter. It must produce an acceptable waveform and voltage for the Galcon valves (run cool and quiet) and have an enable control. A square wave is acceptable if the valves tolerate it; otherwise use a sine-modulated H-bridge on a 36-42 V bus, or a 12 V sine inverter feeding a 24 V transformer.
-* **TBD:** GPIOs for the mains-detect input, battery sense, LCD wake button, LCD power switch and battery LED. Used pins: 2 and 3 (ADC), 4, 5, 6, 7, 10, 11, 14, 15, 16, 17, 18, 19, 20, 23. Check the board's available pins before choosing.
+* **TBD:** inputs and outputs for the mains-detect input, battery sense, LCD wake button, LCD power switch, battery LED and the 24 VAC converter enable. With 8 valves every safe GPIO on the FireBeetle 2 header is used (1, 2, 3, 4, 5, 6, 7, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23; 8 and 9 are boot-strapping pins), so these need an I2C expander (e.g. PCF8574) and an I2C ADC for battery sense (e.g. ADS1115) on the existing I2C bus.
 
 ## Physical Placement: Separate Enclosures
 
@@ -271,7 +271,7 @@ graph LR
     end
 
     subgraph MANIFOLD["Valve manifold"]
-        VALVES[6 x Galcon 24 VAC valves]
+        VALVES[8 x Galcon 24 VAC valves]
     end
 
     MAINS --> PSU
@@ -288,10 +288,9 @@ graph LR
     WIND -- "analog GPIO 3" --> C6
     XDB -- "analog GPIO 2" --> C6
     DS <-- "1-Wire GPIO 4" --> C6
-    C6 -- "valve GPIOs 10 11 14 16 17 18" --> RELAY
-    RELAY -- "IN7 enable" --> CONV
+    C6 -- "valve GPIOs 1 14 18 21 22 16 17 5" --> RELAY
     CONV -- "24 VAC, 50 Hz" --> RELAY
-    RELAY -- "24 VAC, 7 conductors: 1 common + 6" --> VALVES
+    RELAY -- "24 VAC, 9 conductors: 1 common + 8" --> VALVES
 ```
 
 The 24 V bus carries power from the PSU to the battery, and from the battery to the loads during an outage (see "Power Architecture"). The relay board switches the 24 VAC from the converter to each valve.
@@ -347,17 +346,18 @@ The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time
 * **Analog Interface Architecture:** The system uses two independent analog input channels to gather real-time data from physical equipment.
   * *XDB401 Pressure Transmitter (GPIO 2):* Interfaced directly to the primary analog channel. It records real-time water line pressure values, using hardware conditioning to scale raw output signals down to fit within safe internal limits.(ADC1_CH2)
   * *Analog Wind Speed Sensor (GPIO 3):* Interfaced directly to the secondary analog channel. Because the sensor outputs a 0–5V range, an external voltage divider circuit steps the incoming voltage down to a safe, readable level. The software maps this reading back to the true 0.0–30.0 meters per second wind speed curve.(ADC1_CH3)
+* **Valve Relays:** **GPIO 1, 14, 18, 21, 22, 16, 17, 5** for valves 1-8, set by `CONFIG_DYNAMIC_VALVE_GPIO_LIST` with `CONFIG_DEVICE_MAX_VALVES` = 8. The FireBeetle 2 ESP32-C6 header has no GPIO 10 or 11. GPIO 16/17 are UART0, so the console must run on USB Serial/JTAG. GPIO 8/9 (boot strapping) and 15 (on-board LED) are not used for valves. More than 8 valves needs an I2C GPIO expander.
 * **Inter-Chip Link (ESP32-S3 Connection):** **GPIO 6 (TX)** and **GPIO 7 (RX)**. A UART link connecting the FireBeetle 2 to a companion ESP32-S3 module, with GPIO 6 wired to the ESP32-S3's RX pin and GPIO 7 to its TX pin.
 
 ### Network & Protocol Configurations
 The network architecture is configured natively under the revised ESP-IDF 6.0 components using the following specifications:
 * **Wi-Fi Subsystem:** Tailored to exploit the ESP32-C6 radio. It hooks into the global `esp_event` loop framework to transition automatically between the SoftAP + HTTP server configuration topology and the automated Station network connector profile.
-* **Internet Time Synchronization (SNTP):** Utilizing the native **`esp_netif_sntp` framework** optimized in ESP-IDF 6.0. Upon establishing an active station connection in Operational Mode, the system queries public Network Time Protocol (NTP) pools via network sockets to configure and adjust the internal hardware Real-Time Clock (RTC). This guarantees millisecond-accurate scheduling logs and execution timestamps for all 36 optional irrigation events without needing a local hardware RTC battery module.
+* **Internet Time Synchronization (SNTP):** Utilizing the native **`esp_netif_sntp` framework** optimized in ESP-IDF 6.0. Upon establishing an active station connection in Operational Mode, the system queries public Network Time Protocol (NTP) pools via network sockets to configure and adjust the internal hardware Real-Time Clock (RTC). This guarantees millisecond-accurate scheduling logs and execution timestamps for all 48 optional irrigation events without needing a local hardware RTC battery module.
 * **MQTT Client Configuration:** Powered by the core communication component, it parses data over two primary pipelines:
     * *Telemetry & Event Topic (Outbound):* A target path used to broadcast serialized data detailing live water pressure, wind speed in meters per second from GPIO 3, ambient temperature, humidity, and immediate valve state event logs.
-    * *Command/Configuration Topic (Inbound):* A real-time subscription pathway that intercepts remote instructions, environmental baseline thresholds, historical seasonal data packets, and the 6-event scheduler layouts for each of the 6 compiled valves.
+    * *Command/Configuration Topic (Inbound):* A real-time subscription pathway that intercepts remote instructions, environmental baseline thresholds, historical seasonal data packets, and the 6-event scheduler layouts for each of the 8 compiled valves.
 
 ### Storage & Partition Layout Architecture
 To optimize access speed, reduce wear overhead, and safely isolate temporary networking properties from large irrigation parameters, flash memory storage is separated into distinct custom partitions within the `partitions.csv` topology:
 * **Communications NVS Partition (`setup`):** A dedicated, standard key-value NVS flash space strictly reserved for storing Wi-Fi credentials (SSID, Password), security flags, SNTP server pool parameters, and primary MQTT broker socket configuration strings. This partition is exclusively rewritten during Configuration Mode.
-* **Irrigation Storage Data Partition (`config`):** A separate, dedicated data flash partition optimized to hold complex valve schedule configurations, the 36 optional irrigation events, dynamic operational parameters, and historical wind and environmental baseline metrics.
+* **Irrigation Storage Data Partition (`config`):** A separate, dedicated data flash partition optimized to hold complex valve schedule configurations, the 48 optional irrigation events, dynamic operational parameters, and historical wind and environmental baseline metrics.

@@ -1,17 +1,21 @@
 menu "Device Scale Configuration"
     config DEVICE_MAX_VALVES
         int "Maximum Number of Valves"
-        default 6
+        default 8
         range 1 16
         help
             Defines the allocation capacity for the runtime valve array tracking matrices.
 
     config DYNAMIC_VALVE_GPIO_LIST
             string "Comma-separated list of Valve GPIOs"
-            default "10,11,14,16,17,18"
+            default "1,14,18,21,22,16,17,5"
             help
-                Enter a comma-separated list of exactly 6 GPIO pin numbers for your valves.
-                Example: "14,16,17,18,21,22". No spaces allowed.
+                Enter a comma-separated list of GPIO pin numbers for your valves, one per valve,
+                in valve order. Only the first DEVICE_MAX_VALVES entries are used.
+                Example: "1,14,18,21,22,16,17,5". No spaces allowed.
+                FireBeetle 2 ESP32-C6: GPIO 10/11 are not on the header. GPIO 16/17 are UART0,
+                so move the console to USB Serial/JTAG when using them. Avoid GPIO 8/9 (boot
+                strapping) and 15 (on-board LED).
 
     config DEVICE_MAX_VALVE_CONFIG
         int "Maximum single valve setups"

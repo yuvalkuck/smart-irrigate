@@ -6,8 +6,9 @@
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
 #include "logger.h"
+#include "gpio_declaraion.h"
 static const char* TAG = "Wind:";
-#define WIND_ADC_CHANNEL     ADC_CHANNEL_3
+#define WIND_ADC_CHANNEL     GPIO_WIND_EXPANSION
 #define WIND_ADC_ATTEN       ADC_ATTEN_DB_12
 #define WIND_ADC_BITWIDTH    ADC_BITWIDTH_DEFAULT
 

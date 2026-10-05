@@ -10,7 +10,7 @@
 #define GPIO_LED             GPIO_NUM_15  // Status LED
 #define GPIO_CONFIG_MODE_PIN GPIO_NUM_23  // Shifted to avoid sensitive analog blocks
 #define GPIO_ONEWIRE_BUS     GPIO_NUM_4   // Isolated 1-Wire pin to handle 10m cable noise
-#define GPIO_WIND_EXPANSION  GPIO_NUM_5   //
+#define GPIO_WIND_EXPANSION  ADC_CHANNEL_3 //
 #define I2C_PORT             I2C_NUM_0
 #define I2C_SDA_PIN          GPIO_NUM_19
 #define I2C_SCL_PIN          GPIO_NUM_20
