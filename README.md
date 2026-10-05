@@ -170,7 +170,7 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 | ESP32-S3 companion | On | **Off** |
 | Valves open at once | set by `DEVICE_MAX_SIMULTANEOUS_OPEN_VALVES` (menuconfig under "Main Power ON", default 2, range 2-16; design range 2-4), starts staggered ~0.5 s | **1**, time-sliced round robin: each valve gets a slice of at most `DEVICE_MAX_ROUND_ROBIN_TIME_MINI` minutes (menuconfig under "Main Battery ON", default 10, range 5-30), then the next valve with remaining time, until all counters reach zero |
 | Valve switch order | Close old, wait ~1 s, open next (one-valve mode) | Same |
-| LCD2004 | Wakes on button, off after N minutes | **Off** |
+| LCD2004 (driven by the ESP32-S3) | Wakes on button, off after N minutes | **Off** (the S3 is off) |
 | Status LED (`GPIO_LED`) | Startup errors only | Startup errors only |
 | Battery indicator | Off | Slow-blink LED (pin **TBD**) |
 | 24 VAC converter | Enabled only while a valve is open | Enabled only while a valve is open |
@@ -197,8 +197,8 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 | DS18B20 (1-Wire) | Soil temperature | Yes | Yes |
 | XDB401 pressure transmitter | Line pressure and no-water check | Yes | Yes |
 | Wind sensor (0-5 V) | Wind speed | Yes | Yes |
-| LCD2004 with I2C backpack | Local display | Yes (on request) | **No** |
-| LCD wake button, LCD power switch | Display control | Yes | No |
+| LCD2004 with I2C backpack | Local display, driven by the ESP32-S3 (its own I2C bus, not the C6 sensor bus) | Yes (on request) | **No** |
+| LCD wake button, LCD power switch | Display control, on ESP32-S3 GPIOs | Yes | No |
 | Status LED (`GPIO_LED`) | Startup error indicator | Yes | Yes (errors only) |
 | Battery-state LED (slow blink) | Shows battery mode | No | Yes |
 | Config switch (GPIO 23) | Boot into Configuration Mode | Boot only | **Ignored** |
@@ -218,7 +218,7 @@ Battery sizing for 12 h idle plus 3 h of one valve is about 13 Wh usable, so two
 ### Open decisions
 * **TBD:** how the 24 VAC converter regulates the valve voltage (built into the converter, or a separate stage).
 * **TBD:** select the 24 VAC converter. It must produce an acceptable waveform and voltage for the Galcon valves (run cool and quiet) and have an enable control. A square wave is acceptable if the valves tolerate it; otherwise use a sine-modulated H-bridge on a 36-42 V bus, or a 12 V sine inverter feeding a 24 V transformer.
-* **TBD:** inputs and outputs for the mains-detect input, battery sense, LCD wake button, LCD power switch, battery LED and the 24 VAC converter enable. With 8 valves every safe GPIO on the FireBeetle 2 header is used (1, 2, 3, 4, 5, 6, 7, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23; 8 and 9 are boot-strapping pins), so these need an I2C expander (e.g. PCF8574) and an I2C ADC for battery sense (e.g. ADS1115) on the existing I2C bus.
+* **TBD:** inputs and outputs for the mains-detect input, battery sense, battery LED and the 24 VAC converter enable (the LCD has moved to the ESP32-S3, which is off on battery, so it no longer needs C6 pins). With 8 valves every safe GPIO on the FireBeetle 2 header is used (1, 2, 3, 4, 5, 6, 7, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23; 8 and 9 are boot-strapping pins), so these need an I2C expander (e.g. PCF8574) and an I2C ADC for battery sense (e.g. ADS1115) on the existing I2C bus.
 
 ## Physical Placement: Separate Enclosures
 
@@ -348,6 +348,7 @@ The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time
   * *Analog Wind Speed Sensor (GPIO 3):* Interfaced directly to the secondary analog channel. Because the sensor outputs a 0–5V range, an external voltage divider circuit steps the incoming voltage down to a safe, readable level. The software maps this reading back to the true 0.0–30.0 meters per second wind speed curve.(ADC1_CH3)
 * **Valve Relays:** **GPIO 1, 14, 18, 21, 22, 16, 17, 5** for valves 1-8, set by `CONFIG_DYNAMIC_VALVE_GPIO_LIST` with `CONFIG_DEVICE_MAX_VALVES` = 8. The FireBeetle 2 ESP32-C6 header has no GPIO 10 or 11. GPIO 16/17 are UART0, so the console must run on USB Serial/JTAG. GPIO 8/9 (boot strapping) and 15 (on-board LED) are not used for valves. More than 8 valves needs an I2C GPIO expander.
 * **Inter-Chip Link (ESP32-S3 Connection):** **GPIO 6 (TX)** and **GPIO 7 (RX)**. A UART link connecting the FireBeetle 2 to a companion ESP32-S3 module, with GPIO 6 wired to the ESP32-S3's RX pin and GPIO 7 to its TX pin.
+* **LCD2004 (on the ESP32-S3):** the display, its wake button and its power switch are wired to the ESP32-S3, not the C6. The LCD is a mains-only feature (it is off on battery, like the S3), so it uses the S3's spare GPIOs. Proposed S3 pins: I2C SDA GPIO 8, SCL GPIO 9, wake button GPIO 4, LCD power switch GPIO 5 (avoiding the S3's strapping pins 0/3/45/46, USB pins 19/20 and the octal-PSRAM pins 35-37 on N16R8 boards). **TBD:** confirm when the S3 is added.
 
 ### Network & Protocol Configurations
 The network architecture is configured natively under the revised ESP-IDF 6.0 components using the following specifications:
