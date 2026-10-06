@@ -15,9 +15,11 @@ extern "C" {
             |--- program
                 |--- task
 */
+    // type of program a valve may get
 typedef enum ProgramType_t {
     ProgramTyNormal = 0x01,
-    ProgramTyEmergency = 0x02
+    ProgramTyEmergency = 0x02,
+    ProgramTyBattery = 0x03
 } ProgramType;
 
 typedef struct {
