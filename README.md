@@ -120,6 +120,17 @@ The device natively manages a matrix of **8 independent physical water valves** 
 
 ---
 
+## Sensors
+
+| Name / code | Description |
+|---|---|
+| BMP581 | Barometric pressure and temperature, for rain-front prediction. |
+| SHT41 | Ambient air temperature and relative humidity, for vapor pressure deficit. |
+| TSL2591 | Visible and infrared light intensity, for solar load. |
+| DS18B20 | Soil temperature 5-10 cm deep, for soil thermal mass tracking. |
+| XDB401 | Water line pressure, for no-water detection. |
+| Analog wind sensor (0-5 V) | Wind speed from 0 to 30 m/s. |
+
 ## Power Architecture
 
 > **Status: design under evaluation.** Nothing here is built yet. Power figures are datasheet-typical estimates, not measurements. Items marked **TBD** are open decisions.
