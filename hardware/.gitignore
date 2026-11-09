@@ -1,4 +1,6 @@
 ~*
+*.dsn
+*.ses
 *.swp
 *.zip
 *.tgz
@@ -6,3 +8,5 @@
 *.tar.bz2
 *.bak
 */fab/**
+*/production/**
+*/logs/**
