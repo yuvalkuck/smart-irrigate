@@ -16537,6 +16537,170 @@
 		(color 0 0 0 0)
 		(uuid "cddfcad3-c709-4e0e-905f-8982c89a3cba")
 	)
+	(junction
+		(at 227.33 87.63)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5d0a7e10-6b1c-4f3a-9e21-7c4b1a2d3e01")
+	)
+	(wire
+		(pts
+			(xy 227.33 87.63) (xy 236.22 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5d0a7e10-6b1c-4f3a-9e21-7c4b1a2d3e02")
+	)
+	(wire
+		(pts
+			(xy 236.22 74.93) (xy 236.22 80.01)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5d0a7e10-6b1c-4f3a-9e21-7c4b1a2d3e04")
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 236.22 74.93 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "5d0a7e10-6b1c-4f3a-9e21-7c4b1a2d3e05")
+		(property "Reference" "#PWR040"
+			(at 236.22 74.93 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 236.22 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 236.22 74.93 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 236.22 74.93 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol"
+			(at 236.22 74.93 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5d0a7e10-6b1c-4f3a-9e21-7c4b1a2d3e06")
+		)
+		(instances
+			(project "mainboard"
+				(path "/c0872c10-a613-4030-a61b-41049bff9947"
+					(reference "#PWR040")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 236.22 83.82 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "5d0a7e10-6b1c-4f3a-9e21-7c4b1a2d3e07")
+		(property "Reference" "R16"
+			(at 238.76 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10k"
+			(at 238.76 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 234.442 83.82 90)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 236.22 83.82 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "S3_TX (C6 RX) idle pull-up, keeps the UART line high with no S3"
+			(at 236.22 83.82 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5d0a7e10-6b1c-4f3a-9e21-7c4b1a2d3e08")
+		)
+		(pin "2"
+			(uuid "5d0a7e10-6b1c-4f3a-9e21-7c4b1a2d3e09")
+		)
+		(instances
+			(project "mainboard"
+				(path "/c0872c10-a613-4030-a61b-41049bff9947"
+					(reference "R16")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(sheet_instances
 		(path "/"
 			(page "1")
