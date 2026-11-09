@@ -203,7 +203,8 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 | RC snubber (~0.1 uF + 47-100 ohm), shared | Edge softening, relay contact protection | Yes | Yes |
 | Fuses (converter input, 24 V side) | Protection | Yes | Yes |
 | Mains-detect input (PSU DC-OK or optocoupler) | Selects the mode | Yes | Yes |
-| Battery-voltage sense (ADC divider) | Low-battery warning | Yes | Yes |
+| ADS1115 (I2C, 16-bit ADC) | Reads battery voltage, wind speed and line pressure | Yes | Yes |
+| Battery-voltage sense (divider into the ADS1115) | Low-battery warning | Yes | Yes |
 | BMP581, SHT41 (I2C) | Weather sensors | Yes | Yes |
 | DS18B20 (1-Wire) | Soil temperature | Yes | Yes |
 | XDB401 pressure transmitter | Line pressure and no-water check | Yes | Yes |
@@ -229,7 +230,7 @@ Battery sizing for 12 h idle plus 3 h of one valve is about 13 Wh usable, so two
 ### Open decisions
 * **TBD:** how the 24 VAC converter regulates the valve voltage (built into the converter, or a separate stage).
 * **TBD:** select the 24 VAC converter. It must produce an acceptable waveform and voltage for the Galcon valves (run cool and quiet) and have an enable control. A square wave is acceptable if the valves tolerate it; otherwise use a sine-modulated H-bridge on a 36-42 V bus, or a 12 V sine inverter feeding a 24 V transformer.
-* **TBD:** inputs and outputs for the mains-detect input, battery sense, battery LED and the 24 VAC converter enable (the LCD has moved to the ESP32-S3, which is off on battery, so it no longer needs C6 pins). With 8 valves every safe GPIO on the FireBeetle 2 header is used (1, 2, 3, 4, 5, 6, 7, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23; 8 and 9 are boot-strapping pins), so these need an I2C expander (e.g. PCF8574) and an I2C ADC for battery sense (e.g. ADS1115) on the existing I2C bus.
+* **TBD:** inputs and outputs for the mains-detect input, battery sense, battery LED and the 24 VAC converter enable (the LCD has moved to the ESP32-S3, which is off on battery, so it no longer needs C6 pins). With 8 valves every safe GPIO on the FireBeetle 2 header is used (1, 2, 3, 4, 5, 6, 7, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23; 8 and 9 are boot-strapping pins), so these need an I2C expander (e.g. PCF8574) on the existing I2C bus. Battery sense no longer needs a pin: all analog inputs are read by the ADS1115 (see "Hardware Pin Configurations"), which frees GPIO 2 and 3.
 
 ## Physical Placement: Separate Enclosures
 
@@ -252,6 +253,7 @@ graph LR
 
     subgraph MAIN["Main box"]
         PSU[27.6 V PSU]
+        ADS[ADS1115]
         BUCK5[Buck 24 V to 5 V]
         CONV[24 VAC converter]
         C6[ESP32-C6]
@@ -296,8 +298,10 @@ graph LR
     C6 <-- "I2C GPIO 19 and 20" --> BMP
     C6 <-- "RS-485 GPIO 8, 9 and 15" --> CLUSTER
     C6 <-- "I2C GPIO 19 and 20" --> SHT
-    WIND -- "analog GPIO 3" --> C6
-    XDB -- "analog GPIO 2" --> C6
+    C6 <-- "I2C GPIO 19 and 20" --> ADS
+    WIND -- "analog 0-5 V" --> ADS
+    XDB -- "analog" --> ADS
+    BAT -- "analog, through a divider" --> ADS
     DS <-- "1-Wire GPIO 4" --> C6
     C6 -- "valve GPIOs 1 14 18 21 22 16 17 5" --> RELAY
     CONV -- "24 VAC, 50 Hz" --> RELAY
@@ -350,13 +354,17 @@ The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time
 * **Shared I2C Bus:** **GPIO 19 (SDA)** and **GPIO 20 (SCL)**. This digital serial bus multiplexes data extraction lines from the local environment sensors.
   * *SHT41 Sensor:* Provides precision ambient temperature and relative humidity parameters via fixed I2C signaling.
   * *BMP581 Sensor:* Transmits targeted barometric pressure metrics and ambient temperature data.
-  * *Note:* Both sensors function on the exact same physical GPIO 19 and 20 paths, utilizing unique factory hardware address layers to prevent data line collisions.
+  * *ADS1115 ADC:* Reads the battery voltage, wind speed and line pressure (see "Analog Interface Architecture"). Address 0x48 (ADDR pin on GND).
+  * *Note:* All the devices function on the exact same physical GPIO 19 and 20 paths, utilizing unique hardware address layers to prevent data line collisions.
 * **RS-485 Link to the Sensor Cluster:** **GPIO 9 (TX)**, **GPIO 8 (RX)** and **GPIO 15 (DE and /RE)**, through a MAX3485 to terminal J5 (1 = A, 2 = B, 3 = +5 V, 4 = GND).
 * **1-Wire Serial Interface:** **GPIO 4**. Configured as an open-drain bidirectional digital line with a dedicated external pull-up resistor.
   * *DS18B20 Sensor:* Provides high-accuracy underground soil thermal parameters using the precision timing 1-Wire protocol.
-* **Analog Interface Architecture:** The system uses two independent analog input channels to gather real-time data from physical equipment.
-  * *XDB401 Pressure Transmitter (GPIO 2):* Interfaced directly to the primary analog channel. It records real-time water line pressure values, using hardware conditioning to scale raw output signals down to fit within safe internal limits.(ADC1_CH2)
-  * *Analog Wind Speed Sensor (GPIO 3):* Interfaced directly to the secondary analog channel. Because the sensor outputs a 0–5V range, an external voltage divider circuit steps the incoming voltage down to a safe, readable level. The software maps this reading back to the true 0.0–30.0 meters per second wind speed curve.(ADC1_CH3)
+* **Analog Interface Architecture:** All analog inputs are read by one **ADS1115** 16-bit ADC on the shared I2C bus (GPIO 19 and 20), not by the ESP32-C6 internal ADC, which is noisy and non-linear. No C6 GPIO is used for analog signals. Proposed channel order (the schematic is not updated yet): A0 battery voltage, A1 XDB401 pressure, A2 wind speed.
+  * *Battery voltage:* Divided down from the 24 V bus (about 1:9, so 27.6 V gives under 3.3 V). Use 0.1% resistors, because the divider sets the accuracy.
+  * *XDB401 Pressure Transmitter:* Records real-time water line pressure, with hardware conditioning to scale the output signal to fit within the ADS1115 input limits.
+  * *Analog Wind Speed Sensor:* Because the sensor outputs a 0–5V range, an external voltage divider circuit steps the incoming voltage down to a safe, readable level. The software maps this reading back to the true 0.0–30.0 meters per second wind speed curve.
+  * *Input protection (each channel):* A divider so a pin never exceeds 3.3 V, a 1 to 10 kohm series resistor, a clamp to 3.3 V and GND at the pin, and a 10 to 100 nF capacitor to GND. The ADS1115 is powered from the 3.3 V rail only, with 100 nF at VDD.
+  * **TBD:** valve fail-safe when the ADS1115 stops answering, for example the "No Water Pressure" check cannot run. Either close the valve, or run it on a timer only.
 * **Valve Relays:** **GPIO 1, 14, 18, 21, 22, 16, 17, 5** for valves 1-8, set by `CONFIG_DYNAMIC_VALVE_GPIO_LIST` with `CONFIG_DEVICE_MAX_VALVES` = 8. The FireBeetle 2 ESP32-C6 header has no GPIO 10 or 11. GPIO 16/17 are UART0, so the console must run on USB Serial/JTAG. GPIO 8/9 (boot strapping) and 15 (on-board LED) are not used for valves. More than 8 valves needs an I2C GPIO expander.
 * **Inter-Chip Link (ESP32-S3 Connection):** **GPIO 6 (TX)** and **GPIO 7 (RX)**. A UART link connecting the FireBeetle 2 to a companion ESP32-S3 module, with GPIO 6 wired to the ESP32-S3's RX pin and GPIO 7 to its TX pin.
 * **LCD2004 (on the ESP32-S3):** the display, its wake button and its power switch are wired to the ESP32-S3, not the C6. The LCD is a mains-only feature (it is off on battery, like the S3), so it uses the S3's spare GPIOs. Proposed S3 pins: I2C SDA GPIO 8, SCL GPIO 9, wake button GPIO 4, LCD power switch GPIO 5 (avoiding the S3's strapping pins 0/3/45/46, USB pins 19/20 and the octal-PSRAM pins 35-37 on N16R8 boards). **TBD:** confirm when the S3 is added.
@@ -366,7 +374,7 @@ The network architecture is configured natively under the revised ESP-IDF 6.0 co
 * **Wi-Fi Subsystem:** Tailored to exploit the ESP32-C6 radio. It hooks into the global `esp_event` loop framework to transition automatically between the SoftAP + HTTP server configuration topology and the automated Station network connector profile.
 * **Internet Time Synchronization (SNTP):** Utilizing the native **`esp_netif_sntp` framework** optimized in ESP-IDF 6.0. Upon establishing an active station connection in Operational Mode, the system queries public Network Time Protocol (NTP) pools via network sockets to configure and adjust the internal hardware Real-Time Clock (RTC). This guarantees millisecond-accurate scheduling logs and execution timestamps for all 48 optional irrigation events without needing a local hardware RTC battery module.
 * **MQTT Client Configuration:** Powered by the core communication component, it parses data over two primary pipelines:
-    * *Telemetry & Event Topic (Outbound):* A target path used to broadcast serialized data detailing live water pressure, wind speed in meters per second from GPIO 3, ambient temperature, humidity, and immediate valve state event logs.
+    * *Telemetry & Event Topic (Outbound):* A target path used to broadcast serialized data detailing live water pressure, wind speed in meters per second, ambient temperature, humidity, and immediate valve state event logs.
     * *Command/Configuration Topic (Inbound):* A real-time subscription pathway that intercepts remote instructions, environmental baseline thresholds, historical seasonal data packets, and the 6-event scheduler layouts for each of the 8 compiled valves.
 
 ### Storage & Partition Layout Architecture
