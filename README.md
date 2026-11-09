@@ -182,7 +182,7 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 | Valves open at once | set by `DEVICE_MAX_SIMULTANEOUS_OPEN_VALVES` (menuconfig under "Main Power ON", default 2, range 2-16; design range 2-4), starts staggered ~0.5 s | **1**, time-sliced round robin: each valve gets a slice of at most `DEVICE_MAX_ROUND_ROBIN_TIME_MINI` minutes (menuconfig under "Main Battery ON", default 10, range 5-30), then the next valve with remaining time, until all counters reach zero |
 | Valve switch order | Close old, wait ~1 s, open next (one-valve mode) | Same |
 | LCD2004 (driven by the ESP32-S3) | Wakes on button, off after N minutes | **Off** (the S3 is off) |
-| Status LED (`GPIO_LED`) | Startup errors only | Startup errors only |
+| Status LED (`LED_Pin`) | Startup errors only | Startup errors only |
 | Battery indicator | Off | Slow-blink LED (pin **TBD**) |
 | 24 VAC converter | Enabled only while a valve is open | Enabled only while a valve is open |
 
@@ -210,7 +210,7 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 | Wind sensor (0-5 V) | Wind speed | Yes | Yes |
 | LCD2004 with I2C backpack | Local display, driven by the ESP32-S3 (its own I2C bus, not the C6 sensor bus) | Yes (on request) | **No** |
 | LCD wake button, LCD power switch | Display control, on ESP32-S3 GPIOs | Yes | No |
-| Status LED (`GPIO_LED`) | Startup error indicator | Yes | Yes (errors only) |
+| Status LED (`LED_Pin`) | Startup error indicator | Yes | Yes (errors only) |
 | Battery-state LED (slow blink) | Shows battery mode | No | Yes |
 | Config switch (GPIO 23) | Boot into Configuration Mode | Boot only | **Ignored** |
 

@@ -19,9 +19,6 @@
 #include "gpio_declaraion.h"
 #include "onewire_bus.h"
 #include "esp_idf_version.h"
-#if defined(ESP32S3_UART)
-#include "driver/uart.h"
-#endif
 enum blinkPattern_t {
     AllGood = 0,
     SetupMode = 1,
@@ -34,7 +31,7 @@ void init_event_app_handle();
 
 static void setLedState(int fliper) {
     // ESP_LOGI(TAG, "set %d", fliper);
-    gpio_set_level((gpio_num_t)GPIO_LED, fliper);
+    gpio_set_level((gpio_num_t)LED_Pin, fliper);
 }
 
 void continue_after_time_sync_cb(struct timeval* tv) {
@@ -61,13 +58,13 @@ std::array<gpio_num_t, CONFIG_DEVICE_MAX_VALVES> valve_gpio_pins{};
 extern onewire_bus_handle_t onewire_bus_handle;
 static void init_gpio() {
     // === Status Indication ===
-    gpio_reset_pin(GPIO_LED);
-    gpio_set_direction(GPIO_LED, GPIO_MODE_OUTPUT);
+    gpio_reset_pin(LED_Pin);
+    gpio_set_direction(LED_Pin, GPIO_MODE_OUTPUT);
 
     // === 1. Local Configuration Mode Intercept Switch ===
-    gpio_reset_pin(GPIO_CONFIG_MODE_PIN);
+    gpio_reset_pin(CONFIG_MODE_Pin);
     const gpio_config_t config_mode_switch_conf = {
-        .pin_bit_mask = (1ULL << GPIO_CONFIG_MODE_PIN),
+        .pin_bit_mask = (1ULL << CONFIG_MODE_Pin),
         .mode = GPIO_MODE_INPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE, // CHANGED: Disabled internal pull-up to use external 10k resistor
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -122,7 +119,7 @@ static void init_gpio() {
 
     // === 4. 1-Wire Serial Interface (DS18B20 Soil Thermal) ===
     onewire_bus_config_t bus_config = {
-        .bus_gpio_num = GPIO_ONEWIRE_BUS,
+        .bus_gpio_num = ONEWIRE_Pin,
         .flags = {
             .en_pull_up = true,   // matches your original GPIO_PULLUP_ENABLE fallback
         },
@@ -155,35 +152,13 @@ static void init_adc() {
     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_2, &config));
     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_3, &config));
 }
-#if defined(ESP32S3_UART)
-static void init_s3_uart_link() {
-    const uart_config_t uart_config = {
-        .baud_rate = 115200,          // Standard stable cross-chip transfer rate
-        .data_bits = UART_DATA_8_BITS,
-        .parity    = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .source_clk = UART_SCLK_DEFAULT,
-    };
-
-    // Install the driver using the defined port configuration
-    ESP_ERROR_CHECK(uart_driver_install(S3_LINK_UART_PORT, S3_LINK_UART_BUFF * 2, 0, 0, nullptr, 0));
-    ESP_ERROR_CHECK(uart_param_config(S3_LINK_UART_PORT, &uart_config));
-
-    // Route the hardware matrix signals directly to your specific safe macro pins
-    ESP_ERROR_CHECK(uart_set_pin(S3_LINK_UART_PORT, GPIO_S3_LINK_TX, GPIO_S3_LINK_RX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
-}
-#endif
 
 extern "C" [[noreturn]] void app_main(void) {
     METHODTRACE
     init_gpio();
     init_adc();
-#if defined(ESP32S3_UART)
-    init_s3_uart_link();
-#endif
     //Initialize NVS
-    bool initRegular = (gpio_get_level(GPIO_CONFIG_MODE_PIN) == 0 ? false : true);
+    bool initRegular = (gpio_get_level(CONFIG_MODE_Pin) == 0 ? false : true);
     esp_err_t ret = init_flash();
 
     ESP_ERROR_CHECK(ret);

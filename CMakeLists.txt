@@ -29,3 +29,19 @@ SET(INITIATE_NTP_SERVER "$ENV{INITIATE_NTP_SERVER}")
 SET(INITIATE_DEFAULT_LOCALE_TIME_ZONE "$ENV{INITIATE_DEFAULT_LOCALE_TIME_ZONE}")
 configure_file(${CMAKE_CURRENT_LIST_DIR}/components/common/gen/default_initiate.in.h ${CMAKE_CURRENT_LIST_DIR}/components/common/include/default_initiate.h)
 
+
+#
+# Board pin map: hardware/boards/<BOARD>.cmake -> components/common/include/gpio_declaraion.h
+#
+set(BOARD "firebeetle2_c6" CACHE STRING "Board pin map in hardware/boards/")
+include(${CMAKE_CURRENT_LIST_DIR}/hardware/boards/${BOARD}.cmake)
+set(_pin_vars PIN_LED PIN_CONFIG_MODE PIN_ONEWIRE PIN_I2C_SDA PIN_I2C_SCL
+        PIN_RS485_TX PIN_RS485_RX PIN_RS485_DE)
+set(_used_pins "")
+foreach (_var ${_pin_vars})
+    if (${_var} IN_LIST _used_pins)
+        message(WARNING "Board ${BOARD}: GPIO ${${_var}} assigned twice (${_var})")
+    endif ()
+    list(APPEND _used_pins ${${_var}})
+endforeach ()
+configure_file(${CMAKE_CURRENT_LIST_DIR}/components/common/gen/gpio_declaraion.in.h ${CMAKE_CURRENT_LIST_DIR}/components/common/include/gpio_declaraion.h @ONLY)

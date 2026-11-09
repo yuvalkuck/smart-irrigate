@@ -8,7 +8,7 @@
 #include "logger.h"
 #include "gpio_declaraion.h"
 static const char* TAG = "Wind:";
-#define WIND_ADC_CHANNEL     GPIO_WIND_EXPANSION
+#define WIND_ADC_CHANNEL     WIND_EXPANSION_Pin
 #define WIND_ADC_ATTEN       ADC_ATTEN_DB_12
 #define WIND_ADC_BITWIDTH    ADC_BITWIDTH_DEFAULT
 

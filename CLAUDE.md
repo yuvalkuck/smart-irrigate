@@ -90,7 +90,7 @@ flashing, and observing serial logs / MQTT traffic.
 ### Boot flow (`main/entrypoint.cpp`)
 
 `app_main()` always initializes GPIO (valve relays, LED, 1-Wire bus) and ADC (water pressure, wind
-speed channels) first, then branches on `GPIO_CONFIG_MODE_PIN` (GPIO 23) read at boot **and** whether
+speed channels) first, then branches on `CONFIG_MODE_Pin` (GPIO 23) read at boot **and** whether
 Wi-Fi credentials exist in NVS:
 
 - **Configuration Mode** (button held low at boot, or no stored Wi-Fi SSID): starts a SoftAP + HTTP

@@ -50,9 +50,9 @@ adc_oneshot_unit_handle_t adc_handle;
 onewire_bus_handle_t onewire_bus_handle;
 static i2c_master_bus_handle_t master_bus_handler;
 static i2c_master_bus_config_t master_bus_config = {
-    .i2c_port = I2C_PORT,
-    .sda_io_num = I2C_SDA_PIN,
-    .scl_io_num = I2C_SCL_PIN,
+    .i2c_port = I2C_Port,
+    .sda_io_num = I2C_SDA_Pin,
+    .scl_io_num = I2C_SCL_Pin,
     .clk_source = I2C_CLK_SRC_DEFAULT,
     .glitch_ignore_cnt = 7
 

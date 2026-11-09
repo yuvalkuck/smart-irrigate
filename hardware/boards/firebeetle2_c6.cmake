@@ -1,0 +1,11 @@
+# Pin map for DFRobot FireBeetle 2 ESP32-C6. Select with: idf.py -DBOARD=<file name without .cmake>
+set(PIN_LED 15)
+set(PIN_CONFIG_MODE 23)
+set(PIN_ONEWIRE 4)
+set(PIN_I2C_SDA 19)
+set(PIN_I2C_SCL 20)
+set(PIN_RS485_TX 9)
+set(PIN_RS485_RX 8)
+set(PIN_RS485_DE 15)
+set(ADC_CH_PRESSURE 2)
+set(ADC_CH_WIND 3)
