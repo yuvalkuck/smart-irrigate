@@ -102,7 +102,7 @@ graph TD
 ### Predictive & Macro-Environmental Irrigation Control
 Smart Irrigate explicitly avoids relying on a high density of localized ground moisture probes. Because ground sensors only reflect moisture in a very localized, narrow radius, they fail to account for the broader macro-environmental variables driving true plant transpiration and soil evaporation. Instead, this system utilizes an advanced atmospheric and thermal tracking approach to calculate total water demand:
 * **Evapotranspiration & Microclimate Analysis:** Rather than measuring stagnant ground moisture, the device continuously samples ambient air temperature, relative humidity (via the SHT41), and barometric pressure (via the BMP581). By combining these real-time data streams, the system monitors the vapor pressure deficit (VPD) and thermal conditions that directly influence how fast plants lose water and how quickly the ground dries up.
-* **Solar Load Quantification:** To prevent identical watering behaviors on overcast versus clear days, the system utilizes a high-dynamic-range digital light sensor (TSL2591) to capture both visible and infrared light intensities. This real-time solar irradiance data allows the edge logic to accurately model solar energy accumulation across the landscape zone.
+* **Solar Load Quantification:** To prevent identical watering behaviors on overcast versus clear days, the system utilizes a solar panel on the sensor cluster to measure the sunlight level. This real-time solar irradiance data allows the edge logic to accurately model solar energy accumulation across the landscape zone.
 * **Thermal Inertia & Soil Mass Tracking:** A ruggedized, single-point digital thermometer (DS18B20) is deployed just below the topsoil layer. This serves as a thermal anchor, tracking core soil temperature trends against rapid shifts in air temperature to accurately determine evaporation behavior influenced by soil thermal mass.
 * **Boundary Layer Wind Dynamics (Active Analog Processing):** To account for wind stripping away the humid air layer around leaves and increasing plant water loss, the system actively processes live wind speed metrics. An analog wind sensor continuously tracks ambient velocities up to 30 meters per second with a high-accuracy resolution of 0.1 meters per second. The edge logic combines this velocity data with local temperature and humidity readings, automatically increasing watering durations during windy periods to compensate for faster soil drying.
 * **Barometric Weather Prediction & Seasonal Inflection Tracking:** The system monitors short-term barometric pressure tendencies using the BMP581 to anticipate regional rain fronts, adjusting upcoming irrigation volumes dynamically. On a macro-scale, the device cross-references its real-time atmospheric tracking with historical trends sent via the MQTT broker to map seasonal inflections (e.g., changes in solar intensity, regional winds, and seasonal dry spells). This atmospheric data profile allows the system to accurately predict landscape water depletion across the entire zone without deploying numerous spot-checking ground probes.
@@ -126,7 +126,7 @@ The device natively manages a matrix of **8 independent physical water valves** 
 |---|---|
 | BMP581 | Barometric pressure and temperature, for rain-front prediction. |
 | SHT41 | Ambient air temperature and relative humidity, for vapor pressure deficit. |
-| TSL2591 | Visible and infrared light intensity, for solar load. |
+| Solar panel | Sunlight level, for solar load. On the sensor cluster. |
 | DS18B20 | Soil temperature 5-10 cm deep, for soil thermal mass tracking. |
 | XDB401 | Water line pressure, for no-water detection. |
 | Analog wind sensor (0-5 V) | Wind speed from 0 to 30 m/s. |
@@ -204,7 +204,7 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 | Fuses (converter input, 24 V side) | Protection | Yes | Yes |
 | Mains-detect input (PSU DC-OK or optocoupler) | Selects the mode | Yes | Yes |
 | Battery-voltage sense (ADC divider) | Low-battery warning | Yes | Yes |
-| BMP581, SHT41, TSL2591 (I2C) | Weather sensors | Yes | Yes |
+| BMP581, SHT41 (I2C) | Weather sensors | Yes | Yes |
 | DS18B20 (1-Wire) | Soil temperature | Yes | Yes |
 | XDB401 pressure transmitter | Line pressure and no-water check | Yes | Yes |
 | Wind sensor (0-5 V) | Wind speed | Yes | Yes |
@@ -239,7 +239,7 @@ The components do not share one box. Placement is decided by what each part can 
 |---|---|---|---|
 | **Main box** | ESP32-C6, ESP32-S3, BMP581, 8-channel relay board, 27.6 V PSU, buck converter to 5 V, 24 VAC converter, fuses | Indoors or a sheltered spot | Sealed. 230 V side kept apart from the low-voltage side. BMP581 needs a small vent to outside air. |
 | **Battery box** | 2 x 12 V batteries (series) | Next to the main box | Vented to open air, shaded and cool. Short fused cable to the main box through a gland. Lead-acid gives off hydrogen when charging, so keep it out of the main box. |
-| **Sensor mast** | TSL2591 (top, sealed dome facing up), SHT41 (lower, ventilated radiation shield) | Outdoors, at least 1 m above the roof, clear sky view | Housings at least 30 cm apart. One short shared I2C cable. SHT41 in shade with free airflow. |
+| **Sensor mast** | SHT41 (ventilated radiation shield) | Outdoors, at least 1 m above the roof, clear sky view | Housings at least 30 cm apart. One short shared I2C cable. SHT41 in shade with free airflow. |
 | **Roof mast (no box)** | Wind sensor | Roof, 1-2 m above the ridge, clear of the other housings | Weatherproof as bought. Pole mounted, level, with a drip loop in the cable. |
 | **Soil (no box)** | DS18B20 | Irrigated zone, 5-10 cm deep | Waterproof probe in a sealed sleeve. Strain relief at the surface. |
 | **Water line (no box)** | XDB401 | Tee near the manifold | Threaded fitting, upright or sideways. Add an isolation valve. |
@@ -265,7 +265,7 @@ graph LR
     end
 
     subgraph MAST["Sensor mast"]
-        TSL[TSL2591]
+        CLUSTER[Sensor cluster]
         SHT[SHT41]
     end
 
@@ -294,7 +294,7 @@ graph LR
     BUCK5 -- 5 V --> RELAY
     C6 <-- "UART GPIO 6 and 7" --> S3
     C6 <-- "I2C GPIO 19 and 20" --> BMP
-    C6 <-- "I2C GPIO 19 and 20" --> TSL
+    C6 <-- "RS-485 GPIO 8, 9 and 15" --> CLUSTER
     C6 <-- "I2C GPIO 19 and 20" --> SHT
     WIND -- "analog GPIO 3" --> C6
     XDB -- "analog GPIO 2" --> C6
@@ -317,7 +317,7 @@ The 24 V bus carries power from the PSU to the battery, and from the battery to 
 | **3. Boxes** | Move into the real enclosures | Main box, battery box, sensor mast, roof mast, soil probe and water-line fitting (see "Physical Placement"). Fuses, an RCD on the mains side, correctly rated enclosures, a manual shutoff valve on the water line. |
 | **4. Live test run** | Run the system for real, even without the large battery | Failure tests: power cut, Wi-Fi loss, no water pressure, a dead sensor, a reboot mid-watering (the valves must close in every case). Measure the real power draw to check the estimates, then size the battery. Confirm OTA updates or serial access with the boxes closed. |
 | **5. Outdoor soak test** | Find weather and drift problems | A few weeks outdoors: condensation, heat in the main box, UV on the cables. Calibrate the wind and pressure sensors. |
-| **6. PCB** | Replace the modules with a custom board | Freeze the design first. Version 1: a main board with ESP32 WROOM modules, relays, power conversion and connectors for the remote sensors, plus a small satellite board for the SHT41 and TSL2591 on the mast. Keep the 230 V PSU a separate module. |
+| **6. PCB** | Replace the modules with a custom board | Freeze the design first. Version 1: a main board with ESP32 WROOM modules, relays, power conversion and connectors for the remote sensors, plus a small satellite board for the SHT41 on the mast. Keep the 230 V PSU a separate module. |
 
 ## Heat and Environment
 
@@ -330,7 +330,7 @@ Summer here can reach 36 C ambient with humidity as low as 30%. A box in direct 
 | PSU and converters | Often rated 40-50 C at full load | They derate, and run hot in a closed box | Size at 50% load or less, keep them away from other heat sources |
 | 8-channel relay board | About 70-85 C | Coils add heat, and contacts age faster when hot | Mount low in the box with airflow |
 | LCD2004 | About 0-50 C, some -20 to 70 C | Washes out or fails first | Keep it in the shade, and off when not in use |
-| SHT41, BMP581, TSL2591, DS18B20 | 80-125 C or more | Wrong readings, not damage | Radiation shield, away from walls |
+| SHT41, BMP581, DS18B20 | 80-125 C or more | Wrong readings, not damage | Radiation shield, away from walls |
 
 Low humidity is easy on the electronics, but dry air raises the static risk, so ground the metal parts and avoid plastic rubbing against plastic near the boards. Condensation can still form when the boxes cool at night.
 
@@ -350,8 +350,8 @@ The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time
 * **Shared I2C Bus:** **GPIO 19 (SDA)** and **GPIO 20 (SCL)**. This digital serial bus multiplexes data extraction lines from the local environment sensors.
   * *SHT41 Sensor:* Provides precision ambient temperature and relative humidity parameters via fixed I2C signaling.
   * *BMP581 Sensor:* Transmits targeted barometric pressure metrics and ambient temperature data.
-  * *TSL2591 Sensor:* Measures high-resolution visible and infrared light spectrum intensities to calculate real-time solar irradiance load.
-  * *Note:* All three sensors function on the exact same physical GPIO 19 and 20 paths, utilizing unique factory hardware address layers to prevent data line collisions.
+  * *Note:* Both sensors function on the exact same physical GPIO 19 and 20 paths, utilizing unique factory hardware address layers to prevent data line collisions.
+* **RS-485 Link to the Sensor Cluster:** **GPIO 9 (TX)**, **GPIO 8 (RX)** and **GPIO 15 (DE and /RE)**, through a MAX3485 to terminal J5 (1 = A, 2 = B, 3 = +5 V, 4 = GND).
 * **1-Wire Serial Interface:** **GPIO 4**. Configured as an open-drain bidirectional digital line with a dedicated external pull-up resistor.
   * *DS18B20 Sensor:* Provides high-accuracy underground soil thermal parameters using the precision timing 1-Wire protocol.
 * **Analog Interface Architecture:** The system uses two independent analog input channels to gather real-time data from physical equipment.
