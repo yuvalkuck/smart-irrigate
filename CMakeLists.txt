@@ -35,12 +35,12 @@ configure_file(${CMAKE_CURRENT_LIST_DIR}/components/common/gen/default_initiate.
 #
 set(BOARD "firebeetle2_c6" CACHE STRING "Board pin map in hardware/boards/")
 include(${CMAKE_CURRENT_LIST_DIR}/hardware/boards/${BOARD}.cmake)
-set(_pin_vars PIN_LED PIN_CONFIG_MODE PIN_ONEWIRE PIN_I2C_SDA PIN_I2C_SCL
-        PIN_RS485_TX PIN_RS485_RX PIN_RS485_DE)
+set(_pin_vars BOARD_PIN_LED BOARD_PIN_CONFIG_MODE BOARD_PIN_ONEWIRE BOARD_PIN_I2C_SDA BOARD_PIN_I2C_SCL
+        BOARD_PIN_RS485_TX BOARD_PIN_RS485_RX BOARD_PIN_RS485_DE)
 set(_used_pins "")
 foreach (_var ${_pin_vars})
     if (${_var} IN_LIST _used_pins)
-        message(WARNING "Board ${BOARD}: GPIO ${${_var}} assigned twice (${_var})")
+        message(WARNING "Board ${BOARD}: ${${_var}} assigned twice (${_var})")
     endif ()
     list(APPEND _used_pins ${${_var}})
 endforeach ()

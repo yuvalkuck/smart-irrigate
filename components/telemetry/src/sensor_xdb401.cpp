@@ -4,10 +4,11 @@
 
 #include "sensor_xdb401.h"
 #include "logger.h"
+#include "gpio_declaraion.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
 
-#define XDB401_ADC_CHANNEL   ADC_CHANNEL_2
+#define XDB401_ADC_CHANNEL   PRESSURE_ADC_Channel
 #define XDB401_ADC_ATTEN     ADC_ATTEN_DB_12
 #define XDB401_ADC_BITWIDTH  ADC_BITWIDTH_DEFAULT
 
@@ -25,7 +26,7 @@ esp_err_t SensorXDB4xx::init(adc_oneshot_unit_handle_t bus) {
     };
     ESP_ERROR_CHECK(adc_oneshot_config_channel(bus, XDB401_ADC_CHANNEL, &chan_cfg));
     adc_cali_curve_fitting_config_t dev_config = {
-        .unit_id = ADC_UNIT_1,
+        .unit_id = XDB401_ADC_Port,
         .chan = XDB401_ADC_CHANNEL,
         .atten = XDB401_ADC_ATTEN,
         .bitwidth = XDB401_ADC_BITWIDTH,
@@ -78,7 +79,7 @@ bool SensorXDB4xx::read(TelemetryData& data) {
 bool SensorXDB4xx::online(adc_oneshot_unit_handle_t bus) {
     METHODTRACE
     int raw_adc_sample = 0;
-    if (adc_oneshot_read(bus, ADC_CHANNEL_2, &raw_adc_sample) == ESP_OK) {
+    if (adc_oneshot_read(bus, PRESSURE_ADC_Channel, &raw_adc_sample) == ESP_OK) {
         return true;
     } else {
         ESP_LOGE(TAG, "ADC tracking core rejected sample processing.");

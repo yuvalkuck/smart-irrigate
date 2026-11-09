@@ -136,7 +136,7 @@ extern adc_oneshot_unit_handle_t adc_handle;
 static void init_adc() {
     // 1. Configure the ADC1 Unit Configuration Structure
     const adc_oneshot_unit_init_cfg_t init_config1 = {
-        .unit_id = ADC_UNIT_1,
+        .unit_id = SENSORS_ADC_Port,
         .clk_src = ADC_DIGI_CLK_SRC_DEFAULT,
         .ulp_mode = ADC_ULP_MODE_DISABLE,
     };
@@ -149,8 +149,8 @@ static void init_adc() {
     };
 
     // 3. Register Channel 2 (GPIO 2, Water Pressure) and Channel 3 (GPIO 3, Wind Speed) sequentially
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_2, &config));
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, ADC_CHANNEL_3, &config));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, PRESSURE_ADC_Channel, &config));
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, WIND_EXPANSION_Channel, &config));
 }
 
 extern "C" [[noreturn]] void app_main(void) {
