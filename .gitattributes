@@ -1,0 +1,11 @@
+# vendored Bosch driver
+components/bmp5api/** linguist-vendored
+
+# headers are C++ (project is C++20)
+*.h linguist-language=C++
+*.cpp linguist-language=C++
+*.c linguist-language=C
+
+# host-side test tooling and docs: keep out of stats
+test/** linguist-documentation
+doc/** linguist-documentation
