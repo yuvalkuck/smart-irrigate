@@ -2,7 +2,7 @@
 
 Firmware project for the **sensor cluster**, the outdoor node on the sensor mast. It is a separate
 STM32CubeMX project (`sensor_platform.ioc`), not part of the ESP-IDF build. The board is in
-`hardware/sensor-cluster/`.
+`../../hardware/sensor-cluster/`.
 
 The node reads the local sensors and answers the ESP32-C6 over RS-485. The C6 is the Modbus master
 and polls the cluster; the cluster never sends on its own.
@@ -34,7 +34,7 @@ connect to J2 over a short I2C cable. I2C pull-ups (R1, R2, 4.7 k) go to 3.3 V, 
 
 ## Pin map
 
-From the netlist of `hardware/sensor-cluster/sensor-cluster.kicad_sch`.
+From the netlist of `../../hardware/sensor-cluster/sensor-cluster.kicad_sch`.
 
 | U1 pin | Function | Net |
 |---|---|---|
@@ -70,7 +70,7 @@ only a relative sunlight measure, so calibrate it against a reference.
 
 ## RS-485 link
 
-Modbus RTU, 9600 baud, 8N1, matching `components/hmodbus/include/hmodbus.h` on the C6
+Modbus RTU, 9600 baud, 8N1, matching `../../components/hmodbus/include/hmodbus.h` on the C6
 (`HMODBUS_BAUD`, `HMODBUS_TIMEOUT_MS` = 200 ms). The cluster is a slave. It must support function
 `0x03` (read holding registers) and `0x04` (read input registers), and answer a bad request with a
 Modbus exception.

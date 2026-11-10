@@ -2,7 +2,7 @@
 
 Firmware project for the **companion AI module**, an ESP32-S3 DevKitC-1. It is a separate ESP-IDF
 project (its own CLion project, its own `CMakeLists.txt`, `sdkconfig` and `partitions.csv`), not a
-component of the ESP32-C6 irrigation firmware in the repository root.
+component of the ESP32-C6 irrigation firmware in the repository root (`../../`).
 
 ## Role
 
@@ -35,7 +35,7 @@ UART between the two chips:
 | GPIO 7 (RX) | TX pin |
 
 The S3 pin numbers for this UART are **TBD**. The wire protocol is **TBD**. Keep the payload layout
-independent of the transport, as the C6 `protocol` component does (see `doc/stractures.md`).
+independent of the transport, as the C6 `protocol` component does (see `../../doc/stractures.md`).
 
 ## LCD2004
 

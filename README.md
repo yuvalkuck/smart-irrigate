@@ -230,7 +230,7 @@ Battery sizing for 12 h idle plus 3 h of one valve is about 13 Wh usable, so two
 ### Open decisions
 * **TBD:** how the 24 VAC converter regulates the valve voltage (built into the converter, or a separate stage).
 * **TBD:** select the 24 VAC converter. It must produce an acceptable waveform and voltage for the Galcon valves (run cool and quiet) and have an enable control. A square wave is acceptable if the valves tolerate it; otherwise use a sine-modulated H-bridge on a 36-42 V bus, or a 12 V sine inverter feeding a 24 V transformer.
-* **TBD:** inputs and outputs for the mains-detect input, battery sense, battery LED and the 24 VAC converter enable (the LCD has moved to the ESP32-S3, which is off on battery, so it no longer needs C6 pins). With 8 valves every safe GPIO on the FireBeetle 2 header is used (1, 2, 3, 4, 5, 6, 7, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23; 8 and 9 are boot-strapping pins), so these need an I2C expander (e.g. PCF8574) on the existing I2C bus. Battery sense no longer needs a pin: all analog inputs are read by the ADS1115 (see "Hardware Pin Configurations"), which frees GPIO 2 and 3.
+* **TBD:** inputs and outputs for the mains-detect input, battery sense, battery LED and the 24 VAC converter enable (the LCD has moved to the ESP32-S3, which is off on battery, so it no longer needs C6 pins). With 8 valves every safe GPIO on the FireBeetle 2 header is used (1, 2, 3, 4, 5, 6, 7, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23; 8 and 9 are boot-strapping pins, used only for the RS-485 RX and TX), so these need an I2C expander (e.g. PCF8574) on the existing I2C bus. Battery sense no longer needs a pin: all analog inputs are read by the ADS1115 (see "Hardware Pin Configurations"), which frees GPIO 3 (GPIO 2 is now the RS-485 DE, so GPIO 3 is the only spare pin).
 
 ## Physical Placement: Separate Enclosures
 
@@ -296,7 +296,7 @@ graph LR
     BUCK5 -- 5 V --> RELAY
     C6 <-- "UART GPIO 6 and 7" --> S3
     C6 <-- "I2C GPIO 19 and 20" --> BMP
-    C6 <-- "RS-485 GPIO 8, 9 and 15" --> CLUSTER
+    C6 <-- "RS-485 GPIO 8, 9 and 2" --> CLUSTER
     C6 <-- "I2C GPIO 19 and 20" --> SHT
     C6 <-- "I2C GPIO 19 and 20" --> ADS
     WIND -- "analog 0-5 V" --> ADS
@@ -356,7 +356,7 @@ The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time
   * *BMP581 Sensor:* Transmits targeted barometric pressure metrics and ambient temperature data.
   * *ADS1115 ADC:* Reads the battery voltage, wind speed and line pressure (see "Analog Interface Architecture"). Address 0x48 (ADDR pin on GND).
   * *Note:* All the devices function on the exact same physical GPIO 19 and 20 paths, utilizing unique hardware address layers to prevent data line collisions.
-* **RS-485 Link to the Sensor Cluster:** **GPIO 9 (TX)**, **GPIO 8 (RX)** and **GPIO 15 (DE and /RE)**, through a MAX3485 to terminal J5 (1 = A, 2 = B, 3 = +5 V, 4 = GND).
+* **RS-485 Link to the Sensor Cluster:** **GPIO 9 (TX)**, **GPIO 8 (RX)** and **GPIO 2 (DE and /RE)**, through a MAX3485 to terminal J5 (1 = A, 2 = B, 3 = +5 V, 4 = GND).
 * **1-Wire Serial Interface:** **GPIO 4**. Configured as an open-drain bidirectional digital line with a dedicated external pull-up resistor.
   * *DS18B20 Sensor:* Provides high-accuracy underground soil thermal parameters using the precision timing 1-Wire protocol.
 * **Analog Interface Architecture:** All analog inputs are read by one **ADS1115** 16-bit ADC on the shared I2C bus (GPIO 19 and 20), not by the ESP32-C6 internal ADC, which is noisy and non-linear. No C6 GPIO is used for analog signals. Proposed channel order (the schematic is not updated yet): A0 battery voltage, A1 XDB401 pressure, A2 wind speed.
