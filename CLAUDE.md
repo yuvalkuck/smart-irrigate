@@ -53,8 +53,10 @@ power-path behaviour is a design in the README's "Power Architecture" and "Physi
 sections (24 V DC bus, battery backup, one valve at a time on battery with Wi-Fi and the ESP32-S3
 off), not implemented. Treat those README sections as design intent, not current behaviour.
 
-Fixed (non-Kconfig) pin assignments live in `components/common/include/gpio_declaraion.h`
-(status LED, config-mode boot switch, 1-Wire bus, I2C SDA/SCL) — cross-check against the wiring
+Pin assignments live in `components/board_manager/board_peripherals.yaml` (ESP Board Manager: status LED,
+config-mode boot switch, 1-Wire pin, RS-485 pins, I2C SDA/SCL, pressure ADC channel, valves); code reads them
+from the board manager handles/configs. Non-pin board constants (RS-485 UART port, wind ADC channel) come from
+`hardware/boards/<BOARD>.cmake`, generated into `components/common/include/gpio_declaraion.h` at configure time — cross-check against the wiring
 table in the README's "Hardware Pin Configurations" section before touching hardware, since it
 documents a pin *rewire* that supersedes the original table (e.g. config switch moved to GPIO 23,
 DS18B20 to GPIO 4).
@@ -115,7 +117,7 @@ Wi-Fi credentials exist in NVS:
 Each component is a standalone ESP-IDF component with its own `CMakeLists.txt`; dependency direction
 generally flows `main → {flash, hwifi, hmqtt, hsntp, telemetry, protocol} → common`:
 
-- **`common`** — shared, header-only-ish: `gpio_declaraion.h` (pin map), `common_event.h`
+- **`common`** — shared, header-only-ish: `gpio_declaraion.h` (board constants), `common_event.h`
   (`COMMON_BASE_EVENTS` esp_event bus + `EventData`/`TelemetryData` structs), `logger.h`
   (`METHODTRACE`/`LOGTRACE` macros, compiled to no-ops unless `_DEBUG` is defined via
   `CMAKE_BUILD_TYPE=Debug`), generated `default_initiate.h`.

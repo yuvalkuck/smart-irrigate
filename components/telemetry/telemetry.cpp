@@ -5,7 +5,6 @@
 #include "common_event.h"
 #include "esp_event.h"
 #include "esp_adc/adc_oneshot.h"
-#include "gpio_declaraion.h"
 #include "driver/i2c_master.h"
 #include "esp_board_manager_includes.h"
 /*###*/

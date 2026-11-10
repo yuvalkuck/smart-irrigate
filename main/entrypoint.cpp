@@ -16,25 +16,31 @@
 #include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
 #include "time.h"
-#include "gpio_declaraion.h"
 #include "onewire_bus.h"
 #include "esp_idf_version.h"
 #include "esp_board_manager_includes.h"
 
-enum blinkPattern_t {
-    AllGood = 0,
-    SetupMode = 1,
-    Error = 2,
-};
-const uint16_t blinkPattern[] = {1000,300,100};
+// enum blinkPattern_t {
+//     AllGood = 0,
+//     SetupMode = 1,
+//     Error = 2,
+// };
+// const uint16_t blinkPattern[] = {1000,300,100};
 static constexpr auto TAG = "App:";
 
 void init_event_app_handle();
 
-static void setLedState(int fliper) {
-    // ESP_LOGI(TAG, "set %d", fliper);
-    gpio_set_level((gpio_num_t)LED_Pin, fliper);
+// GPIO number of a "gpio" peripheral declared in components/board_manager/board_peripherals.yaml
+static gpio_num_t board_gpio(const char *name) {
+    void *periph = nullptr;
+    ESP_ERROR_CHECK(esp_board_manager_get_periph_handle(name, &periph));
+    return static_cast<periph_gpio_handle_t *>(periph)->gpio_num;
 }
+// static void setLedState(int fliper) {
+//     // ESP_LOGI(TAG, "set %d", fliper);
+//     gpio_set_level((gpio_num_t)LED_Pin, fliper);
+// }
+
 
 void continue_after_time_sync_cb(struct timeval* tv) {
     ESP_LOGI(TAG, "Notification of a time synchronization event");
@@ -67,14 +73,12 @@ static void init_gpio() {
     for (size_t i = 0; i < valve_gpio_pins.size(); ++i) {
         char name[16];
         snprintf(name, sizeof(name), "gpio_valve_%u", static_cast<unsigned>(i));
-        void *periph = nullptr;
-        ESP_ERROR_CHECK(esp_board_manager_get_periph_handle(name, &periph));
-        valve_gpio_pins[i] = static_cast<periph_gpio_handle_t *>(periph)->gpio_num;
+        valve_gpio_pins[i] = board_gpio(name);
     }
 
     // === 4. 1-Wire Serial Interface (DS18B20 Soil Thermal) ===
     onewire_bus_config_t bus_config = {
-        .bus_gpio_num = ONEWIRE_Pin,
+        .bus_gpio_num = board_gpio("gpio_onewire"),
         .flags = {
             .en_pull_up = true,   // matches your original GPIO_PULLUP_ENABLE fallback
         },
@@ -89,34 +93,26 @@ static void init_gpio() {
 extern adc_oneshot_unit_handle_t adc_handle;
 
 static void init_adc() {
-    // The board manager creates ADC1 and configures Channel 2 (GPIO 2, Water Pressure) via "adc_pressure".
-    // It supports one channel per oneshot unit, so Channel 3 (GPIO 3, Wind Speed) is added on the same handle.
+    // The board manager creates the ADC unit via "adc_pressure". The sensors configure their own channels on it.
     void *periph = nullptr;
     ESP_ERROR_CHECK(esp_board_manager_get_periph_handle("adc_pressure", &periph));
     adc_handle = static_cast<periph_adc_handle_t *>(periph)->oneshot;
-
-    const adc_oneshot_chan_cfg_t config = {
-        .atten = ADC_ATTEN_DB_12,
-        .bitwidth = ADC_BITWIDTH_DEFAULT,
-    };
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, WIND_EXPANSION_Channel, &config));
 }
 
-extern "C" [[noreturn]] void app_main(void) {
+extern "C" void app_main(void) {
     METHODTRACE
     esp_board_manager_init();
     init_gpio();
     init_adc();
     //Initialize NVS
-    bool initRegular = (gpio_get_level(CONFIG_MODE_Pin) == 0 ? false : true);
+    bool initRegular = (gpio_get_level(board_gpio("gpio_config_mode")) == 0 ? false : true);
     esp_err_t ret = init_flash();
 
     ESP_ERROR_CHECK(ret);
     ESP_LOGI(TAG, "start event loop default");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    setLedState(true);
-    blinkPattern_t initModePattern = AllGood;
+    // blinkPattern_t initModePattern = AllGood;
     // test if we have wifi config
     { // block to release hCfg when not use anymore
 
@@ -129,7 +125,7 @@ extern "C" [[noreturn]] void app_main(void) {
             ESP_LOGI(TAG, "Start wifi configuration state");
             init_wifi_softap();
             start_wifi();
-            initModePattern = SetupMode;
+            // initModePattern = SetupMode;
             ESP_LOGI(TAG, "free heap: %iK", esp_get_free_heap_size()/1024);
         } else {
             ESP_LOGI(TAG, "Start Regular Load");
@@ -153,19 +149,22 @@ extern "C" [[noreturn]] void app_main(void) {
                 start_sntp();
                 start_telemetry();
             } else {
-                initModePattern = Error;
+                // initModePattern = Error;
             }
         }
     }
     ESP_LOGI(TAG, "working stage");
-    auto ticker = blinkPattern[initModePattern];
-    int ledFlip = 1;
-    for (;;) {
-        --ledFlip;
-        if (ledFlip < 0) {
-            ledFlip = 1;
-        }
-        setLedState(ledFlip);
-        vTaskDelay(ticker / portTICK_PERIOD_MS);
-    }
+    // --- KEP FOR REFERENCE
+    // while (1);
+    // auto ticker = blinkPattern[initModePattern];
+    // int ledFlip = 1;
+    // for (;;) {
+    //     --ledFlip;
+    //     if (ledFlip < 0) {
+    //         ledFlip = 1;
+    //     }
+    //     vTaskDelay(ticker / portTICK_PERIOD_MS);
+    // }
+
+    // INFO: exist of main is believable in ESP-IDF
 }

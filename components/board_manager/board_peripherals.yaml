@@ -1,17 +1,39 @@
 peripherals:
-  - name: gpio_status_led
-    type: gpio
-    config:
-      pin: 15
-      mode: GPIO_MODE_OUTPUT
-      default_level: 0
-
   - name: gpio_config_mode
     type: gpio
     config:
       pin: 23
       mode: GPIO_MODE_INPUT
       pull_up: false
+
+  - name: gpio_onewire
+    type: gpio
+    config:
+      pin: 4
+      mode: GPIO_MODE_INPUT_OUTPUT_OD
+      pull_up: true
+
+  # RS-485 pins. Declared as gpio, not uart: esp-modbus installs the UART driver itself,
+  # which would collide with the board manager's uart peripheral.
+  - name: gpio_rs485_tx
+    type: gpio
+    config:
+      pin: 9
+      mode: GPIO_MODE_OUTPUT
+      default_level: 1
+
+  - name: gpio_rs485_rx
+    type: gpio
+    config:
+      pin: 8
+      mode: GPIO_MODE_INPUT
+
+  - name: gpio_485de_led
+    type: gpio
+    config:
+      pin: 15
+      mode: GPIO_MODE_OUTPUT
+      default_level: 0
 
   - name: i2c_main
     type: i2c

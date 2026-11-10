@@ -1,16 +1,4 @@
-# Pin map for DFRobot FireBeetle 2 ESP32-C6. Select with: idf.py -DBOARD=<file name without .cmake>
-set(BOARD_PIN_LED GPIO_NUM_15)
-set(BOARD_PIN_CONFIG_MODE GPIO_NUM_23)
-set(BOARD_PIN_ONEWIRE GPIO_NUM_4)
-set(BOARD_PIN_I2C_SDA GPIO_NUM_19)
-set(BOARD_PIN_I2C_SCL GPIO_NUM_20)
-set(BOARD_PIN_RS485_TX GPIO_NUM_9)
-set(BOARD_PIN_RS485_RX GPIO_NUM_8)
-set(BOARD_PIN_RS485_DE GPIO_NUM_2)
+# Board constants for DFRobot FireBeetle 2 ESP32-C6. Select with: idf.py -DBOARD=<file name without .cmake>
+# Pins are declared in components/board_manager/board_peripherals.yaml.
 set(BOARD_PORT_RS485 UART_NUM_1)
-set(BOARD_ADC_CH_PRESSURE ADC_CHANNEL_2)
 set(BOARD_ADC_CH_WIND ADC_CHANNEL_3)
-set(BOARD_PORT_I2C I2C_NUM_0)
-set(BOARD_PORT_ADC_SENSORS ADC_UNIT_1)
-set(BOARD_PORT_ADC_WIND ADC_UNIT_1)
-set(BOARD_PORT_ADC_XDB401 ADC_UNIT_1)
