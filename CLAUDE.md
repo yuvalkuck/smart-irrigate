@@ -82,6 +82,13 @@ new protocol code TESTER-safe if it needs to be exercised from this tool.
 `EMBED_TXTFILES` in `components/hmqtt/CMakeLists.txt` (`ca.crt`, `client.crt`, `client.key`) — these
 must exist before building firmware that includes `hmqtt`.
 
+`test/unit/` is a second host-native CMake project that fetches GoogleTest and fff (fake functions) and
+builds a `tests` executable. It is not part of the firmware build:
+
+```bash
+cmake -S test/unit -B test/unit/build && cmake --build test/unit/build && ctest --test-dir test/unit/build
+```
+
 There is no on-device unit test framework in this repo; correctness is validated by building,
 flashing, and observing serial logs / MQTT traffic.
 
