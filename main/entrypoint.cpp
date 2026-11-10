@@ -1,6 +1,5 @@
 #include <array>
-#include <string_view>
-#include <charconv>
+#include <cstdio>
 
 #include "protocol.h"
 #include "telemetry.h"
@@ -13,12 +12,15 @@
 #include "wifi_softap.h"
 #include "hmqtt.h"
 #include "hsntp.h"
+#include "hmodbus.h"
 #include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
 #include "time.h"
 #include "gpio_declaraion.h"
 #include "onewire_bus.h"
 #include "esp_idf_version.h"
+#include "esp_board_manager_includes.h"
+
 enum blinkPattern_t {
     AllGood = 0,
     SetupMode = 1,
@@ -57,64 +59,17 @@ std::array<gpio_num_t, CONFIG_DEVICE_MAX_VALVES> valve_gpio_pins{};
 // ====================================================================
 extern onewire_bus_handle_t onewire_bus_handle;
 static void init_gpio() {
-    // === Status Indication ===
-    gpio_reset_pin(LED_Pin);
-    gpio_set_direction(LED_Pin, GPIO_MODE_OUTPUT);
+    // LED and config-mode switch are set up by the board manager (components/board_manager).
 
-    // === 1. Local Configuration Mode Intercept Switch ===
-    gpio_reset_pin(CONFIG_MODE_Pin);
-    const gpio_config_t config_mode_switch_conf = {
-        .pin_bit_mask = (1ULL << CONFIG_MODE_Pin),
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE, // CHANGED: Disabled internal pull-up to use external 10k resistor
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE
-    };
-    gpio_config(&config_mode_switch_conf);
-
-    // === 2. Parse Kconfig String via Zero-Allocation C++17 string_view ===
-    std::string_view pin_list_view{CONFIG_DYNAMIC_VALVE_GPIO_LIST};
-    size_t parsed_valve_count = 0;
-
-    while (!pin_list_view.empty() && parsed_valve_count < CONFIG_DEVICE_MAX_VALVES) {
-        const size_t comma_pos = pin_list_view.find(',');
-        const std::string_view token = (comma_pos == std::string_view::npos)
-                                           ? pin_list_view
-                                           : pin_list_view.substr(0, comma_pos);
-
-        if (!token.empty()) {
-            int pin_num = 0;
-            auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), pin_num);
-            if (ec == std::errc{}) {
-                valve_gpio_pins[parsed_valve_count] = static_cast<gpio_num_t>(pin_num);
-                parsed_valve_count++;
-            }
-        }
-
-        if (comma_pos == std::string_view::npos) {
-            break;
-        }
-        pin_list_view.remove_prefix(comma_pos + 1);
-    }
-
-    // === 3. Relay Array Controls ===
-    uint64_t valve_pin_mask = 0;
-    for (size_t i = 0; i < parsed_valve_count; ++i) {
-        gpio_reset_pin(valve_gpio_pins[i]);
-        valve_pin_mask |= (1ULL << valve_gpio_pins[i]);
-    }
-
-    const gpio_config_t valve_conf = {
-        .pin_bit_mask = valve_pin_mask,
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE
-    };
-    gpio_config(&valve_conf);
-
-    for (size_t i = 0; i < parsed_valve_count; ++i) {
-        gpio_set_level(valve_gpio_pins[i], 0);
+    // === 2. Relay Array Controls ===
+    // "gpio_valve_<n>" peripherals are configured and driven low by the board manager.
+    // DEVICE_MAX_VALVES must not exceed the number of gpio_valve_<n> entries in board_peripherals.yaml.
+    for (size_t i = 0; i < valve_gpio_pins.size(); ++i) {
+        char name[16];
+        snprintf(name, sizeof(name), "gpio_valve_%u", static_cast<unsigned>(i));
+        void *periph = nullptr;
+        ESP_ERROR_CHECK(esp_board_manager_get_periph_handle(name, &periph));
+        valve_gpio_pins[i] = static_cast<periph_gpio_handle_t *>(periph)->gpio_num;
     }
 
     // === 4. 1-Wire Serial Interface (DS18B20 Soil Thermal) ===
@@ -134,27 +89,22 @@ static void init_gpio() {
 extern adc_oneshot_unit_handle_t adc_handle;
 
 static void init_adc() {
-    // 1. Configure the ADC1 Unit Configuration Structure
-    const adc_oneshot_unit_init_cfg_t init_config1 = {
-        .unit_id = SENSORS_ADC_Port,
-        .clk_src = ADC_DIGI_CLK_SRC_DEFAULT,
-        .ulp_mode = ADC_ULP_MODE_DISABLE,
-    };
-    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc_handle));
+    // The board manager creates ADC1 and configures Channel 2 (GPIO 2, Water Pressure) via "adc_pressure".
+    // It supports one channel per oneshot unit, so Channel 3 (GPIO 3, Wind Speed) is added on the same handle.
+    void *periph = nullptr;
+    ESP_ERROR_CHECK(esp_board_manager_get_periph_handle("adc_pressure", &periph));
+    adc_handle = static_cast<periph_adc_handle_t *>(periph)->oneshot;
 
-    // 2. Define Shared Channel Properties
     const adc_oneshot_chan_cfg_t config = {
         .atten = ADC_ATTEN_DB_12,
         .bitwidth = ADC_BITWIDTH_DEFAULT,
     };
-
-    // 3. Register Channel 2 (GPIO 2, Water Pressure) and Channel 3 (GPIO 3, Wind Speed) sequentially
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, PRESSURE_ADC_Channel, &config));
     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, WIND_EXPANSION_Channel, &config));
 }
 
 extern "C" [[noreturn]] void app_main(void) {
     METHODTRACE
+    esp_board_manager_init();
     init_gpio();
     init_adc();
     //Initialize NVS
@@ -197,6 +147,9 @@ extern "C" [[noreturn]] void app_main(void) {
                 }
                 // MQTT
                 init_hmqtt();
+                if (init_modbus() != ESP_OK) {
+                    ESP_LOGE(TAG, "RS-485 init failed");
+                }
                 start_sntp();
                 start_telemetry();
             } else {

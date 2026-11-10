@@ -40,11 +40,12 @@ they configure_file to empty strings and provisioning happens entirely at runtim
 ### Device configuration (Kconfig)
 
 Run `idf.py menuconfig` to adjust project-specific settings defined in `main/Kconfig.projbuild`:
-valve count (`DEVICE_MAX_VALVES`), the valve GPIO list (`DYNAMIC_VALVE_GPIO_LIST`, comma-separated,
-parsed at boot in `main/entrypoint.cpp`), max programs per valve (`DEVICE_MAX_VALVE_CONFIG`), LCD
+valve count (`DEVICE_MAX_VALVES`, must not exceed the `gpio_valve_<n>` entries in
+`components/board_manager/board_peripherals.yaml`), max programs per valve (`DEVICE_MAX_VALVE_CONFIG`), LCD
 presence (`DEVICE_LCD_ENABLE`), power-state valve limits (`DEVICE_MAX_SIMULTANEOUS_OPEN_VALVES` under
 "Main Power ON", `DEVICE_MAX_ROUND_ROBIN_TIME_MINI` slice minutes under "Main Battery ON"), and SoftAP
-provisioning defaults (password, gateway/mask, SSID suffix). Changing valve GPIOs is a firmware
+provisioning defaults (password, gateway/mask, SSID suffix). Valve GPIOs are declared in `components/board_manager/board_peripherals.yaml`
+(ESP Board Manager, `idf.py bmgr -b board_manager`), not in Kconfig. Changing them is a firmware
 rebuild, not a runtime option — pins are compiled in.
 
 The mains/battery options are defined in Kconfig but no firmware code reads them yet — the

@@ -76,6 +76,78 @@ dependencies:
       registry_url: https://components.espressif.com/
       type: service
     version: 2.1.4
+  espressif/esp_board_manager:
+    component_hash: 5a4e67bdd2ed54fb3ae5170b0e26f0ff937526d29fa6ea46bf5e24eda9b8bac7
+    dependencies:
+    - matches:
+      - if: $CONFIG{ESP_BOARD_DEV_BUTTON_SUPPORT} == True
+      name: espressif/button
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^4.1.4
+    - name: espressif/esp_boards
+      registry_url: https://components.espressif.com
+      require: private
+      version: ~0.7.1
+    - matches:
+      - if: $CONFIG{ESP_BOARD_DEV_AUDIO_CODEC_SUPPORT} == True
+      name: espressif/esp_codec_dev
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^2.0.0-beta4
+    - matches:
+      - if: $CONFIG{ESP_BOARD_DEV_GPIO_EXPANDER_SUPPORT} == True
+      name: espressif/esp_io_expander
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^1.2.1
+    - matches:
+      - if: $CONFIG{ESP_BOARD_DEV_DISPLAY_LCD_SUB_RGB_3WIRE_SPI_SUPPORT} == True
+      name: espressif/esp_lcd_panel_io_additions
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^1.0.0
+    - matches:
+      - if: $CONFIG{ESP_BOARD_DEV_LCD_TOUCH_SUPPORT} == True
+      name: espressif/esp_lcd_touch
+      registry_url: https://components.espressif.com
+      require: private
+      version: '*'
+    - matches:
+      - if: $CONFIG{ESP_BOARD_DEV_CAMERA_SUPPORT} == True
+      name: espressif/esp_video
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^2.3.0
+    - matches:
+      - if: $CONFIG{ESP_BOARD_DEV_KNOB_SUPPORT} == True
+      name: espressif/knob
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^1.1.0
+    - matches:
+      - if: $CONFIG{ESP_BOARD_DEV_LED_STRIP_SUPPORT} == True
+      name: espressif/led_strip
+      registry_url: https://components.espressif.com
+      require: private
+      version: '*'
+    - matches:
+      - if: $CONFIG{ESP_BOARD_DEV_LITTLEFS_SUPPORT} == True
+      name: joltwallet/littlefs
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^1.22.1
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.7.5
+  espressif/esp_boards:
+    component_hash: 216e7a5dfe4b9ee53e840fea74dadd7aedf097f6bbb1b60800f2046f3d72d9de
+    dependencies: []
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 0.7.2
   espressif/fmt:
     component_hash: aad535ae0552e693978867f5e53731c8ae6592092cfb087698b7ec1ddf75c7cb
     dependencies:
@@ -170,11 +242,12 @@ direct_dependencies:
 - esp-idf-lib/i2cdev
 - espressif/ds18b20
 - espressif/esp-modbus
+- espressif/esp_board_manager
 - espressif/fmt
 - espressif/mqtt
 - espressif/onewire_bus
 - idf
 - k0i05/esp_sht4x
-manifest_hash: f76cbc9673c5645721b1e70bbf5c08b4557f4a4ed3a7c95c84fac375fa96adcf
+manifest_hash: 81f2a77311fcdac3b7d179d940a080dda95e24d117bb84122c1ac6156b321adb
 target: esp32c6
 version: 3.0.0

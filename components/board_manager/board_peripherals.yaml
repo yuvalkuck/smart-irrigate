@@ -1,0 +1,87 @@
+peripherals:
+  - name: gpio_status_led
+    type: gpio
+    config:
+      pin: 15
+      mode: GPIO_MODE_OUTPUT
+      default_level: 0
+
+  - name: gpio_config_mode
+    type: gpio
+    config:
+      pin: 23
+      mode: GPIO_MODE_INPUT
+      pull_up: false
+
+  - name: i2c_main
+    type: i2c
+    config:
+      port: 0
+      pins:
+        sda: 19
+        scl: 20
+
+  - name: adc_pressure
+    type: adc
+    role: oneshot
+    config:
+      unit_id: ADC_UNIT_1
+      channel_id: 2
+      atten: ADC_ATTEN_DB_12
+      bit_width: ADC_BITWIDTH_DEFAULT
+
+  - name: gpio_valve_0
+    type: gpio
+    config:
+      pin: 1
+      mode: GPIO_MODE_OUTPUT
+      default_level: 0
+
+  - name: gpio_valve_1
+    type: gpio
+    config:
+      pin: 14
+      mode: GPIO_MODE_OUTPUT
+      default_level: 0
+
+  - name: gpio_valve_2
+    type: gpio
+    config:
+      pin: 18
+      mode: GPIO_MODE_OUTPUT
+      default_level: 0
+
+  - name: gpio_valve_3
+    type: gpio
+    config:
+      pin: 21
+      mode: GPIO_MODE_OUTPUT
+      default_level: 0
+
+  - name: gpio_valve_4
+    type: gpio
+    config:
+      pin: 22
+      mode: GPIO_MODE_OUTPUT
+      default_level: 0
+
+  - name: gpio_valve_5
+    type: gpio
+    config:
+      pin: 16
+      mode: GPIO_MODE_OUTPUT
+      default_level: 0
+
+  - name: gpio_valve_6
+    type: gpio
+    config:
+      pin: 17
+      mode: GPIO_MODE_OUTPUT
+      default_level: 0
+
+  - name: gpio_valve_7
+    type: gpio
+    config:
+      pin: 5
+      mode: GPIO_MODE_OUTPUT
+      default_level: 0
