@@ -13,6 +13,7 @@
 #define RS485_TX_Pin         @BOARD_PIN_RS485_TX@
 #define RS485_RX_Pin         @BOARD_PIN_RS485_RX@
 #define RS485_DE_Pin         @BOARD_PIN_RS485_DE@
+#define RS485_UART_Port      @BOARD_PORT_RS485@
 
 // === Analog (ADC) ===
 #define SENSORS_ADC_Port       @BOARD_PORT_ADC_SENSORS@
