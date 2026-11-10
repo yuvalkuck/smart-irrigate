@@ -2254,7 +2254,7 @@
 					)
 				)
 			)
-			(property "Footprint" "Package_SO:VSSOP-10_3x3mm_P0.5mm"
+			(property "Footprint" "Package_SO:MSOP-10_3x3mm_P0.5mm"
 				(at 20.32 -11.43 0)
 				(effects
 					(font
@@ -2290,7 +2290,7 @@
 					(hide yes)
 				)
 			)
-			(property "ki_fp_filters" "VSSOP*3x3mm*P0.5mm*"
+			(property "ki_fp_filters" "MSOP*3x3mm*P0.5mm*"
 				(at 0 0 0)
 				(effects
 					(font
