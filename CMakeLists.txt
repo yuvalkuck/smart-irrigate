@@ -10,13 +10,6 @@ project(smart-irrigate
         VERSION 1.0.0.0
         LANGUAGES C CXX
 )
-find_package(GTest REQUIRED)
-target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third_party)
-target_link_libraries(tests PRIVATE GTest::gtest_main)
-include(FetchContent)
-FetchContent_Declare(fff GIT_REPOSITORY https://github.com/meekrosoft/fff.git GIT_TAG v1.1)
-FetchContent_MakeAvailable(fff)
-target_include_directories(tests PRIVATE ${fff_SOURCE_DIR})
 
 SET(INITIATE_WIFI_SSID "$ENV{INITIATE_WIFI_SSID}")
 SET(INITIATE_WIFI_PASSWORD "$ENV{INITIATE_WIFI_PASSWORD}")
