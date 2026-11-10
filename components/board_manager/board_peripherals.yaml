@@ -35,6 +35,20 @@ peripherals:
       mode: GPIO_MODE_OUTPUT
       default_level: 0
 
+  # UART link to the AI running on the ESP32-S3 (J4). Declared as gpio for the same reason as the RS-485 pins.
+  - name: gpio_ai_tx
+    type: gpio
+    config:
+      pin: 6
+      mode: GPIO_MODE_OUTPUT
+      default_level: 1
+
+  - name: gpio_ai_rx
+    type: gpio
+    config:
+      pin: 7
+      mode: GPIO_MODE_INPUT
+
   - name: i2c_main
     type: i2c
     config:

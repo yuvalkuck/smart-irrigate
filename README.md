@@ -211,6 +211,7 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 | Battery-voltage sense (divider into the ADS1115) | Low-battery warning | Yes | Yes |
 | BMP581, SHT41 (I2C) | Weather sensors | Yes | Yes |
 | DS18B20 (1-Wire) | Soil temperature | Yes | Yes |
+| DS18B20 U7 (TO-92, on the main board, 1-Wire) | Board temperature, shares the GPIO 4 bus and its pull-up (R5 4.7k) with the soil probe | Yes | Yes |
 | XDB401 pressure transmitter | Line pressure and no-water check | Yes | Yes |
 | Wind sensor (0-5 V) | Wind speed | Yes | Yes |
 | LCD2004 with I2C backpack | Local display, driven by the ESP32-S3 (its own I2C bus, not the C6 sensor bus) | Yes (on request) | **No** |
@@ -498,6 +499,7 @@ The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time
 * **RS-485 Link to the Sensor Cluster:** **GPIO 9 (TX)**, **GPIO 8 (RX)** and **GPIO 2 (DE and /RE)**, through a MAX3485 to terminal J5 (1 = A, 2 = B, 3 = +5 V, 4 = GND).
 * **1-Wire Serial Interface:** **GPIO 4**. Configured as an open-drain bidirectional digital line with a dedicated external pull-up resistor.
   * *DS18B20 Sensor:* Provides high-accuracy underground soil thermal parameters using the precision timing 1-Wire protocol.
+  * *Board DS18B20 (U7):* A second DS18B20 on the same bus measures the main-board temperature. The two sensors are told apart by their 64-bit ROM address, so the firmware must address each one (not `SKIP_ROM`). **TBD:** the firmware still reads one DS18B20 only.
 * **Analog Interface Architecture:** All analog inputs are read by one **ADS1115** 16-bit ADC on the shared I2C bus (GPIO 19 and 20), not by the ESP32-C6 internal ADC, which is noisy and non-linear. No C6 GPIO is used for analog signals. Proposed channel order (the schematic is not updated yet): A0 battery voltage, A1 XDB401 pressure, A2 wind speed.
   * *Battery voltage:* Divided down from the 24 V bus (about 1:9, so 27.6 V gives under 3.3 V). Use 0.1% resistors, because the divider sets the accuracy.
   * *XDB401 Pressure Transmitter:* Records real-time water line pressure, with hardware conditioning to scale the output signal to fit within the ADS1115 input limits.
