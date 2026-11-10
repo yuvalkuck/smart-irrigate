@@ -66,6 +66,16 @@ dependencies:
       registry_url: https://components.espressif.com/
       type: service
     version: 0.4.0
+  espressif/esp-modbus:
+    component_hash: 26a64a9531b5e15a1bbdb9064f2f8715df5b150bfb821dd493174a5aa7566bf8
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 2.1.4
   espressif/fmt:
     component_hash: aad535ae0552e693978867f5e53731c8ae6592092cfb087698b7ec1ddf75c7cb
     dependencies:
@@ -101,7 +111,7 @@ dependencies:
       type: service
     version: 1.1.0
   espressif/onewire_bus:
-    component_hash: a85dc1ceb71fb87af77c57d5fd4e6f48a504de1fc2b83fc302ec0cea331d05ce
+    component_hash: dcce4fb1c2fc43c3d02de1cc9abdf062127468a785578723696de3817c526f99
     dependencies:
     - name: idf
       require: private
@@ -109,7 +119,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.1.1
+    version: 1.1.2
   espressif/sensor_hub:
     component_hash: ea30db551c34aee2862482abf8b3164dd3855ecb4b4659b1e6878455c9cb9e22
     dependencies:
@@ -159,11 +169,12 @@ dependencies:
 direct_dependencies:
 - esp-idf-lib/i2cdev
 - espressif/ds18b20
+- espressif/esp-modbus
 - espressif/fmt
 - espressif/mqtt
 - espressif/onewire_bus
 - idf
 - k0i05/esp_sht4x
-manifest_hash: 1a8e6cf60d6b56da304fc8ea7313614a2aeaf6911896e56d2af9875813ac0874
+manifest_hash: f76cbc9673c5645721b1e70bbf5c08b4557f4a4ed3a7c95c84fac375fa96adcf
 target: esp32c6
 version: 3.0.0
