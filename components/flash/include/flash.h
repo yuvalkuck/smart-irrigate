@@ -17,30 +17,36 @@ static constexpr const char* CFG_NVS_KEY_MQTT_PASSWORD = "mqtt_pword";
 static constexpr const char* CFG_NVS_KEY_NTP_SERVER = "ntp_server";
 static constexpr const char* CFG_NVS_KEY_LOCALE_TZ = "locale_tz";
 
-esp_err_t init_flash(void);
+esp_err_t init_flash();
+
 /* use C++ for handler container */
 class NvsConfig {
     nvs_handle_t handler_ = 0;
-public:
+
+    public:
     explicit operator bool() const {
         return handler_ != 0;
     }
+
     explicit operator nvs_handle_t() const {
         return handler_;
     }
+
     NvsConfig();
     ~NvsConfig();
     NvsConfig(const NvsConfig&) = delete;
     NvsConfig& operator=(const NvsConfig&) = delete;
     NvsConfig(NvsConfig&&) = delete;
     NvsConfig& operator=(NvsConfig&&) = delete;
-    bool setStr(const char* key, const char* value);
-    size_t getStrLen(const char* key);
-    bool getStr(const char *key, char *value, size_t len);
-    bool getStr(const char *key, uint8_t *value, size_t len) {
-        return getStr(key, (char *)value, len);
+    bool setStr(const char* key, const char* value) const;
+    size_t getStrLen(const char* key) const;
+    bool getStr(const char* key, char* value, size_t len) const;
+
+    bool getStr(const char* key, uint8_t* value, size_t len) const {
+        return getStr(key, (char*)value, len);
     }
-    bool isStrEmpty(const char *key) const;
+
+    bool isStrEmpty(const char* key) const;
 };
 
 #endif

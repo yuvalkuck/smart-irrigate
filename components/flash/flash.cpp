@@ -27,9 +27,11 @@ esp_err_t nvsCreateKeyStr(nvs_handle_t handler, const char* name, const char* de
 }
 
 static esp_err_t nvs_config(nvs_handle_t* handler) {
-    esp_err_t ret = nvs_open_from_partition(PARTITION_SETUP_NAME_STR, PARTITION_SETUP_NAMESPACE_STR, NVS_READWRITE, handler);
+    esp_err_t ret = nvs_open_from_partition(PARTITION_SETUP_NAME_STR, PARTITION_SETUP_NAMESPACE_STR, NVS_READWRITE,
+                                            handler);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, PARTITION_SETUP_NAME_STR, PARTITION_SETUP_NAMESPACE_STR);
+        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, PARTITION_SETUP_NAME_STR,
+                 PARTITION_SETUP_NAMESPACE_STR);
     }
     return ret;
 }
@@ -54,16 +56,17 @@ bool NvsConfig::isStrEmpty(const char* key) const {
     }
     return required_size <= 1; // Only null terminator or truly empty
 }
-size_t NvsConfig::getStrLen(const char* key) {
+
+size_t NvsConfig::getStrLen(const char* key) const {
     size_t required_size;
     auto err = nvs_get_str(handler_, key, NULL, &required_size);
     if (err != ESP_OK) {
         return 0;
     }
     return required_size;
-
 }
-bool NvsConfig::getStr(const char* key, char* value, size_t len) {
+
+bool NvsConfig::getStr(const char* key, char* value, size_t len) const {
     size_t required_size;
     esp_err_t err;
 
@@ -92,8 +95,8 @@ bool NvsConfig::getStr(const char* key, char* value, size_t len) {
     return true; // Success
 }
 
-bool NvsConfig::setStr(const char* key, const char* value) {
-    esp_err_t err = nvs_set_str(handler_, key, value);
+bool NvsConfig::setStr(const char* key, const char* value) const {
+    esp_err_t err = nvs_set_str(handler_, key, value); // it does not change handler so it can be const
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Error (%s) writing NVS key '%s'", esp_err_to_name(err), key);
         return false;
@@ -102,7 +105,7 @@ bool NvsConfig::setStr(const char* key, const char* value) {
     return err == ESP_OK;
 }
 
-esp_err_t init_flash(void) {
+esp_err_t init_flash() {
     ESP_LOGI(TAG, "nvs flash init");
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -126,7 +129,8 @@ esp_err_t init_flash(void) {
         }
         ret = nvs_flash_init_partition(PARTITION_SETUP_NAME_STR);
         if (ret != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to re-initialize NVS partition '%s' after erase: %s", PARTITION_SETUP_NAME_STR, esp_err_to_name(ret));
+            ESP_LOGE(TAG, "Failed to re-initialize NVS partition '%s' after erase: %s", PARTITION_SETUP_NAME_STR,
+                     esp_err_to_name(ret));
             return ret;
         }
     }
@@ -134,7 +138,8 @@ esp_err_t init_flash(void) {
     nvs_handle_t setup_handle;
     ret = nvs_config(&setup_handle);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, PARTITION_SETUP_NAME_STR, PARTITION_SETUP_NAMESPACE_STR);
+        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, PARTITION_SETUP_NAME_STR,
+                 PARTITION_SETUP_NAMESPACE_STR);
         return ret;
     }
 
