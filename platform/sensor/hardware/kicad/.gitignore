@@ -1,2 +1,4 @@
 .history
 /~*
+/production/**
+/production
