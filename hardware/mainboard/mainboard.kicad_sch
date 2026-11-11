@@ -7633,6 +7633,366 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Analog_ADC:ADS1115IDGS"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at 2.54 13.97 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "ADS1115IDGS"
+				(at 7.62 11.43 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Package_SO:TSSOP-10_3x3mm_P0.5mm"
+				(at 0 -12.7 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "http://www.ti.com/lit/ds/symlink/ads1113.pdf"
+				(at -1.27 -22.86 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Ultra-Small, Low-Power, I2C-Compatible, 3.3-kSPS, 12-Bit ADCs With Internal Reference, Oscillator, and Programmable Comparator, VSSOP-10"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "12 bit 4 channel I2C ADC"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "TSSOP*3x3mm*P0.5mm*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "ADS1115IDGS_0_1"
+				(rectangle
+					(start -7.62 10.16)
+					(end 7.62 -7.62)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "ADS1115IDGS_1_1"
+				(pin input line
+					(at 10.16 -5.08 180)
+					(length 2.54)
+					(name "ADDR"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 10.16 5.08 180)
+					(length 2.54)
+					(name "ALERT/RDY"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -10.16 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -10.16 2.54 0)
+					(length 2.54)
+					(name "AIN0"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -10.16 0 0)
+					(length 2.54)
+					(name "AIN1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -10.16 -2.54 0)
+					(length 2.54)
+					(name "AIN2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at -10.16 -5.08 0)
+					(length 2.54)
+					(name "AIN3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 12.7 270)
+					(length 2.54)
+					(name "VDD"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at 10.16 -2.54 180)
+					(length 2.54)
+					(name "SDA"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "9"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 10.16 0 180)
+					(length 2.54)
+					(name "SCL"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "10"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "FullModules:MCP9700A-E_TO"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at 7.62 5.08 0)
+				(effects (font (size 1.27 1.27)) (justify left))
+			)
+			(property "Value" "MCP9700A-E/TO"
+				(at 7.62 2.54 0)
+				(effects (font (size 1.27 1.27)) (justify left))
+			)
+			(property "Footprint" "Package_TO_SOT_THT:TO-92_Inline"
+				(at 0 0 0)
+				(effects (font (size 1.27 1.27)) (hide yes))
+			)
+			(property "Datasheet" "https://ww1.microchip.com/downloads/en/DeviceDoc/20001942G.pdf"
+				(at 0 0 0)
+				(effects (font (size 1.27 1.27)) (hide yes))
+			)
+			(property "Description" "Analog temperature sensor, 10 mV/degC, 500 mV at 0 degC, +-2 degC (0..70 degC), 2.3-5.5 V, TO-92. Pin 1 = VDD, pin 2 = VOUT, pin 3 = GND (datasheet DS20001942G, bottom view)."
+				(at 0 0 0)
+				(effects (font (size 1.27 1.27)) (hide yes))
+			)
+			(property "ki_keywords" "MCP9700A analog temperature sensor thermistor IC TO-92"
+				(at 0 0 0)
+				(effects (font (size 1.27 1.27)) (hide yes))
+			)
+			(property "ki_fp_filters" "TO-92*"
+				(at 0 0 0)
+				(effects (font (size 1.27 1.27)) (hide yes))
+			)
+			(symbol "MCP9700A-E_TO_0_1"
+				(rectangle
+					(start -5.08 5.08)
+					(end 5.08 -5.08)
+					(stroke (width 0.254) (type default))
+					(fill (type background))
+				)
+			)
+			(symbol "MCP9700A-E_TO_1_1"
+				(pin power_in line
+					(at 0 7.62 270)
+					(length 2.54)
+					(name "VDD"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "VOUT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -7.62 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole")
@@ -9065,16 +9425,6 @@
 		(color 0 0 0 0)
 		(uuid "4cdef385-b007-466d-b207-d7844f07dfeb")
 	)
-	(label "PRESS_ADC"
-		(at 219.71 110.49 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "a0a11f2c-a5b6-47e4-bf2b-b7d4c38c7e46")
-	)
 	(symbol
 		(lib_id "Device:R")
 		(at 254 160.02 0)
@@ -9220,16 +9570,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d1242926-4492-4b4e-94ae-ff981d139197")
-	)
-	(label "WIND_ADC"
-		(at 219.71 113.03 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "177ecd28-3ead-4461-8be3-3b1714e7d31b")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -14141,27 +14481,7 @@
 	
 	(wire
 		(pts
-			(xy 217.17 110.49) (xy 242.57 110.49)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b3f0ddcb-80bb-4ae2-be58-58ec2ffadd43")
-	)
-	(wire
-		(pts
-			(xy 242.57 110.49) (xy 242.57 152.4)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b634a30a-135c-44b5-9578-d6999cb2e558")
-	)
-	(wire
-		(pts
-			(xy 242.57 152.4) (xy 254 152.4)
+			(xy 246.38 152.4) (xy 254 152.4)
 		)
 		(stroke
 			(width 0)
@@ -14201,27 +14521,7 @@
 	)
 	(wire
 		(pts
-			(xy 217.17 113.03) (xy 240.03 113.03)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c06ed1a3-c414-45f2-a8f2-6ce272d8b178")
-	)
-	(wire
-		(pts
-			(xy 240.03 113.03) (xy 240.03 182.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b477d3c2-28d9-4c4a-9681-609c52efddd7")
-	)
-	(wire
-		(pts
-			(xy 240.03 182.88) (xy 254 182.88)
+			(xy 247.65 182.88) (xy 254 182.88)
 		)
 		(stroke
 			(width 0)
@@ -23588,7 +23888,7 @@
 		(uuid "3fe9f2e5-4f5e-4153-b57c-327dc65a281d")
 	)
 	(symbol
-		(lib_id "Sensor_Temperature:DS18B20")
+		(lib_id "FullModules:MCP9700A-E_TO")
 		(at 330.2 232.41 0)
 		(unit 1)
 		(body_style 1)
@@ -23607,7 +23907,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "DS18B20"
+		(property "Value" "MCP9700A-E/TO"
 			(at 332.74 237.49 0)
 			(effects
 				(font
@@ -23626,7 +23926,7 @@
 				(justify left)
 			)
 		)
-		(property "Datasheet" "http://datasheets.maximintegrated.com/en/ds/DS18B20.pdf"
+		(property "Datasheet" "https://ww1.microchip.com/downloads/en/DeviceDoc/20001942G.pdf"
 			(at 330.2 232.41 0)
 			(hide yes)
 			(effects
@@ -23636,7 +23936,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "Board temperature sensor, 1-Wire, shares the DATA line (GPIO 4) with the soil probe J8"
+		(property "Description" "Board temperature sensor, analog 10 mV/degC, VOUT to ADS1115 AIN2"
 			(at 330.2 232.41 0)
 			(hide yes)
 			(effects
@@ -23829,55 +24129,496 @@
 		)
 		(uuid "1480541b-0796-4557-8ef4-7144b8f832cf")
 	)
-	(wire
-		(pts
-			(xy 337.82 232.41) (xy 337.82 241.3)
+	(symbol
+		(lib_id "Analog_ADC:ADS1115IDGS")
+		(at 261.62 247.65 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "ceefcfc2-d1f1-4f4b-90fc-08dd93ab97a8")
+		(property "Reference" "U8"
+			(at 264.16 232.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
 		)
-		(stroke
-			(width 0)
-			(type default)
+		(property "Value" "ADS1115IDGS"
+			(at 264.16 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
 		)
-		(uuid "5d10bdcb-5bd2-4b1b-9389-b3655af33c46")
+		(property "Footprint" "Package_SO:TSSOP-10_3x3mm_P0.5mm"
+			(at 261.62 247.65 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/ads1113.pdf"
+			(at 261.62 247.65 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "16-bit ADC on the I2C bus, address 0x48 (ADDR = GND). AIN0 = XDB401 pressure, AIN1 = wind sensor"
+			(at 261.62 247.65 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "23a7db5f-fc5c-4479-b4c3-ee2098cf5c59")
+		)
+		(pin "2"
+			(uuid "06f6f26c-6790-4d46-8043-7b01bdf9e0bd")
+		)
+		(pin "3"
+			(uuid "bb8d499e-cac2-47a3-b8a6-0ff7ac16e068")
+		)
+		(pin "4"
+			(uuid "a003ff0a-9a25-4535-b0fa-43648bc78234")
+		)
+		(pin "5"
+			(uuid "3c6b4ecc-70ab-4641-829b-2d10e42859c1")
+		)
+		(pin "6"
+			(uuid "764efe25-be29-4271-ba90-0412c32bb12b")
+		)
+		(pin "7"
+			(uuid "931f3bf3-1101-4577-bac9-5d65066f469f")
+		)
+		(pin "8"
+			(uuid "e3af3a5a-fc68-4c54-8385-20d7cdb57d0e")
+		)
+		(pin "9"
+			(uuid "5db2c5a0-0601-43c4-aada-41207a82f508")
+		)
+		(pin "10"
+			(uuid "cd703ea5-b314-4124-b017-9150a699b75d")
+		)
+		(instances
+			(project "mainboard"
+				(path "/c0872c10-a613-4030-a61b-41049bff9947"
+					(reference "U8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 283.21 226.06 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "09b74f56-3099-4df0-a9b4-e1f904898c80")
+		(property "Reference" "C7"
+			(at 285.75 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100nF"
+			(at 285.75 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_THT:CP_Radial_D6.3mm_P2.50mm"
+			(at 283.21 226.06 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 283.21 226.06 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "ADS1115 decoupling"
+			(at 283.21 226.06 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "fd17e866-5f37-4d33-b24a-5e080b252198")
+		)
+		(pin "2"
+			(uuid "42ee0bf9-3dee-4d41-851a-17ca17cacd98")
+		)
+		(instances
+			(project "mainboard"
+				(path "/c0872c10-a613-4030-a61b-41049bff9947"
+					(reference "C7")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(wire
 		(pts
-			(xy 337.82 241.3) (xy 278.13 241.3)
+			(xy 261.62 234.95) (xy 261.62 212.09)
 		)
 		(stroke
 			(width 0)
 			(type default)
+			(color 0 90 220 1)
 		)
-		(uuid "1a693431-85d5-4ceb-a660-6ecde8fd1853")
+		(uuid "bc6570e6-ef0c-4e6b-8ae6-1c4ac8a19a83")
 	)
 	(wire
 		(pts
-			(xy 278.13 241.3) (xy 278.13 219.71)
+			(xy 261.62 212.09) (xy 262.89 212.09)
 		)
 		(stroke
 			(width 0)
 			(type default)
+			(color 0 90 220 1)
 		)
-		(uuid "a906bf93-c0e0-4e94-b289-e1bbd10e4352")
+		(uuid "a7cef52b-c496-48a5-a4fe-d435694258f4")
 	)
 	(wire
 		(pts
-			(xy 278.13 219.71) (xy 279.4 219.71)
+			(xy 262.89 212.09) (xy 262.89 200.66)
 		)
 		(stroke
 			(width 0)
 			(type default)
+			(color 0 90 220 1)
 		)
-		(uuid "3ba5eea8-f3bf-4577-9c5b-d0872c117212")
+		(uuid "0d6b16fc-9025-4553-b49f-c76e17c45914")
 	)
 	(wire
 		(pts
-			(xy 279.4 219.71) (xy 279.4 213.36)
+			(xy 261.62 257.81) (xy 261.62 259.08)
+		)
+		(stroke
+			(width 0)
+			(type default)
+			(color 0 0 0 1)
+		)
+		(uuid "ff5ed98c-88b4-4cb2-bae7-28221c4a5c4e")
+	)
+	(wire
+		(pts
+			(xy 261.62 259.08) (xy 276.86 259.08)
+		)
+		(stroke
+			(width 0)
+			(type default)
+			(color 0 0 0 1)
+		)
+		(uuid "99b03719-933d-4227-ac5e-c0ae3190a0de")
+	)
+	(wire
+		(pts
+			(xy 276.86 259.08) (xy 276.86 218.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+			(color 0 0 0 1)
+		)
+		(uuid "34e6eb88-f1ab-4a7f-9a4e-a9ea78227bc9")
+	)
+	(wire
+		(pts
+			(xy 271.78 252.73) (xy 276.86 252.73)
+		)
+		(stroke
+			(width 0)
+			(type default)
+			(color 0 0 0 1)
+		)
+		(uuid "48cdf37d-9023-4550-bf83-ae2c1e998cfa")
+	)
+	(wire
+		(pts
+			(xy 271.78 250.19) (xy 308.61 250.19)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "51424806-1af3-4712-bd86-c1ae87b11355")
+		(uuid "2122c601-dbbd-4cf1-814e-a19318b2ec7e")
+	)
+	(wire
+		(pts
+			(xy 308.61 250.19) (xy 308.61 120.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6e068328-63c4-4145-af24-1f3c17057b9e")
+	)
+	(wire
+		(pts
+			(xy 271.78 247.65) (xy 309.88 247.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b586268c-bc90-4b62-9d83-0710ae8e7c90")
+	)
+	(wire
+		(pts
+			(xy 309.88 247.65) (xy 309.88 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "94647413-bf6f-4e9a-8e7b-33b2dee29388")
+	)
+	(wire
+		(pts
+			(xy 251.46 245.11) (xy 246.38 245.11)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f1713900-60a6-43ec-b95e-6db2b84cc764")
+	)
+	(wire
+		(pts
+			(xy 246.38 245.11) (xy 246.38 152.4)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "899969ee-ea9b-4acd-a601-d86708fb67e7")
+	)
+	(wire
+		(pts
+			(xy 251.46 247.65) (xy 247.65 247.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9bba54f1-4292-4719-b7e0-f6a8bba5edd9")
+	)
+	(wire
+		(pts
+			(xy 247.65 247.65) (xy 247.65 182.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "146b9f3d-5f13-4b8d-9550-7db4c15131f1")
+	)
+	(wire
+		(pts
+			(xy 283.21 222.25) (xy 283.21 201.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+			(color 0 90 220 1)
+		)
+		(uuid "c13d6568-2c51-4f07-a5a0-bab43cb9bad7")
+	)
+	(wire
+		(pts
+			(xy 283.21 229.87) (xy 283.21 231.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+			(color 0 0 0 1)
+		)
+		(uuid "ea75e862-987b-426d-b585-1071739e6932")
+	)
+	(wire
+		(pts
+			(xy 283.21 231.14) (xy 280.67 231.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+			(color 0 0 0 1)
+		)
+		(uuid "8bd04140-e4de-466b-8190-457dca4af209")
+	)
+	(wire
+		(pts
+			(xy 280.67 231.14) (xy 280.67 218.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+			(color 0 0 0 1)
+		)
+		(uuid "4d54e320-b509-4dd5-a281-76c0442ebe11")
+	)
+	(junction
+		(at 262.89 200.66)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "440fcbce-2e36-4fe9-a653-af4cd7ef4572")
+	)
+	(junction
+		(at 276.86 218.44)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "46e05604-786f-4549-bf79-f4f6688272d7")
+	)
+	(junction
+		(at 276.86 252.73)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5152355d-afa0-4d92-9c61-dfa4c1800b01")
+	)
+	(junction
+		(at 280.67 218.44)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "525338cf-3911-456c-b96e-d2e3da6f0054")
+	)
+	(junction
+		(at 283.21 201.93)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "cd447644-3c86-40d2-8b24-0f61e3555d59")
+	)
+	(junction
+		(at 308.61 120.65)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "b423b310-2c7b-42ec-b1fc-bd3acc4ff6c1")
+	)
+	(junction
+		(at 309.88 123.19)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f8129a16-029e-4988-be95-2b15b67564fd")
+	)
+	(no_connect
+		(at 217.17 110.49)
+		(uuid "5ee63a93-8c6f-48a3-839d-103c0523d7e8")
+	)
+	(no_connect
+		(at 217.17 113.03)
+		(uuid "53d6bd50-1a36-4977-a5c2-9ee6e3eebbb7")
+	)
+	(no_connect
+		(at 251.46 252.73)
+		(uuid "26679c6a-5f85-45cd-a7ad-8258877f7b99")
+	)
+	(no_connect
+		(at 271.78 242.57)
+		(uuid "57cb5607-c6cc-48e1-b7f9-311e2fa3cd28")
+	)
+	(wire
+		(pts
+			(xy 251.46 250.19) (xy 248.92 250.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "06ad47d2-d266-4be1-8514-144d04b8d0e5")
+	)
+	(wire
+		(pts
+			(xy 248.92 250.19) (xy 248.92 260.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fd6a42c6-1672-4a02-9969-136fe1919aa3")
+	)
+	(wire
+		(pts
+			(xy 248.92 260.35) (xy 278.13 260.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "551f6fb3-e107-4f01-ac09-ff98282cdd4c")
+	)
+	(wire
+		(pts
+			(xy 278.13 260.35) (xy 278.13 251.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f3706fed-9aa9-4c19-b8e0-f54b090c9fb5")
+	)
+	(wire
+		(pts
+			(xy 278.13 251.46) (xy 340.36 251.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ee5ab495-2cd6-4538-bcf3-e7143ad70484")
+	)
+	(wire
+		(pts
+			(xy 340.36 251.46) (xy 340.36 232.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ffbf1a0e-4218-43d3-9233-705df11af121")
+	)
+	(wire
+		(pts
+			(xy 340.36 232.41) (xy 337.82 232.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a9316676-7549-4c75-8a32-8e98dbb4aa27")
 	)
 	(sheet_instances
 		(path "/"
