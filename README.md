@@ -206,16 +206,19 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 | 24 VAC converter (DC-to-AC, part not selected) | Makes 50 Hz 24 VAC for the valves. Requirements: input range covers the 21-27.6 V bus, 24 Vrms output, 1 A continuous (4 valves holding), 2 A peak (inrush), enable input or switchable supply, short-circuit protection | Yes | Yes |
 | RC snubber (~0.1 uF + 47-100 ohm), shared | Edge softening, relay contact protection | Yes | Yes |
 | Fuses (converter input, 24 V side) | Protection | Yes | Yes |
+| F3, 5 A fuse in a 5x20 mm panel-mount PCB holder (6 A, 250 V rated) on the 24 V DC input J1 | Protects the board and a reversed supply (the 30 V TVS conducts and blows the fuse) | Yes | **No** (absent) |
 | Mains-detect input (PSU DC-OK or optocoupler) | Selects the mode | Yes | Yes |
-| ADS1115 (I2C, 16-bit ADC) | Reads battery voltage, wind speed and line pressure | Yes | Yes |
-| Battery-voltage sense (divider into the ADS1115) | Low-battery warning | Yes | Yes |
+| ADS1115 (I2C, 16-bit ADC) | Reads line pressure (AIN0), wind speed (AIN1) and board temperature (AIN2) | Yes | Yes |
+| INA226 (I2C 0x40) with a 10 mohm shunt in the battery negative lead | Battery bus voltage and battery current (coulomb counting), low-battery warning | Yes | Yes |
+| TCA9555 (I2C 0x20, 16-bit I/O expander) | Status LEDs, SHOW LEDs button, 24 VAC converter enable | Yes | Yes |
 | BMP581, SHT41 (I2C) | Weather sensors | Yes | Yes |
 | DS18B20 (1-Wire) | Soil temperature | Yes | Yes |
-| DS18B20 U7 (TO-92, on the main board, 1-Wire) | Board temperature, shares the GPIO 4 bus and its pull-up (R5 4.7k) with the soil probe | Yes | Yes |
+| MCP9700A U7 (TO-92, on the main board, analog) | Board temperature, 10 mV/degC output (500 mV at 0 degC) read by ADS1115 AIN2 | Yes | Yes |
 | XDB401 pressure transmitter | Line pressure and no-water check | Yes | Yes |
 | Wind sensor (0-5 V) | Wind speed | Yes | Yes |
-| LCD2004 with I2C backpack | Local display, driven by the ESP32-S3 (its own I2C bus, not the C6 sensor bus) | Yes (on request) | **No** |
-| LCD wake button, LCD power switch | Display control, on ESP32-S3 GPIOs | Yes | No |
+| LCD2004 with I2C backpack (5 V module) | Local display, driven by the ESP32-S3 (its own I2C bus, not the C6 sensor bus). Powered from the 5 V net, the same net as the S3 5 V input, so it follows the S3 supply | Yes (on request) | **No** |
+| BSS138 I2C level shifter U9 | Lets the 3.3 V S3 I2C lines (GPIO 8 and 9) talk to the 5 V LCD backpack, whose pull-ups are tied to 5 V | Yes | No |
+| LCD wake button | Display control, on an ESP32-S3 GPIO | Yes | No |
 | Status LED (`LED_Pin`) | Startup error indicator | Yes | Yes (errors only) |
 | Battery-state LED (slow blink) | Shows battery mode | No | Yes |
 | Config switch (GPIO 23) | Boot into Configuration Mode | Boot only | **Ignored** |
@@ -235,7 +238,7 @@ Battery sizing for 12 h idle plus 3 h of one valve is about 13 Wh usable, so two
 ### Open decisions
 * **TBD:** how the 24 VAC converter regulates the valve voltage (built into the converter, or a separate stage).
 * **TBD:** select the 24 VAC converter. It must produce an acceptable waveform and voltage for the Galcon valves (run cool and quiet) and have an enable control. A square wave is acceptable if the valves tolerate it; otherwise use a sine-modulated H-bridge on a 36-42 V bus, or a 12 V sine inverter feeding a 24 V transformer.
-* **TBD:** inputs and outputs for the mains-detect input, battery sense, battery LED and the 24 VAC converter enable (the LCD has moved to the ESP32-S3, which is off on battery, so it no longer needs C6 pins). With 8 valves every safe GPIO on the FireBeetle 2 header is used (1, 2, 3, 4, 5, 6, 7, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23; 8 and 9 are boot-strapping pins, used only for the RS-485 RX and TX), so these need an I2C expander (e.g. PCF8574) on the existing I2C bus. Battery sense no longer needs a pin: all analog inputs are read by the ADS1115 (see "Hardware Pin Configurations"), which frees GPIO 3 (GPIO 2 is now the RS-485 DE, so GPIO 3 is the only spare pin).
+* **TBD:** inputs and outputs for the mains-detect input, battery sense, battery LED and the 24 VAC converter enable (the LCD has moved to the ESP32-S3, which is off on battery, so it no longer needs C6 pins). With 8 valves every safe GPIO on the FireBeetle 2 header is used (1, 4, 5, 6, 7, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, with 2 and 3 still free; 8 and 9 are boot-strapping pins, used only for the RS-485 RX and TX), so these use the TCA9555 I/O expander (U5, I2C 0x20) on the existing I2C bus. Battery sense needs no pin: the INA226 reads it over I2C. The RS-485 DE is on GPIO 15, and GPIO 2 and 3 are unused.
 
 ## Physical Placement: Separate Enclosures
 
@@ -301,7 +304,7 @@ graph LR
     BUCK5 -- 5 V --> RELAY
     C6 <-- "UART GPIO 6 and 7" --> S3
     C6 <-- "I2C GPIO 19 and 20" --> BMP
-    C6 <-- "RS-485 GPIO 8, 9 and 2" --> CLUSTER
+    C6 <-- "RS-485 GPIO 8, 9 and 15" --> CLUSTER
     C6 <-- "I2C GPIO 19 and 20" --> SHT
     C6 <-- "I2C GPIO 19 and 20" --> ADS
     WIND -- "analog 0-5 V" --> ADS
@@ -494,21 +497,23 @@ The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time
 * **Shared I2C Bus:** **GPIO 19 (SDA)** and **GPIO 20 (SCL)**. This digital serial bus multiplexes data extraction lines from the local environment sensors.
   * *SHT41 Sensor:* Provides precision ambient temperature and relative humidity parameters via fixed I2C signaling.
   * *BMP581 Sensor:* Transmits targeted barometric pressure metrics and ambient temperature data.
-  * *ADS1115 ADC:* Reads the battery voltage, wind speed and line pressure (see "Analog Interface Architecture"). Address 0x48 (ADDR pin on GND).
+  * *ADS1115 ADC:* Reads line pressure, wind speed and board temperature (see "Analog Interface Architecture"). Address 0x48 (ADDR pin on GND).
+  * *INA226 monitor:* Reads the battery bus voltage and the battery current through a 10 mohm shunt. Address 0x40 (A0 and A1 on GND).
+  * *TCA9555 I/O expander:* Drives the status LEDs (P00 to P06), reads the SHOW LEDs button (P10) and drives the 24 VAC converter enable (P12). Address 0x20 (A0, A1 and A2 on GND).
   * *Note:* All the devices function on the exact same physical GPIO 19 and 20 paths, utilizing unique hardware address layers to prevent data line collisions.
-* **RS-485 Link to the Sensor Cluster:** **GPIO 9 (TX)**, **GPIO 8 (RX)** and **GPIO 2 (DE and /RE)**, through a MAX3485 to terminal J5 (1 = A, 2 = B, 3 = +5 V, 4 = GND).
+* **RS-485 Link to the Sensor Cluster:** **GPIO 9 (TX)**, **GPIO 8 (RX)** and **GPIO 15 (DE and /RE)**, through a MAX3485 to terminal J5 (1 = A, 2 = B, 3 = +5 V, 4 = GND).
 * **1-Wire Serial Interface:** **GPIO 4**. Configured as an open-drain bidirectional digital line with a dedicated external pull-up resistor.
   * *DS18B20 Sensor:* Provides high-accuracy underground soil thermal parameters using the precision timing 1-Wire protocol.
-  * *Board DS18B20 (U7):* A second DS18B20 on the same bus measures the main-board temperature. The two sensors are told apart by their 64-bit ROM address, so the firmware must address each one (not `SKIP_ROM`). **TBD:** the firmware still reads one DS18B20 only.
-* **Analog Interface Architecture:** All analog inputs are read by one **ADS1115** 16-bit ADC on the shared I2C bus (GPIO 19 and 20), not by the ESP32-C6 internal ADC, which is noisy and non-linear. No C6 GPIO is used for analog signals. Proposed channel order (the schematic is not updated yet): A0 battery voltage, A1 XDB401 pressure, A2 wind speed.
-  * *Battery voltage:* Divided down from the 24 V bus (about 1:9, so 27.6 V gives under 3.3 V). Use 0.1% resistors, because the divider sets the accuracy.
+  * *Board temperature (U7):* An MCP9700A analog sensor on ADS1115 AIN2, not on the 1-Wire bus. Output is 500 mV at 0 degC plus 10 mV per degC. **TBD:** the firmware does not read it yet.
+* **Analog Interface Architecture:** All analog inputs are read by one **ADS1115** 16-bit ADC on the shared I2C bus (GPIO 19 and 20), not by the ESP32-C6 internal ADC, which is noisy and non-linear. No C6 GPIO is used for analog signals. Channel order (as in the schematic): AIN0 XDB401 pressure, AIN1 wind speed, AIN2 board temperature (MCP9700A), AIN3 unused. Battery voltage is read by the INA226, not the ADS1115.
+  * *Battery voltage and current:* Read by the INA226 over I2C (bus voltage from the 24 V bus, current from the 10 mohm shunt R31 in the battery negative lead), so no divider into the ADS1115 is needed.
   * *XDB401 Pressure Transmitter:* Records real-time water line pressure, with hardware conditioning to scale the output signal to fit within the ADS1115 input limits.
   * *Analog Wind Speed Sensor:* Because the sensor outputs a 0–5V range, an external voltage divider circuit steps the incoming voltage down to a safe, readable level. The software maps this reading back to the true 0.0–30.0 meters per second wind speed curve.
   * *Input protection (each channel):* A divider so a pin never exceeds 3.3 V, a 1 to 10 kohm series resistor, a clamp to 3.3 V and GND at the pin, and a 10 to 100 nF capacitor to GND. The ADS1115 is powered from the 3.3 V rail only, with 100 nF at VDD.
   * **TBD:** valve fail-safe when the ADS1115 stops answering, for example the "No Water Pressure" check cannot run. Either close the valve, or run it on a timer only.
 * **Valve Relays:** **GPIO 1, 14, 18, 21, 22, 16, 17, 5** for valves 1-8, declared as `gpio_valve_0` to `gpio_valve_7` in `components/board_manager/board_peripherals.yaml`, with `CONFIG_DEVICE_MAX_VALVES` = 8. The FireBeetle 2 ESP32-C6 header has no GPIO 10 or 11. GPIO 16/17 are UART0, so the console must run on USB Serial/JTAG. GPIO 8/9 (boot strapping) and 15 (on-board LED) are not used for valves. More than 8 valves needs an I2C GPIO expander.
 * **Inter-Chip Link (ESP32-S3 Connection):** **GPIO 6 (TX)** and **GPIO 7 (RX)**. A UART link connecting the FireBeetle 2 to a companion ESP32-S3 module, with GPIO 6 wired to the ESP32-S3's RX pin and GPIO 7 to its TX pin.
-* **LCD2004 (on the ESP32-S3):** the display, its wake button and its power switch are wired to the ESP32-S3, not the C6. The LCD is a mains-only feature (it is off on battery, like the S3), so it uses the S3's spare GPIOs. Proposed S3 pins: I2C SDA GPIO 8, SCL GPIO 9, wake button GPIO 4, LCD power switch GPIO 5 (avoiding the S3's strapping pins 0/3/45/46, USB pins 19/20 and the octal-PSRAM pins 35-37 on N16R8 boards). **TBD:** confirm when the S3 is added.
+* **LCD2004 (on the ESP32-S3):** the display and its wake button are wired to the ESP32-S3, not the C6. The LCD is a 5 V module with an I2C backpack (PCF8574T) whose pull-ups are tied to 5 V, so a BSS138 level shifter (U9) sits between the 3.3 V S3 I2C lines and the backpack. It is powered from the 5 V net, the same net as the S3 5 V input, so it follows the S3 supply and needs no power switch of its own. It is a mains-only feature (the S3 is off on battery). Proposed S3 pins: I2C SDA GPIO 8, SCL GPIO 9, wake button GPIO 4 (avoiding the S3's strapping pins 0/3/45/46, USB pins 19/20 and the octal-PSRAM pins 35-37 on N16R8 boards). **TBD:** confirm when the S3 is added.
 
 ### Network & Protocol Configurations
 The network architecture is configured natively under the revised ESP-IDF 6.0 components using the following specifications:
