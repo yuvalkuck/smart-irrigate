@@ -1,19 +1,4 @@
 dependencies:
-  esp-idf-lib/ads111x:
-    component_hash: 1a85038643af938de126f33084e40c4687062254d3e9e89999563e8813f3897f
-    dependencies:
-    - name: esp-idf-lib/esp_idf_lib_helpers
-      registry_url: https://components.espressif.com
-      require: private
-      version: '*'
-    - name: esp-idf-lib/i2cdev
-      registry_url: https://components.espressif.com
-      require: private
-      version: '*'
-    source:
-      registry_url: https://components.espressif.com/
-      type: service
-    version: 1.1.15
   esp-idf-lib/esp_idf_lib_helpers:
     component_hash: 2b46288d7500846fe9f5ca7bfa2597067de9e38d94fb0d6ff834639ab02734ba
     dependencies: []
@@ -232,7 +217,6 @@ dependencies:
       type: service
     version: 1.2.7
 direct_dependencies:
-- esp-idf-lib/ads111x
 - esp-idf-lib/i2cdev
 - espressif/ds18b20
 - espressif/esp-modbus
@@ -242,6 +226,6 @@ direct_dependencies:
 - espressif/onewire_bus
 - idf
 - k0i05/esp_sht4x
-manifest_hash: 552ac858171781c47a45d1e22de354d912f59ae09d3464ff344a90cec1409eac
+manifest_hash: 81f2a77311fcdac3b7d179d940a080dda95e24d117bb84122c1ac6156b321adb
 target: esp32c6
 version: 3.0.0
