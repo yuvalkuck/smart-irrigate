@@ -5,14 +5,16 @@
 #include "common_event.h"
 #include "esp_event.h"
 #include "esp_adc/adc_oneshot.h"
-#include "gpio_declaraion.h"
 #include "driver/i2c_master.h"
+#include "esp_board_manager_includes.h"
 /*###*/
 #include "sensor_sht4x.h"
 #include "sensor_bmp5xx.h"
 #include "sensor_ds18b20.h"
 #include "sensor_wind.h"
 #include "sensor_xdb401.h"
+#include "sensor_platform.h"
+#include "sensor_board_temp.h"
 #include <bitset>
 
 // Define I2C pins for ESP32-C6
@@ -27,7 +29,8 @@ namespace Diagnostics {
         XDB401 = (1 << 3),
         WindSpeed = (1 << 4),
         TSL2591 = (1 << 5),
-        All = SHT41 | BMP581 | TSL2591 | DS18B20 | XDB401 | WindSpeed
+        BoardTemp = (1 << 6),
+        All = SHT41 | BMP581 | TSL2591 | DS18B20 | XDB401 | WindSpeed | BoardTemp
     };
 
     constexpr MaskStateOK operator|(MaskStateOK lhs, MaskStateOK rhs) {
@@ -49,14 +52,6 @@ static constexpr auto TAG = "Telemetry:";
 adc_oneshot_unit_handle_t adc_handle;
 onewire_bus_handle_t onewire_bus_handle;
 static i2c_master_bus_handle_t master_bus_handler;
-static i2c_master_bus_config_t master_bus_config = {
-    .i2c_port = I2C_PORT,
-    .sda_io_num = I2C_SDA_PIN,
-    .scl_io_num = I2C_SCL_PIN,
-    .clk_source = I2C_CLK_SRC_DEFAULT,
-    .glitch_ignore_cnt = 7
-
-};
 ///////////////////////////
 
 static SensorSHT4x sensorSHT;
@@ -64,6 +59,8 @@ static SensorBMP5xx sensorBMP;
 static SensorDS18B20 sensorDS18B20;
 static SensorWind sensorWind;
 static SensorXDB4xx sensorXDB4xx;
+static SensorPlatform sensorPlatform;
+static SensorBoardTemp sensorBoardTemp;
 
 static void i2c_scan(i2c_master_bus_handle_t bus) {
     ESP_LOGI(TAG, "Scanning I2C bus...");
@@ -86,9 +83,8 @@ static void i2c_scan(i2c_master_bus_handle_t bus) {
 esp_err_t init_telemetry() {
     METHODTRACE
     /***** init services ****/
-    master_bus_config.flags.enable_internal_pullup = true;
-    // I2C Master
-    ESP_ERROR_CHECK(i2c_new_master_bus(&master_bus_config, &master_bus_handler));
+    // I2C Master, created by the board manager ("i2c_main")
+    ESP_ERROR_CHECK(esp_board_manager_get_periph_handle("i2c_main", reinterpret_cast<void **>(&master_bus_handler)));
     // init I2C sensors
     i2c_scan(master_bus_handler);
     Diagnostics::MaskStateOK state = Diagnostics::MaskStateOK::NoValue;
@@ -98,7 +94,8 @@ esp_err_t init_telemetry() {
     ONLINE_STATE(state, onewire_bus_handle, sensorDS18B20, DS18B20);
     ONLINE_STATE(state, adc_handle, sensorXDB4xx, XDB401);
     ONLINE_STATE(state, adc_handle, sensorWind, WindSpeed);
-    const std::bitset<6> pr = static_cast<uint8_t>(state);
+    ONLINE_STATE(state, master_bus_handler, sensorBoardTemp, BoardTemp);
+    const std::bitset<7> pr = static_cast<uint8_t>(state);
     ESP_LOGI(TAG, "Sensors Online:%s", pr.to_string().c_str());
     //-----------------------------
     INIT_SENSOR(master_bus_handler,sensorSHT,SHT41)
@@ -107,6 +104,9 @@ esp_err_t init_telemetry() {
     INIT_SENSOR(onewire_bus_handle,sensorDS18B20,DS18B20)
     INIT_SENSOR(adc_handle,sensorXDB4xx,XDB401)
     INIT_SENSOR(adc_handle,sensorWind,WindSpeed)
+    INIT_SENSOR(master_bus_handler,sensorBoardTemp,BoardTemp)
+    // remote sensor cluster, enabled by the HW mask (read once here, a change needs a restart)
+    if (sensorPlatform.init() != ESP_OK) { ESP_LOGE(TAG, "Sensor Init Failed: Platform"); }
 
     return ESP_OK;
 }
@@ -120,6 +120,8 @@ esp_err_t init_telemetry() {
         sensorXDB4xx.read(telemetryPayload);
         sensorDS18B20.read(telemetryPayload);
         sensorWind.read(telemetryPayload);
+        sensorBoardTemp.read(telemetryPayload);
+        sensorPlatform.read(telemetryPayload); // after the on-board sensors, its values win
         esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_UPDATED_SENSOR, &event, event.length(), portMAX_DELAY);
         vTaskDelay(pdMS_TO_TICKS(TASK_DELAY));
     }

@@ -25,6 +25,7 @@ struct TelemetryData {
     float soile_temperature;
     float solar_level;
     float wind_speed;
+    float board_temperature;
 };
 
 #endif

@@ -4,10 +4,18 @@
 
 #include "sensor_xdb401.h"
 #include "logger.h"
+#include "esp_board_manager_includes.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
 
-#define XDB401_ADC_CHANNEL   ADC_CHANNEL_2
+// Unit and channel come from the "adc_pressure" peripheral in components/board_manager/board_peripherals.yaml
+static const periph_adc_config_t *board_adc() {
+    void *cfg = nullptr;
+    ESP_ERROR_CHECK(esp_board_manager_get_periph_config("adc_pressure", &cfg));
+    return static_cast<const periph_adc_config_t *>(cfg);
+}
+
+#define XDB401_ADC_CHANNEL   (static_cast<adc_channel_t>(board_adc()->cfg.oneshot.channel_id))
 #define XDB401_ADC_ATTEN     ADC_ATTEN_DB_12
 #define XDB401_ADC_BITWIDTH  ADC_BITWIDTH_DEFAULT
 
@@ -25,7 +33,7 @@ esp_err_t SensorXDB4xx::init(adc_oneshot_unit_handle_t bus) {
     };
     ESP_ERROR_CHECK(adc_oneshot_config_channel(bus, XDB401_ADC_CHANNEL, &chan_cfg));
     adc_cali_curve_fitting_config_t dev_config = {
-        .unit_id = ADC_UNIT_1,
+        .unit_id = board_adc()->cfg.oneshot.unit_cfg.unit_id,
         .chan = XDB401_ADC_CHANNEL,
         .atten = XDB401_ADC_ATTEN,
         .bitwidth = XDB401_ADC_BITWIDTH,
@@ -78,7 +86,7 @@ bool SensorXDB4xx::read(TelemetryData& data) {
 bool SensorXDB4xx::online(adc_oneshot_unit_handle_t bus) {
     METHODTRACE
     int raw_adc_sample = 0;
-    if (adc_oneshot_read(bus, ADC_CHANNEL_2, &raw_adc_sample) == ESP_OK) {
+    if (adc_oneshot_read(bus, XDB401_ADC_CHANNEL, &raw_adc_sample) == ESP_OK) {
         return true;
     } else {
         ESP_LOGE(TAG, "ADC tracking core rejected sample processing.");

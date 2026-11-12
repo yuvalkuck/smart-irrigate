@@ -22,7 +22,7 @@ esp_err_t SensorDS18B20::init(onewire_bus_handle_t bus) {
         ESP_ERROR_CHECK(onewire_new_device_iter(bus, &iter));
         // ESP_ERR_NOT_FOUND is how the driver signals "search complete", not a fault.
         // ESP_ERR_INVALID_CRC means bus noise corrupted a bit mid-search (the long
-        // 1-Wire run is noise-prone, see GPIO_ONEWIRE_BUS comment) -- retry the scan
+        // 1-Wire run is noise-prone, see ONEWIRE_Pin comment) -- retry the scan
         // rather than treating it the same as "no device present".
         while ((rc = onewire_device_iter_get_next(iter, &dev)) == ESP_OK) {
             LOGTRACE(TAG, "device add: 0x%016" PRIX64, dev.address);

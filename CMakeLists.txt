@@ -10,6 +10,7 @@ project(smart-irrigate
         VERSION 1.0.0.0
         LANGUAGES C CXX
 )
+
 SET(INITIATE_WIFI_SSID "$ENV{INITIATE_WIFI_SSID}")
 SET(INITIATE_WIFI_PASSWORD "$ENV{INITIATE_WIFI_PASSWORD}")
 # BT
@@ -29,3 +30,11 @@ SET(INITIATE_NTP_SERVER "$ENV{INITIATE_NTP_SERVER}")
 SET(INITIATE_DEFAULT_LOCALE_TIME_ZONE "$ENV{INITIATE_DEFAULT_LOCALE_TIME_ZONE}")
 configure_file(${CMAKE_CURRENT_LIST_DIR}/components/common/gen/default_initiate.in.h ${CMAKE_CURRENT_LIST_DIR}/components/common/include/default_initiate.h)
 
+
+#
+# Board constants (ports, channels; pins are in components/board_manager):
+# hardware/boards/<BOARD>.cmake -> components/common/include/gpio_declaraion.h
+#
+set(BOARD "firebeetle2_c6" CACHE STRING "Board constants in hardware/boards/")
+include(${CMAKE_CURRENT_LIST_DIR}/hardware/boards/${BOARD}.cmake)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/components/common/gen/gpio_declaraion.in.h ${CMAKE_CURRENT_LIST_DIR}/components/common/include/gpio_declaraion.h @ONLY)

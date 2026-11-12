@@ -63,18 +63,18 @@ static esp_err_t get_status_handler(httpd_req_t* req) {
     METHODTRACE
     std::array<char[MAX_STRING_LENGTH], 5> strCache = {};
     NvsConfig hCfg;
-    hCfg.getStr(CFG_NVS_KEY_WIFI_SSID, strCache[0],MAX_STRING_LENGTH);
-    hCfg.getStr(CFG_NVS_KEY_WIFI_PASSWORD, strCache[1],MAX_STRING_LENGTH);
-    hCfg.getStr(CFG_NVS_KEY_MQTT_URL, strCache[2],MAX_STRING_LENGTH);
-    hCfg.getStr(CFG_NVS_KEY_MQTT_USERNAME, strCache[3],MAX_STRING_LENGTH);
-    hCfg.getStr(CFG_NVS_KEY_MQTT_PASSWORD, strCache[4],MAX_STRING_LENGTH);
+    hCfg.getStr(SETUP_KEY(WIFI_SSID), strCache[0],MAX_STRING_LENGTH);
+    hCfg.getStr(SETUP_KEY(WIFI_PASSWORD), strCache[1],MAX_STRING_LENGTH);
+    hCfg.getStr(SETUP_KEY(MQTT_URL), strCache[2],MAX_STRING_LENGTH);
+    hCfg.getStr(SETUP_KEY(MQTT_USERNAME), strCache[3],MAX_STRING_LENGTH);
+    hCfg.getStr(SETUP_KEY(MQTT_PASSWORD), strCache[4],MAX_STRING_LENGTH);
     char payload[1024] = {0};
     fmt::format_to_n(payload, sizeof(payload), R"({{"{}"="{}","{}"="{}","{}"="{}","{}"="{}","{}"="{}"}})",
-                     CFG_NVS_KEY_WIFI_SSID, strCache[0],
-                     CFG_NVS_KEY_WIFI_PASSWORD, strCache[1],
-                     CFG_NVS_KEY_MQTT_URL, strCache[2],
-                     CFG_NVS_KEY_MQTT_USERNAME, strCache[3],
-                     CFG_NVS_KEY_MQTT_PASSWORD, strCache[4]);
+                     SETUP_KEY(WIFI_SSID), strCache[0],
+                     SETUP_KEY(WIFI_PASSWORD), strCache[1],
+                     SETUP_KEY(MQTT_URL), strCache[2],
+                     SETUP_KEY(MQTT_USERNAME), strCache[3],
+                     SETUP_KEY(MQTT_PASSWORD), strCache[4]);
     httpd_resp_set_type(req, "application/json");
     httpd_resp_send(req, payload, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;

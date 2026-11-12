@@ -1,0 +1,6 @@
+board: board_manager
+chip: esp32c6
+version: "1.0.0"
+description: "Smart Irrigate controller"
+manufacturer: "uv"
+

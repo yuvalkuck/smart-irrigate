@@ -13,23 +13,27 @@
   * [Predictive & Macro-Environmental Irrigation Control](#predictive--macro-environmental-irrigation-control)
   * [Hydraulic Feedback & Healing (Zero-Pressure Handling)](#hydraulic-feedback--healing-zero-pressure-handling)
   * [Multi-Valve Scheduling & Compile-Time Constraints](#multi-valve-scheduling--compile-time-constraints)
-* [Power Architecture](#power-architecture)
-  * [Power paths](#power-paths)
-  * [Behaviour by state](#behaviour-by-state)
-  * [Parts and where they are used](#parts-and-where-they-are-used)
-  * [Estimated power (battery side)](#estimated-power-battery-side)
-  * [Open decisions](#open-decisions)
-* [Physical Placement: Separate Enclosures](#physical-placement-separate-enclosures)
-  * [Connection overview](#connection-overview)
-* [Project Progress Plan](#project-progress-plan)
-* [Heat and Environment](#heat-and-environment)
-* [Project Configuration](#project-configuration)
-  * [Hardware Pin Configurations](#hardware-pin-configurations)
-  * [Network & Protocol Configurations](#network--protocol-configurations)
-  * [Storage & Partition Layout Architecture](#storage--partition-layout-architecture)
+* [Power Architecture](doc/PowerArchitecture.md)
+  * [Power paths](doc/PowerArchitecture.md#power-paths)
+  * [Behaviour by state](doc/PowerArchitecture.md#behaviour-by-state)
+  * [Parts and where they are used](doc/PowerArchitecture.md#parts-and-where-they-are-used)
+  * [Estimated power (battery side)](doc/PowerArchitecture.md#estimated-power-battery-side)
+  * [Open decisions](doc/PowerArchitecture.md#open-decisions)
+* [Physical Placement: Separate Enclosures](doc/PhysicalPlacement.md)
+  * [Connection overview](doc/PhysicalPlacement.md#connection-overview)
+* [Project Progress Plan](doc/ProjectProgressPlan.md)
+* [Heat and Environment](doc/HeatAndEnvironment.md)
+* [Building from Scratch](doc/BuildingFromScratch.md)
+  * [Build dependencies](doc/BuildingFromScratch.md#build-dependencies)
+  * [Steps after a fresh clone](doc/BuildingFromScratch.md#steps-after-a-fresh-clone)
+  * [Troubleshooting a fresh build](doc/BuildingFromScratch.md#troubleshooting-a-fresh-build)
+* [Project Configuration](doc/ProjectConfiguration.md)
+  * [Hardware Pin Configurations](doc/ProjectConfiguration.md#hardware-pin-configurations)
+  * [Network & Protocol Configurations](doc/ProjectConfiguration.md#network--protocol-configurations)
+  * [Storage & Partition Layout Architecture](doc/ProjectConfiguration.md#storage--partition-layout-architecture)
 
 ## Project Description
-**Smart Irrigate** is an automated, low-power irrigation controller engineered for the **ESP-IDF 6.0 framework** running on the ESP32-C6 FireBeetle 2 platform. The device acts as an intelligent edge-computing node that monitors microclimate variables, tracks live hydraulic line pressure data, and manages a matrix of physical AC water valves using an external relay array.
+**Smart Irrigate** is an automated, low-power irrigation controller engineered for the **ESP-IDF 6.1 framework** running on the ESP32-C6 FireBeetle 2 platform. The device acts as an intelligent edge-computing node that monitors microclimate variables, tracks live hydraulic line pressure data, and manages a matrix of physical AC water valves using an external relay array.
 
 ### System Tiers
 Smart Irrigate is designed to operate as a three-tier system, from a fully autonomous single unit up to a fleet managed by a central control server:
@@ -64,7 +68,7 @@ graph TD
 ```
    
 ### Setup & Operational Mode 
-The software architecture leverages ESP-IDF 6.0 optimizations—such as the memory-efficient **Picolibc standard library**—to run proactive edge-logic routines. Smart Irrigate transitions between two software-controlled lifecycles evaluated at boot time:
+The software architecture leverages ESP-IDF 6.1 optimizations—such as the memory-efficient **Picolibc standard library**—to run proactive edge-logic routines. Smart Irrigate transitions between two software-controlled lifecycles evaluated at boot time:
 * **Setup Mode:** Triggered manually by holding down a physical button interface during boot. The device suspends monitoring and spins up a native local Wi-Fi Access Point (SoftAP) alongside an **HTTP server** (`esp_http_server`). A dedicated Android app connects directly to this host network, exchanging structured string payloads to populate network credentials and MQTT infrastructure layouts. The HTTP server parses these properties, commits them into a dedicated Non-Volatile Storage (NVS) communication partition, and issues a hardware system restart.
 * **Operational Mode:** The standard execution pathway. The device extracts connection profiles from the communication NVS partition, connects to the network via Wi-Fi Station mode, updates its clock via SNTP, and establishes a persistent, secure session with an upstream MQTT broker. A real-time engine concurrently samples physical data from the sensor array, packages the values, and streams them to the broker. Concurrently, the system acts upon incoming remote valve command structures, logging execution timelines and tracking irrigation events in real time.
 
@@ -130,246 +134,3 @@ The device natively manages a matrix of **8 independent physical water valves** 
 | DS18B20 | Soil temperature 5-10 cm deep, for soil thermal mass tracking. |
 | XDB401 | Water line pressure, for no-water detection. |
 | Analog wind sensor (0-5 V) | Wind speed from 0 to 30 m/s. |
-
-## Power Architecture
-
-> **Status: design under evaluation.** Nothing here is built yet. Power figures are datasheet-typical estimates, not measurements. Items marked **TBD** are open decisions.
-
-The valves are **24 VAC Galcon solenoids** (0.30 A inrush, 0.19 A holding, ~2.1 W real power, 7.2 VA inrush / 4.6 VA holding). They must keep watering when mains is lost, so the whole system runs from a single **24 V DC bus** that a mains PSU feeds and a battery backs up. A DC-to-AC converter (part not selected yet) turns the bus into the 50 Hz 24 VAC the valves need. No 230 V-to-24 V transformer and no 230 V inverter is used.
-
-### Power paths
-
-**Mains present (non-battery state)**
-
-```mermaid
-graph LR
-    M[230 V mains] --> PSU[27.6 V 2 A PSU]
-    PSU --> BUS[24 V bus]
-    BAT[2 x 12 V SLA in series<br/>floating, charging] --- BUS
-    BUS --> BUCK5[Buck 24 V to 5 V]
-    BUCK5 --> LOGIC[C6, S3, relays, sensors, LCD]
-    BUS --> BUCK24[Voltage regulation, if needed]
-    BUCK24 --> EN[Converter enable, pin TBD]
-    EN --> ACB[24 VAC converter, 50 Hz]
-    ACB --> SNUB[RC snubber]
-    SNUB --> RELAYS[8-ch relay board]
-    RELAYS --> V[Galcon valves]
-```
-
-**Battery (mains lost)**
-
-```mermaid
-graph LR
-    BAT[2 x 12 V SLA in series] --> BUS[24 V bus]
-    BUS --> BUCK5[Buck 24 V to 5 V]
-    BUCK5 --> LOGIC[C6 Wi-Fi off, relays, sensors]
-    BUS --> BUCK24[Voltage regulation, if needed]
-    BUCK24 --> EN[Converter enable, pin TBD]
-    EN --> ACB[24 VAC converter, 50 Hz]
-    ACB --> SNUB[RC snubber]
-    SNUB --> RELAYS[8-ch relay board]
-    RELAYS --> V[One Galcon valve at a time]
-```
-
-The battery floats across the bus at all times, so a mains loss causes no switch-over: the loads simply keep drawing from the battery.
-
-### Behaviour by state
-
-| | Mains present | Battery |
-|---|---|---|
-| Wi-Fi / SNTP / MQTT | On | **Off** (local schedule from the `config` partition, RTC clock) |
-| ESP32-S3 companion | On | **Off** |
-| Valves open at once | set by `DEVICE_MAX_SIMULTANEOUS_OPEN_VALVES` (menuconfig under "Main Power ON", default 2, range 2-16; design range 2-4), starts staggered ~0.5 s | **1**, time-sliced round robin: each valve gets a slice of at most `DEVICE_MAX_ROUND_ROBIN_TIME_MINI` minutes (menuconfig under "Main Battery ON", default 10, range 5-30), then the next valve with remaining time, until all counters reach zero |
-| Valve switch order | Close old, wait ~1 s, open next (one-valve mode) | Same |
-| LCD2004 (driven by the ESP32-S3) | Wakes on button, off after N minutes | **Off** (the S3 is off) |
-| Status LED (`GPIO_LED`) | Startup errors only | Startup errors only |
-| Battery indicator | Off | Slow-blink LED (pin **TBD**) |
-| 24 VAC converter | Enabled only while a valve is open | Enabled only while a valve is open |
-
-### Parts and where they are used
-
-| Part | Role | Mains | Battery |
-|---|---|---|---|
-| FireBeetle 2 ESP32-C6 | Main controller | Yes | Yes (Wi-Fi off) |
-| ESP32-S3 DevKitC-1 | Companion AI module | Yes | **No** |
-| 8-channel 5 V relay module | Valve switching, all 8 channels used (IN1-IN8 = valves 1-8) | Yes | Yes |
-| 8 x Galcon 24 VAC solenoid valves | Water valves | Yes | Yes (1 at a time) |
-| 230 V to 27.6 V, 2 A PSU | Feeds the bus, charges the battery | Yes | **No** (absent) |
-| 2 x 12 V SLA battery in series | Backup (24 V) | Yes (floating) | Yes (sole source) |
-| Battery fuse and low-voltage disconnect (~21 V) | Protection | Yes | Yes |
-| Buck converter 24 V to 5 V (35 V rated) | Logic supply | Yes | Yes |
-| Voltage regulation stage (needed only if the converter output follows its input) | Holds valve voltage at 24 Vrms from the 27.6 V bus | Yes | Yes (bus <= 25.6 V; must not drop below ~21 Vrms at the valves) |
-| 24 VAC converter (DC-to-AC, part not selected) | Makes 50 Hz 24 VAC for the valves. Requirements: input range covers the 21-27.6 V bus, 24 Vrms output, 1 A continuous (4 valves holding), 2 A peak (inrush), enable input or switchable supply, short-circuit protection | Yes | Yes |
-| RC snubber (~0.1 uF + 47-100 ohm), shared | Edge softening, relay contact protection | Yes | Yes |
-| Fuses (converter input, 24 V side) | Protection | Yes | Yes |
-| Mains-detect input (PSU DC-OK or optocoupler) | Selects the mode | Yes | Yes |
-| Battery-voltage sense (ADC divider) | Low-battery warning | Yes | Yes |
-| BMP581, SHT41 (I2C) | Weather sensors | Yes | Yes |
-| DS18B20 (1-Wire) | Soil temperature | Yes | Yes |
-| XDB401 pressure transmitter | Line pressure and no-water check | Yes | Yes |
-| Wind sensor (0-5 V) | Wind speed | Yes | Yes |
-| LCD2004 with I2C backpack | Local display, driven by the ESP32-S3 (its own I2C bus, not the C6 sensor bus) | Yes (on request) | **No** |
-| LCD wake button, LCD power switch | Display control, on ESP32-S3 GPIOs | Yes | No |
-| Status LED (`GPIO_LED`) | Startup error indicator | Yes | Yes (errors only) |
-| Battery-state LED (slow blink) | Shows battery mode | No | Yes |
-| Config switch (GPIO 23) | Boot into Configuration Mode | Boot only | **Ignored** |
-
-**Not used in either path:** a 230 V to 24 VAC transformer, a 12 V to 230 V inverter, a mains/inverter changeover relay, a series DC-blocking capacitor, and the FireBeetle's own Li-ion charger (it only handles a single 3.7 V cell).
-
-### Estimated power (battery side)
-
-| State | Draw |
-|---|---|
-| Battery idle (Wi-Fi off, LCD off, converter off) | ~0.4 W |
-| Battery, one valve open | ~3-4 W (valve ~2.1 W plus converter and relay losses) |
-| Mains, 2-4 valves open, electronics on | PSU needs ~2 A at 27.6 V including recharge |
-
-Battery sizing for 12 h idle plus 3 h of one valve is about 13 Wh usable, so two 12 V 4 Ah batteries in series leave generous margin.
-
-### Open decisions
-* **TBD:** how the 24 VAC converter regulates the valve voltage (built into the converter, or a separate stage).
-* **TBD:** select the 24 VAC converter. It must produce an acceptable waveform and voltage for the Galcon valves (run cool and quiet) and have an enable control. A square wave is acceptable if the valves tolerate it; otherwise use a sine-modulated H-bridge on a 36-42 V bus, or a 12 V sine inverter feeding a 24 V transformer.
-* **TBD:** inputs and outputs for the mains-detect input, battery sense, battery LED and the 24 VAC converter enable (the LCD has moved to the ESP32-S3, which is off on battery, so it no longer needs C6 pins). With 8 valves every safe GPIO on the FireBeetle 2 header is used (1, 2, 3, 4, 5, 6, 7, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23; 8 and 9 are boot-strapping pins), so these need an I2C expander (e.g. PCF8574) and an I2C ADC for battery sense (e.g. ADS1115) on the existing I2C bus.
-
-## Physical Placement: Separate Enclosures
-
-The components do not share one box. Placement is decided by what each part can survive outdoors (heat, rain, cold), and by what it needs to measure correctly. Parts that are not weatherproof go in a protected box, parts that must be outside to measure correctly get their own housing, and parts that are weatherproof as bought are mounted outside with no box.
-
-| Box | Contents | Location | Housing and notes |
-|---|---|---|---|
-| **Main box** | ESP32-C6, ESP32-S3, BMP581, 8-channel relay board, 27.6 V PSU, buck converter to 5 V, 24 VAC converter, fuses | Indoors or a sheltered spot | Sealed. 230 V side kept apart from the low-voltage side. BMP581 needs a small vent to outside air. |
-| **Battery box** | 2 x 12 V batteries (series) | Next to the main box | Vented to open air, shaded and cool. Short fused cable to the main box through a gland. Lead-acid gives off hydrogen when charging, so keep it out of the main box. |
-| **Sensor mast** | SHT41 (ventilated radiation shield) | Outdoors, at least 1 m above the roof, clear sky view | Housings at least 30 cm apart. One short shared I2C cable. SHT41 in shade with free airflow. |
-| **Roof mast (no box)** | Wind sensor | Roof, 1-2 m above the ridge, clear of the other housings | Weatherproof as bought. Pole mounted, level, with a drip loop in the cable. |
-| **Soil (no box)** | DS18B20 | Irrigated zone, 5-10 cm deep | Waterproof probe in a sealed sleeve. Strain relief at the surface. |
-| **Water line (no box)** | XDB401 | Tee near the manifold | Threaded fitting, upright or sideways. Add an isolation valve. |
-
-### Connection overview
-
-```mermaid
-graph LR
-    MAINS[230 V mains]
-
-    subgraph MAIN["Main box"]
-        PSU[27.6 V PSU]
-        BUCK5[Buck 24 V to 5 V]
-        CONV[24 VAC converter]
-        C6[ESP32-C6]
-        S3[ESP32-S3]
-        BMP[BMP581]
-        RELAY[8-channel relay board]
-    end
-
-    subgraph BATBOX["Battery box"]
-        BAT[2 x 12 V batteries]
-    end
-
-    subgraph MAST["Sensor mast"]
-        CLUSTER[Sensor cluster]
-        SHT[SHT41]
-    end
-
-    subgraph ROOF["Roof mast"]
-        WIND[Wind sensor]
-    end
-
-    subgraph SOIL["Soil"]
-        DS[DS18B20]
-    end
-
-    subgraph PIPE["Water line"]
-        XDB[XDB401]
-    end
-
-    subgraph MANIFOLD["Valve manifold"]
-        VALVES[8 x Galcon 24 VAC valves]
-    end
-
-    MAINS --> PSU
-    PSU -- 24 V bus --> BUCK5
-    PSU -- 24 V bus --> CONV
-    BAT <-- "fused cable, 24 V bus" --> PSU
-    BUCK5 -- 5 V --> C6
-    BUCK5 -- 5 V --> S3
-    BUCK5 -- 5 V --> RELAY
-    C6 <-- "UART GPIO 6 and 7" --> S3
-    C6 <-- "I2C GPIO 19 and 20" --> BMP
-    C6 <-- "RS-485 GPIO 8, 9 and 15" --> CLUSTER
-    C6 <-- "I2C GPIO 19 and 20" --> SHT
-    WIND -- "analog GPIO 3" --> C6
-    XDB -- "analog GPIO 2" --> C6
-    DS <-- "1-Wire GPIO 4" --> C6
-    C6 -- "valve GPIOs 1 14 18 21 22 16 17 5" --> RELAY
-    CONV -- "24 VAC, 50 Hz" --> RELAY
-    RELAY -- "24 VAC, 9 conductors: 1 common + 8" --> VALVES
-```
-
-The 24 V bus carries power from the PSU to the battery, and from the battery to the loads during an outage (see "Power Architecture"). The relay board switches the 24 VAC from the converter to each valve.
-
-## Project Progress Plan
-
-**Current status:** a half-working prototype on a breadboard, built from off-the-shelf modules.
-
-| Stage | Goal | Tasks |
-|---|---|---|
-| **1. Breadboard** (now) | Prove the sensors and the valve control | Finish the breadboard prototype. Pick and test the 24 VAC converter with a real valve (coil heat, buzz). |
-| **2. Firmware for the power design** | Implement what the Power Architecture describes | Mains-detect and battery mode, the mains valve limit, the battery round robin, Wi-Fi and S3 off on battery, a maximum open time per valve. |
-| **3. Boxes** | Move into the real enclosures | Main box, battery box, sensor mast, roof mast, soil probe and water-line fitting (see "Physical Placement"). Fuses, an RCD on the mains side, correctly rated enclosures, a manual shutoff valve on the water line. |
-| **4. Live test run** | Run the system for real, even without the large battery | Failure tests: power cut, Wi-Fi loss, no water pressure, a dead sensor, a reboot mid-watering (the valves must close in every case). Measure the real power draw to check the estimates, then size the battery. Confirm OTA updates or serial access with the boxes closed. |
-| **5. Outdoor soak test** | Find weather and drift problems | A few weeks outdoors: condensation, heat in the main box, UV on the cables. Calibrate the wind and pressure sensors. |
-| **6. PCB** | Replace the modules with a custom board | Freeze the design first. Version 1: a main board with ESP32 WROOM modules, relays, power conversion and connectors for the remote sensors, plus a small satellite board for the SHT41 on the mast. Keep the 230 V PSU a separate module. |
-
-## Heat and Environment
-
-Summer here can reach 36 C ambient with humidity as low as 30%. A box in direct sun can reach 55-65 C inside, so the boxes and components must stand that load. The ratings below are typical datasheet figures; check them against the exact parts used.
-
-| Part | Typical limit | Heat risk | Action |
-|---|---|---|---|
-| Lead-acid batteries | Best at 20-25 C | Life roughly halves for every 8-10 C above that | Shaded, ventilated battery box, never in the sun |
-| ESP32-C6 and ESP32-S3 modules | About 85 C | Low, but Wi-Fi activity adds a few degrees | Ventilate the main box |
-| PSU and converters | Often rated 40-50 C at full load | They derate, and run hot in a closed box | Size at 50% load or less, keep them away from other heat sources |
-| 8-channel relay board | About 70-85 C | Coils add heat, and contacts age faster when hot | Mount low in the box with airflow |
-| LCD2004 | About 0-50 C, some -20 to 70 C | Washes out or fails first | Keep it in the shade, and off when not in use |
-| SHT41, BMP581, DS18B20 | 80-125 C or more | Wrong readings, not damage | Radiation shield, away from walls |
-
-Low humidity is easy on the electronics, but dry air raises the static risk, so ground the metal parts and avoid plastic rubbing against plastic near the boards. Condensation can still form when the boxes cool at night.
-
-**Measures**
-* Light-coloured enclosures in the shade, or a sun shield about 5 cm above each box.
-* Vents with insect and dust filters, and a small fan if the main box still passes about 50 C.
-* A temperature sensor inside the main box, so the firmware can warn and reduce load.
-* A heat test during the live run (see "Project Progress Plan").
-
----
-
-## Project Configuration
-
-### Hardware Pin Configurations
-The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time variables defined via Kconfig:
-* **System Boot Switch:** **GPIO 23**. Configured as a digital input relying on internal pull-up resistors. A logical `LOW` reading recorded during the power-on sequence intercepts standard execution loops to force execution into Configuration Mode.
-* **Shared I2C Bus:** **GPIO 19 (SDA)** and **GPIO 20 (SCL)**. This digital serial bus multiplexes data extraction lines from the local environment sensors.
-  * *SHT41 Sensor:* Provides precision ambient temperature and relative humidity parameters via fixed I2C signaling.
-  * *BMP581 Sensor:* Transmits targeted barometric pressure metrics and ambient temperature data.
-  * *Note:* Both sensors function on the exact same physical GPIO 19 and 20 paths, utilizing unique factory hardware address layers to prevent data line collisions.
-* **RS-485 Link to the Sensor Cluster:** **GPIO 9 (TX)**, **GPIO 8 (RX)** and **GPIO 15 (DE and /RE)**, through a MAX3485 to terminal J5 (1 = A, 2 = B, 3 = +5 V, 4 = GND).
-* **1-Wire Serial Interface:** **GPIO 4**. Configured as an open-drain bidirectional digital line with a dedicated external pull-up resistor.
-  * *DS18B20 Sensor:* Provides high-accuracy underground soil thermal parameters using the precision timing 1-Wire protocol.
-* **Analog Interface Architecture:** The system uses two independent analog input channels to gather real-time data from physical equipment.
-  * *XDB401 Pressure Transmitter (GPIO 2):* Interfaced directly to the primary analog channel. It records real-time water line pressure values, using hardware conditioning to scale raw output signals down to fit within safe internal limits.(ADC1_CH2)
-  * *Analog Wind Speed Sensor (GPIO 3):* Interfaced directly to the secondary analog channel. Because the sensor outputs a 0–5V range, an external voltage divider circuit steps the incoming voltage down to a safe, readable level. The software maps this reading back to the true 0.0–30.0 meters per second wind speed curve.(ADC1_CH3)
-* **Valve Relays:** **GPIO 1, 14, 18, 21, 22, 16, 17, 5** for valves 1-8, set by `CONFIG_DYNAMIC_VALVE_GPIO_LIST` with `CONFIG_DEVICE_MAX_VALVES` = 8. The FireBeetle 2 ESP32-C6 header has no GPIO 10 or 11. GPIO 16/17 are UART0, so the console must run on USB Serial/JTAG. GPIO 8/9 (boot strapping) and 15 (on-board LED) are not used for valves. More than 8 valves needs an I2C GPIO expander.
-* **Inter-Chip Link (ESP32-S3 Connection):** **GPIO 6 (TX)** and **GPIO 7 (RX)**. A UART link connecting the FireBeetle 2 to a companion ESP32-S3 module, with GPIO 6 wired to the ESP32-S3's RX pin and GPIO 7 to its TX pin.
-* **LCD2004 (on the ESP32-S3):** the display, its wake button and its power switch are wired to the ESP32-S3, not the C6. The LCD is a mains-only feature (it is off on battery, like the S3), so it uses the S3's spare GPIOs. Proposed S3 pins: I2C SDA GPIO 8, SCL GPIO 9, wake button GPIO 4, LCD power switch GPIO 5 (avoiding the S3's strapping pins 0/3/45/46, USB pins 19/20 and the octal-PSRAM pins 35-37 on N16R8 boards). **TBD:** confirm when the S3 is added.
-
-### Network & Protocol Configurations
-The network architecture is configured natively under the revised ESP-IDF 6.0 components using the following specifications:
-* **Wi-Fi Subsystem:** Tailored to exploit the ESP32-C6 radio. It hooks into the global `esp_event` loop framework to transition automatically between the SoftAP + HTTP server configuration topology and the automated Station network connector profile.
-* **Internet Time Synchronization (SNTP):** Utilizing the native **`esp_netif_sntp` framework** optimized in ESP-IDF 6.0. Upon establishing an active station connection in Operational Mode, the system queries public Network Time Protocol (NTP) pools via network sockets to configure and adjust the internal hardware Real-Time Clock (RTC). This guarantees millisecond-accurate scheduling logs and execution timestamps for all 48 optional irrigation events without needing a local hardware RTC battery module.
-* **MQTT Client Configuration:** Powered by the core communication component, it parses data over two primary pipelines:
-    * *Telemetry & Event Topic (Outbound):* A target path used to broadcast serialized data detailing live water pressure, wind speed in meters per second from GPIO 3, ambient temperature, humidity, and immediate valve state event logs.
-    * *Command/Configuration Topic (Inbound):* A real-time subscription pathway that intercepts remote instructions, environmental baseline thresholds, historical seasonal data packets, and the 6-event scheduler layouts for each of the 8 compiled valves.
-
-### Storage & Partition Layout Architecture
-To optimize access speed, reduce wear overhead, and safely isolate temporary networking properties from large irrigation parameters, flash memory storage is separated into distinct custom partitions within the `partitions.csv` topology:
-* **Communications NVS Partition (`setup`):** A dedicated, standard key-value NVS flash space strictly reserved for storing Wi-Fi credentials (SSID, Password), security flags, SNTP server pool parameters, and primary MQTT broker socket configuration strings. This partition is exclusively rewritten during Configuration Mode.
-* **Irrigation Storage Data Partition (`config`):** A separate, dedicated data flash partition optimized to hold complex valve schedule configurations, the 48 optional irrigation events, dynamic operational parameters, and historical wind and environmental baseline metrics.

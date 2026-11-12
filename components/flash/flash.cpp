@@ -1,38 +1,13 @@
 #include "esp_log.h"
 #include "flash.h"
-
-#include <algorithm>
-
 #include "sdkconfig.h"
 #include "nvs_flash.h"
-#include "default_initiate.h"
 
 static constexpr const char* PARTITION_SETUP_NAMESPACE_STR = ".";
 static constexpr const char* PARTITION_SETUP_NAME_STR = "setup";
 
 static const char* TAG = "flash:";
-
-esp_err_t nvsCreateKeyStr(nvs_handle_t handler, const char* name, const char* default_value = "") {
-    ESP_LOGD(TAG, "%s: %s", __func__, name);
-    size_t required_size;
-    esp_err_t err = nvs_get_str(handler, name, NULL, &required_size);
-
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
-        err = nvs_set_str(handler, name, default_value);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to set default value for key '%s': %s", name, esp_err_to_name(err));
-        }
-    }
-    return err;
-}
-
-static esp_err_t nvs_config(nvs_handle_t* handler) {
-    esp_err_t ret = nvs_open_from_partition(PARTITION_SETUP_NAME_STR, PARTITION_SETUP_NAMESPACE_STR, NVS_READWRITE, handler);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, PARTITION_SETUP_NAME_STR, PARTITION_SETUP_NAMESPACE_STR);
-    }
-    return ret;
-}
+extern esp_err_t nvs_config(nvs_handle_t* handler);
 
 NvsConfig::NvsConfig() {
     nvs_config(&handler_);
@@ -54,16 +29,17 @@ bool NvsConfig::isStrEmpty(const char* key) const {
     }
     return required_size <= 1; // Only null terminator or truly empty
 }
-size_t NvsConfig::getStrLen(const char* key) {
+
+size_t NvsConfig::getStrLen(const char* key) const {
     size_t required_size;
     auto err = nvs_get_str(handler_, key, NULL, &required_size);
     if (err != ESP_OK) {
         return 0;
     }
     return required_size;
-
 }
-bool NvsConfig::getStr(const char* key, char* value, size_t len) {
+
+bool NvsConfig::getStr(const char* key, char* value, size_t len) const {
     size_t required_size;
     esp_err_t err;
 
@@ -92,8 +68,8 @@ bool NvsConfig::getStr(const char* key, char* value, size_t len) {
     return true; // Success
 }
 
-bool NvsConfig::setStr(const char* key, const char* value) {
-    esp_err_t err = nvs_set_str(handler_, key, value);
+bool NvsConfig::setStr(const char* key, const char* value) const {
+    esp_err_t err = nvs_set_str(handler_, key, value); // it does not change handler so it can be const
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Error (%s) writing NVS key '%s'", esp_err_to_name(err), key);
         return false;
@@ -102,56 +78,37 @@ bool NvsConfig::setStr(const char* key, const char* value) {
     return err == ESP_OK;
 }
 
-esp_err_t init_flash(void) {
-    ESP_LOGI(TAG, "nvs flash init");
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ret = nvs_flash_erase();
-        if (ret != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to erase NVS flash: %s", esp_err_to_name(ret));
-            return ret;
-        }
-        ret = nvs_flash_init();
-        if (ret != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to re-initialize NVS flash after erase: %s", esp_err_to_name(ret));
-            return ret;
-        }
+bool NvsConfig::getMask(const char* key, uint16_t& value) const {
+    size_t required_size = sizeof(value); // in: buffer size, out: stored size
+    esp_err_t err = nvs_get_blob(handler_, key, &value, &required_size);
+    // it does not change handler so it can be const
+    if (err != ESP_OK || required_size != sizeof(uint16_t)) {
+        ESP_LOGE(TAG, "Error (%s) get NVS mask key '%s'", esp_err_to_name(err), key);
+        return false;
     }
-    ret = nvs_flash_init_partition(PARTITION_SETUP_NAME_STR);
-    if (ret != ESP_OK) {
-        ret = nvs_flash_erase_partition(PARTITION_SETUP_NAME_STR);
-        if (ret != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to erase NVS partition '%s': %s", PARTITION_SETUP_NAME_STR, esp_err_to_name(ret));
-            return ret;
-        }
-        ret = nvs_flash_init_partition(PARTITION_SETUP_NAME_STR);
-        if (ret != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to re-initialize NVS partition '%s' after erase: %s", PARTITION_SETUP_NAME_STR, esp_err_to_name(ret));
-            return ret;
-        }
-    }
+    return err == ESP_OK;
+}
 
-    nvs_handle_t setup_handle;
-    ret = nvs_config(&setup_handle);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "failed (%d) to open partition: %s:%s", ret, PARTITION_SETUP_NAME_STR, PARTITION_SETUP_NAMESPACE_STR);
-        return ret;
+bool NvsConfig::maskAddSub_(bool isAdd, const char* key, uint16_t value) const {
+    uint16_t nvs_value, compare_with;
+    if (!getMask(key, nvs_value)) {
+        return false;
     }
-
-    ESP_LOGI(TAG, "start init keys");
-    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_WIFI_SSID, INITIATE_WIFI_SSID);
-    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_WIFI_PASSWORD, INITIATE_WIFI_PASSWORD);
-    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_DEVICE_UNIQUE, INITIATE_DEVICE_UNIQUE);
-    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_MQTT_URL, INITIATE_BROKER_URL);
-    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_MQTT_USERNAME, INITIATE_MQTT_CLIENT_USERNAME);
-    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_MQTT_PASSWORD, INITIATE_MQTT_CLIENT_PASSWORD);
-    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_NTP_SERVER, INITIATE_NTP_SERVER);
-    nvsCreateKeyStr(setup_handle, CFG_NVS_KEY_LOCALE_TZ, INITIATE_DEFAULT_LOCALE_TIME_ZONE);
-
-    ret = nvs_commit(setup_handle);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "failed (%d) nvs_commit", ret);
+    compare_with = nvs_value;
+    if (isAdd) {
+        nvs_value |= value;
+    } else {
+        nvs_value &= value;
     }
-    nvs_close(setup_handle);
-    return ESP_OK;
+    if (nvs_value == compare_with) {
+        return true;
+    }
+    esp_err_t err = nvs_set_blob(handler_, key, &nvs_value, sizeof(nvs_value));
+    // it does not change handler so it can be const
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error (%s) writing NVS mask key '%s'", esp_err_to_name(err), key);
+        return false;
+    }
+    err = nvs_commit(handler_);
+    return err == ESP_OK;
 }

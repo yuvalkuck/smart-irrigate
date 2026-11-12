@@ -7,8 +7,17 @@
 #include "esp_adc/adc_cali_scheme.h"
 #include "logger.h"
 #include "gpio_declaraion.h"
+#include "esp_board_manager_includes.h"
 static const char* TAG = "Wind:";
-#define WIND_ADC_CHANNEL     GPIO_WIND_EXPANSION
+
+// Shares the ADC unit of the "adc_pressure" peripheral. The board manager supports one channel per oneshot unit.
+static const periph_adc_config_t *board_adc() {
+    void *cfg = nullptr;
+    ESP_ERROR_CHECK(esp_board_manager_get_periph_config("adc_pressure", &cfg));
+    return static_cast<const periph_adc_config_t *>(cfg);
+}
+
+#define WIND_ADC_CHANNEL     WIND_EXPANSION_Channel
 #define WIND_ADC_ATTEN       ADC_ATTEN_DB_12
 #define WIND_ADC_BITWIDTH    ADC_BITWIDTH_DEFAULT
 
@@ -24,7 +33,7 @@ esp_err_t SensorWind::init(adc_oneshot_unit_handle_t bus) {
     };
     ESP_ERROR_CHECK(adc_oneshot_config_channel(bus, WIND_ADC_CHANNEL, &chan_cfg));
     adc_cali_curve_fitting_config_t dev_config = {
-        .unit_id = ADC_UNIT_1,
+        .unit_id = board_adc()->cfg.oneshot.unit_cfg.unit_id,
         .chan = WIND_ADC_CHANNEL,
         .atten = WIND_ADC_ATTEN,
         .bitwidth = WIND_ADC_BITWIDTH,
@@ -76,7 +85,7 @@ bool SensorWind::read(TelemetryData& data) {
 bool SensorWind::online(adc_oneshot_unit_handle_t bus) {
     METHODTRACE
     int raw_wind_sample = 0;
-    if (adc_oneshot_read(bus, ADC_CHANNEL_3, &raw_wind_sample) == ESP_OK) {
+    if (adc_oneshot_read(bus, WIND_ADC_CHANNEL, &raw_wind_sample) == ESP_OK) {
         return true;
     } else {
         ESP_LOGE(TAG, "  [FAIL] ADC tracking core rejected wind speed sample processing.");
