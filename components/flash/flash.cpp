@@ -8,20 +8,6 @@ static constexpr const char* PARTITION_SETUP_NAME_STR = "setup";
 
 static const char* TAG = "flash:";
 extern esp_err_t nvs_config(nvs_handle_t* handler);
-esp_err_t nvsCreateKeyStr(nvs_handle_t handler, const char* name, const char* default_value = "") {
-    ESP_LOGD(TAG, "%s: %s", __func__, name);
-    size_t required_size;
-    esp_err_t err = nvs_get_str(handler, name, NULL, &required_size);
-
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
-        err = nvs_set_str(handler, name, default_value);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "Failed to set default value for key '%s': %s", name, esp_err_to_name(err));
-        }
-    }
-    return err;
-}
-
 
 NvsConfig::NvsConfig() {
     nvs_config(&handler_);
@@ -92,3 +78,37 @@ bool NvsConfig::setStr(const char* key, const char* value) const {
     return err == ESP_OK;
 }
 
+bool NvsConfig::getMask(const char* key, uint16_t& value) const {
+    size_t required_size;
+    esp_err_t err = nvs_get_blob(handler_, key, &value, &required_size);
+    // it does not change handler so it can be const
+    if (err != ESP_OK || required_size != sizeof(uint16_t)) {
+        ESP_LOGE(TAG, "Error (%s) get NVS mask key '%s'", esp_err_to_name(err), key);
+        return false;
+    }
+    return err == ESP_OK;
+}
+
+bool NvsConfig::maskAddSub_(bool isAdd, const char* key, uint16_t value) {
+    uint16_t nvs_value, compare_with;
+    if (!getMask(key, nvs_value)) {
+        return false;
+    }
+    compare_with = nvs_value;
+    if (isAdd) {
+        nvs_value |= value;
+    } else {
+        nvs_value &= value;
+    }
+    if (nvs_value == compare_with) {
+        return true;
+    }
+    esp_err_t err = nvs_set_blob(handler_, key, &nvs_value, sizeof(nvs_value));
+    // it does not change handler so it can be const
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error (%s) writing NVS mask key '%s'", esp_err_to_name(err), key);
+        return false;
+    }
+    err = nvs_commit(handler_);
+    return err == ESP_OK;
+}

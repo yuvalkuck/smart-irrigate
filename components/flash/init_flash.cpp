@@ -9,8 +9,34 @@
 static const char* TAG = "initFlash:";
 static constexpr const char* PARTITION_SETUP_NAMESPACE_STR = ".";
 static constexpr const char* PARTITION_SETUP_NAME_STR = "setup";
-extern esp_err_t nvsCreateKeyStr(nvs_handle_t handler, const char* name, const char* default_value = "");
 
+static esp_err_t nvsCreateKeyStr(nvs_handle_t handler, const char* name, const char* default_value = "") {
+    ESP_LOGD(TAG, "%s: %s", __func__, name);
+    size_t required_size;
+    esp_err_t err = nvs_get_str(handler, name, NULL, &required_size);
+
+    if (err == ESP_ERR_NVS_NOT_FOUND) {
+        err = nvs_set_str(handler, name, default_value);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to set default value for key '%s': %s", name, esp_err_to_name(err));
+        }
+    }
+    return err;
+}
+
+static esp_err_t nvsCreateKeyBlob(nvs_handle_t handler, const char* name, const uint16_t default_value = 0) {
+    ESP_LOGD(TAG, "%s: %s", __func__, name);
+    size_t required_size;
+    esp_err_t err = nvs_get_blob(handler, name, NULL, &required_size);
+
+    if (err == ESP_ERR_NVS_NOT_FOUND) {
+        err = nvs_set_blob(handler, name, &default_value, sizeof(default_value));
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to set default value for key '%s': %s", name, esp_err_to_name(err));
+        }
+    }
+    return err;
+}
 
 esp_err_t nvs_config(nvs_handle_t* handler) {
     esp_err_t ret = nvs_open_from_partition(PARTITION_SETUP_NAME_STR, PARTITION_SETUP_NAMESPACE_STR, NVS_READWRITE,
@@ -21,10 +47,12 @@ esp_err_t nvs_config(nvs_handle_t* handler) {
     }
     return ret;
 }
-#define SET_SETUP_KEY(name, value) nvsCreateKeyStr(setup_handle, SETUP_NVS_KEY_##name, value);
-#define SET_SETUP_CFGKEY(name, value) nvsCreateKeyStr(setup_handle, SETUP_NVS_KEY_##name, #value);
-#define ENABLE "1"
-#define DISABLE "0"
+
+#define SET_SETUP_KEY(name, value) nvsCreateKeyStr(setup_handle, SETUP_NVS_KEY_##name, value)
+#define SET_SETUP_CFGKEY(name, value) nvsCreateKeyStr(setup_handle, SETUP_NVS_KEY_##name, #value)
+#define SETUP_KEY_MASK( name, value ) nvsCreateKeyBlob(setup_handle, SETUP_NVS_KEY_##name, value)
+#define SETUP_MASK_ENABLE( name ) SETUP_KEY_MASK( name, 0xFFFF)
+
 esp_err_t init_flash() {
     ESP_LOGI(TAG, "nvs flash init");
     esp_err_t ret = nvs_flash_init();
@@ -72,19 +100,14 @@ esp_err_t init_flash() {
     SET_SETUP_KEY(MQTT_PASSWORD, INITIATE_MQTT_CLIENT_PASSWORD);
     SET_SETUP_KEY(NTP_SERVER, INITIATE_NTP_SERVER);
     SET_SETUP_KEY(LOCALE_TZ, INITIATE_DEFAULT_LOCALE_TIME_ZONE);
-    //
-    SET_SETUP_CFGKEY(ENABLE_AI, CONFIG_DEVICE_PLATFORM_AI_ENABLE);
-    SET_SETUP_CFGKEY(ENABLE_LCD, CONFIG_DEVICE_PLATFORM_AI_ENABLE); // lcd is in AI device
-    //
-    SET_SETUP_KEY(PLATFORM_SENSOR, ENABLE);
-    SET_SETUP_KEY(SENSOR_BME, ENABLE);
-    SET_SETUP_KEY(SENSOR_SHT, ENABLE);
-    SET_SETUP_KEY(SENSOR_SOLAR, ENABLE);
-    //
-    SET_SETUP_KEY(SENSOR_WIND, ENABLE);
-    SET_SETUP_KEY(SENSOR_SOILE, ENABLE);
-    SET_SETUP_KEY(SENSOR_PRESHER, ENABLE);
+    SETUP_MASK_ENABLE(ENABLE_SW);
 
+    // hard config
+    #if CONFIG_DEVICE_PLATFORM_AI_ENABLE == 1
+    SETUP_MASK_ENABLE(ENABLE_HW);
+    #else
+    SETUP_KEY_MASK(ENABLE_HW, HardwareEnable::DeviceAI | HardwareEnable::Display);
+    #endif
 
     ret = nvs_commit(setup_handle);
     if (ret != ESP_OK) {
