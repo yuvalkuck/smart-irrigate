@@ -53,7 +53,7 @@ The display wakes on the button and switches off after N minutes. The pins avoid
 
 ## Project setup
 
-* Target: `esp32s3`, ESP-IDF v6.0, C++20, exceptions and RTTI off (same conventions as the C6 project).
+* Target: `esp32s3`, ESP-IDF v6.1, C++20, exceptions and RTTI off (same conventions as the C6 project).
 * Create the project in CLion with its own ESP-IDF toolchain profile:
 
 ```bash

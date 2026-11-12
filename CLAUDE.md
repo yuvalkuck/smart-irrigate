@@ -4,22 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Smart Irrigate is an ESP-IDF (v6.0) firmware project for an **ESP32-C6** (FireBeetle 2) irrigation
+Smart Irrigate is an ESP-IDF (v6.1) firmware project for an **ESP32-C6** (FireBeetle 2) irrigation
 controller. It monitors ambient/soil sensors, computes irrigation demand from macro-environmental
 data (rather than local soil-moisture probes), and drives up to 6 relay-controlled water valves. It
 talks to the outside world via MQTT (telemetry out / commands in) and is provisioned over a
-temporary SoftAP + HTTP server. See `README.md` for the full design rationale (evapotranspiration
+temporary SoftAP + HTTP server. See `README.md` (and the split design docs in `doc/`: power, placement, progress plan, build, configuration) for the full design rationale (evapotranspiration
 model, hydraulic zero-pressure handling, valve scheduling) and `doc/stractures.md` for the
 currently-implemented wire protocol design.
 
 ## Build
 
 This is a standard ESP-IDF project (`CMakeLists.txt` at repo root calls
-`$ENV{IDF_PATH}/tools/cmake/project.cmake`). ESP-IDF is expected at `~/esp/esp-idf`; source its
-export script before building:
+`$ENV{IDF_PATH}/tools/cmake/project.cmake`). Source the export script of your ESP-IDF install before
+building (on the main dev machine `~/esp/active` is a symlink to `~/esp/v6.1`):
 
 ```bash
-. ~/esp/esp-idf/export.sh
+. ~/esp/active/esp-idf/export.sh
 idf.py set-target esp32c6      # target is also force-set in CMakeLists.txt
 idf.py build
 idf.py -p <PORT> flash monitor
@@ -49,15 +49,15 @@ provisioning defaults (password, gateway/mask, SSID suffix). Valve GPIOs are dec
 rebuild, not a runtime option — pins are compiled in.
 
 The mains/battery options are defined in Kconfig but no firmware code reads them yet — the
-power-path behaviour is a design in the README's "Power Architecture" and "Physical Placement"
-sections (24 V DC bus, battery backup, one valve at a time on battery with Wi-Fi and the ESP32-S3
-off), not implemented. Treat those README sections as design intent, not current behaviour.
+power-path behaviour is a design in `doc/PowerArchitecture.md` and `doc/PhysicalPlacement.md`
+(24 V DC bus, battery backup, one valve at a time on battery with Wi-Fi and the ESP32-S3
+off), not implemented. Treat those docs as design intent, not current behaviour.
 
 Pin assignments live in `components/board_manager/board_peripherals.yaml` (ESP Board Manager: status LED,
 config-mode boot switch, 1-Wire pin, RS-485 pins, I2C SDA/SCL, pressure ADC channel, valves); code reads them
 from the board manager handles/configs. Non-pin board constants (RS-485 UART port, wind ADC channel) come from
 `hardware/boards/<BOARD>.cmake`, generated into `components/common/include/gpio_declaraion.h` at configure time — cross-check against the wiring
-table in the README's "Hardware Pin Configurations" section before touching hardware, since it
+table in the "Hardware Pin Configurations" section of `doc/ProjectConfiguration.md` before touching hardware, since it
 documents a pin *rewire* that supersedes the original table (e.g. config switch moved to GPIO 23,
 DS18B20 to GPIO 4).
 
@@ -121,13 +121,19 @@ generally flows `main → {flash, hwifi, hmqtt, hsntp, telemetry, protocol} → 
   (`COMMON_BASE_EVENTS` esp_event bus + `EventData`/`TelemetryData` structs), `logger.h`
   (`METHODTRACE`/`LOGTRACE` macros, compiled to no-ops unless `_DEBUG` is defined via
   `CMAKE_BUILD_TYPE=Debug`), generated `default_initiate.h`.
-- **`flash`** — NVS wrapper (`NvsConfig` RAII class) plus the `CFG_NVS_KEY_*` string constants for
-  Wi-Fi/MQTT/NTP/timezone/device-unique-id storage in the `setup` partition.
+- **`flash`** — NVS wrapper (`NvsConfig` RAII class) plus the `SETUP_KEY()` string constants for
+  Wi-Fi/MQTT/NTP/timezone/device-unique-id storage in the `setup` partition, and the `ENABLE_HW`/`ENABLE_SW`
+  bit masks (`HardwareEnable`/`SoftwareEnable`) that switch sensors and features. They are read once at boot,
+  so a change needs a restart.
 - **`hwifi`** — Wi-Fi STA (`hwifi_sta.cpp`) and SoftAP + provisioning webserver
   (`soft_ap.cpp`, `ap_webserver.cpp`) — mutually exclusive modes selected in `entrypoint.cpp`.
 - **`hmqtt`** — MQTT client over TLS (certs embedded from `certs/`); `mqtt_publish(topic, payload)`
   is the only outbound API; inbound commands land back on the app via `COMMON_BASE_EVENTS`.
 - **`hsntp`** — SNTP client; `init_sntp(server, cb)` fires `cb` once time sync completes.
+- **`hmodbus`** — Modbus RTU master (esp-modbus) on the RS-485 link to the sensor platform;
+  `modbus_read_registers(slave, function, address, count, out)`.
+- **`ads1115`** — ADS1115 ADC on the shared I2C master bus (single-shot, single-ended, ±2.048 V),
+  used for the board temperature.
 - **`telemetry`** — owns the shared I2C master bus, ADC unit, and 1-Wire bus handles, and drives all
   sensors from one periodic FreeRTOS task (`cbTelemetryTask`, 10s interval) that posts
   `COMMON_EVENT_UPDATED_SENSOR` on `COMMON_BASE_EVENTS`. Sensor drivers live under
@@ -135,13 +141,16 @@ generally flows `main → {flash, hwifi, hmqtt, hsntp, telemetry, protocol} → 
   `SensorConcept`/`SensorI2C`/`SensorADC`/`SensorOneWire` C++20 concepts declared in
   `telemetry/inc/sensor_concept.h` (compile-time-enforced via `AbstractSensorI2C<Derived>` etc. —
   every sensor needs `init(bus)`, `online(bus)`, and `read(TelemetryData&)`). New sensors should
-  follow this pattern rather than being wired ad hoc into `telemetry.cpp`.
+  follow this pattern rather than being wired ad hoc into `telemetry.cpp`. The remote sensor platform
+  (SHT41, BMP581, solar) is read by `SensorPlatform` (`sensor_platform.cpp`) over Modbus when the
+  `PlatformSensor` mask bit is set. The board temperature (MCP9700A on ADS1115 AIN2) is `SensorBoardTemp`.
 - **`protocol`** — binary MQTT command/configuration payload (de)serialization
   (`getPayloadCommand`, `setConfiguration`, `getConfiguration`). Structs are `#pragma pack`ed and
   guarded with `#if !defined(TESTER)` so the same headers compile both on-device and in the host
   `test/genpaylaod` tool. **The wire format here is actively evolving** — `doc/stractures.md`
   documents the currently-implemented `Command`/`Configuration` layout; treat anything not reflected
-  there as not yet implemented.
+  there as not yet implemented. `platform_modbus.h` holds the Modbus register map shared with the
+  sensor platform (`platform/sensor`).
 - **`bmp5api`** — vendored Bosch BMP5xx sensor API (upstream driver, avoid modifying — see its own
   `README.md`/`LICENSE` under `components/bmp5api/1.5.0/`).
 

@@ -26,7 +26,7 @@ sudo apt install git wget flex bison gperf python3 python3-pip python3-venv cmak
     libffi-dev libssl-dev dfu-util libusb-1.0-0 openssl
 ```
 
-**ESP-IDF**: v6.x. The project is documented for v6.0 and was last built with v6.1.0. The ESP32-C6 toolchain
+**ESP-IDF**: v6.1. The project was last built with v6.1.0. The ESP32-C6 toolchain
 (`riscv32-esp-elf`) is installed by ESP-IDF's `install.sh`.
 
 **ESP-IDF components**: downloaded automatically by the IDF Component Manager during `idf.py reconfigure`, so the first
