@@ -49,8 +49,8 @@ void init_wifi_sta() {
     // 5. Configure Station Mode
     NvsConfig hCfg;
     wifi_config_t wifi_config = {};
-    hCfg.getStr(CFG_NVS_KEY_WIFI_SSID, wifi_config.sta.ssid, sizeof(wifi_config.sta.ssid));
-    hCfg.getStr(CFG_NVS_KEY_WIFI_PASSWORD, wifi_config.sta.password, sizeof(wifi_config.sta.password));
+    hCfg.getStr(SETUP_KEY(WIFI_SSID), wifi_config.sta.ssid, sizeof(wifi_config.sta.ssid));
+    hCfg.getStr(SETUP_KEY(WIFI_PASSWORD), wifi_config.sta.password, sizeof(wifi_config.sta.password));
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
 }

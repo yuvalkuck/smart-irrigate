@@ -7,16 +7,19 @@
 #if !defined(nvs_handle_t)
 typedef uint32_t nvs_handle_t;
 #endif
+// TODO: need to convert SETUP_KEY to template for type verify
+#define SETUP_KEY(name) SETUP_NVS_KEY_##name
 
-static constexpr const char* CFG_NVS_KEY_WIFI_SSID = "wifi_ssid";
-static constexpr const char* CFG_NVS_KEY_WIFI_PASSWORD = "wifi_password";
-static constexpr const char* CFG_NVS_KEY_DEVICE_UNIQUE = "device_unique";
-static constexpr const char* CFG_NVS_KEY_MQTT_URL = "mqtt_url";
-static constexpr const char* CFG_NVS_KEY_MQTT_USERNAME = "mqtt_uname";
-static constexpr const char* CFG_NVS_KEY_MQTT_PASSWORD = "mqtt_pword";
-static constexpr const char* CFG_NVS_KEY_NTP_SERVER = "ntp_server";
-static constexpr const char* CFG_NVS_KEY_LOCALE_TZ = "locale_tz";
-
+#define DEC_SETUP_KEY(name, value) constexpr const char* SETUP_NVS_KEY_##name = #value
+DEC_SETUP_KEY(WIFI_SSID, wifi_ssid);
+DEC_SETUP_KEY(WIFI_PASSWORD,wifi_password);
+DEC_SETUP_KEY(DEVICE_UNIQUE,device_unique);
+DEC_SETUP_KEY(MQTT_URL,mqtt_url);
+DEC_SETUP_KEY(MQTT_USERNAME,mqtt_uname);
+DEC_SETUP_KEY(MQTT_PASSWORD,mqtt_pword);
+DEC_SETUP_KEY(NTP_SERVER,ntp_server);
+DEC_SETUP_KEY(LOCALE_TZ,locale_tz);
+#undef DEC_SETUP_KEY
 esp_err_t init_flash();
 
 /* use C++ for handler container */

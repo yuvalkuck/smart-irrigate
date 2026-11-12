@@ -54,7 +54,7 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
 
 void init_event_app_handle() {
     NvsConfig nvs;
-    nvs.getStr(CFG_NVS_KEY_DEVICE_UNIQUE, uniqueName.data(), uniqueName.size());
+    nvs.getStr(SETUP_KEY(DEVICE_UNIQUE), uniqueName.data(), uniqueName.size());
     if (uniqueName[0] == 0) {
         memmove(uniqueName.data(), "<NA>", 4);
         memset(uniqueName.data() + 4, 0, uniqueName.size() - 4);

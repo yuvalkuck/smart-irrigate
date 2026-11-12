@@ -122,14 +122,14 @@ void init_hmqtt() {
     METHODTRACE
     NvsConfig hCfg;
 
-    if (hCfg.getStr(CFG_NVS_KEY_MQTT_URL, mqtt_broker_uri, sizeof(mqtt_broker_uri))) {
+    if (hCfg.getStr(SETUP_KEY(MQTT_URL), mqtt_broker_uri, sizeof(mqtt_broker_uri))) {
         mqtt_cfg.broker.address.uri = mqtt_broker_uri;
     } else {
         ESP_LOGE(TAG, "Failed to get MQTT URL");
         return;
     }
 
-    if (hCfg.getStr(CFG_NVS_KEY_MQTT_USERNAME, mqtt_username, sizeof(mqtt_username))) {
+    if (hCfg.getStr(SETUP_KEY(MQTT_USERNAME), mqtt_username, sizeof(mqtt_username))) {
         mqtt_cfg.credentials.username = mqtt_username;
     } else {
         ESP_LOGE(TAG, "Failed to get MQTT Username");
@@ -138,7 +138,7 @@ void init_hmqtt() {
         return;
     }
 
-    if (hCfg.getStr(CFG_NVS_KEY_MQTT_PASSWORD, mqtt_password, sizeof(mqtt_password))) {
+    if (hCfg.getStr(SETUP_KEY(MQTT_PASSWORD), mqtt_password, sizeof(mqtt_password))) {
         mqtt_cfg.credentials.authentication.password = mqtt_password;
     } else {
         ESP_LOGE(TAG, "Failed to get MQTT Password");

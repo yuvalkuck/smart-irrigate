@@ -46,7 +46,7 @@ void continue_after_time_sync_cb(struct timeval* tv) {
     ESP_LOGI(TAG, "Notification of a time synchronization event");
     NvsConfig hCfg;
     char buff[128] = {0};
-    if (hCfg.getStr(CFG_NVS_KEY_LOCALE_TZ, buff, sizeof(buff))) {
+    if (hCfg.getStr(SETUP_KEY(LOCALE_TZ), buff, sizeof(buff))) {
         setenv("TZ", buff, 1);
         tzset();
         ESP_LOGI(TAG, "set TimeZone to: %s", buff);
@@ -121,7 +121,7 @@ extern "C" void app_main(void) {
             ESP_LOGE(TAG, "failed to init config flash");
             abort();
         }
-        if (!initRegular || hCfg.isStrEmpty(CFG_NVS_KEY_WIFI_SSID)) {
+        if (!initRegular || hCfg.isStrEmpty(SETUP_KEY(WIFI_SSID))) {
             ESP_LOGI(TAG, "Start wifi configuration state");
             init_wifi_softap();
             start_wifi();
@@ -136,7 +136,7 @@ extern "C" void app_main(void) {
                 start_wifi();
                 // SNTP
                 char buff[128] = {0};
-                if (hCfg.getStr(CFG_NVS_KEY_NTP_SERVER, buff, sizeof(buff))) {
+                if (hCfg.getStr(SETUP_KEY(NTP_SERVER), buff, sizeof(buff))) {
                     init_sntp(buff, continue_after_time_sync_cb);
                 } else {
                     ESP_LOGE(TAG, "failed to get NTP server url from flash");
