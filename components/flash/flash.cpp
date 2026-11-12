@@ -79,7 +79,7 @@ bool NvsConfig::setStr(const char* key, const char* value) const {
 }
 
 bool NvsConfig::getMask(const char* key, uint16_t& value) const {
-    size_t required_size;
+    size_t required_size = sizeof(value); // in: buffer size, out: stored size
     esp_err_t err = nvs_get_blob(handler_, key, &value, &required_size);
     // it does not change handler so it can be const
     if (err != ESP_OK || required_size != sizeof(uint16_t)) {
@@ -89,7 +89,7 @@ bool NvsConfig::getMask(const char* key, uint16_t& value) const {
     return err == ESP_OK;
 }
 
-bool NvsConfig::maskAddSub_(bool isAdd, const char* key, uint16_t value) {
+bool NvsConfig::maskAddSub_(bool isAdd, const char* key, uint16_t value) const {
     uint16_t nvs_value, compare_with;
     if (!getMask(key, nvs_value)) {
         return false;

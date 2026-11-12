@@ -13,6 +13,7 @@
 #include "sensor_ds18b20.h"
 #include "sensor_wind.h"
 #include "sensor_xdb401.h"
+#include "sensor_platform.h"
 #include <bitset>
 
 // Define I2C pins for ESP32-C6
@@ -56,6 +57,7 @@ static SensorBMP5xx sensorBMP;
 static SensorDS18B20 sensorDS18B20;
 static SensorWind sensorWind;
 static SensorXDB4xx sensorXDB4xx;
+static SensorPlatform sensorPlatform;
 
 static void i2c_scan(i2c_master_bus_handle_t bus) {
     ESP_LOGI(TAG, "Scanning I2C bus...");
@@ -98,6 +100,8 @@ esp_err_t init_telemetry() {
     INIT_SENSOR(onewire_bus_handle,sensorDS18B20,DS18B20)
     INIT_SENSOR(adc_handle,sensorXDB4xx,XDB401)
     INIT_SENSOR(adc_handle,sensorWind,WindSpeed)
+    // remote sensor cluster, enabled by the HW mask (read once here, a change needs a restart)
+    if (sensorPlatform.init() != ESP_OK) { ESP_LOGE(TAG, "Sensor Init Failed: Platform"); }
 
     return ESP_OK;
 }
@@ -111,6 +115,7 @@ esp_err_t init_telemetry() {
         sensorXDB4xx.read(telemetryPayload);
         sensorDS18B20.read(telemetryPayload);
         sensorWind.read(telemetryPayload);
+        sensorPlatform.read(telemetryPayload); // after the on-board sensors, its values win
         esp_event_post(COMMON_BASE_EVENTS, COMMON_EVENT_UPDATED_SENSOR, &event, event.length(), portMAX_DELAY);
         vTaskDelay(pdMS_TO_TICKS(TASK_DELAY));
     }

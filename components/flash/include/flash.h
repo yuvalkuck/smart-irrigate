@@ -56,7 +56,7 @@ inline uint16_t operator&(HardwareEnable lhs, HardwareEnable rhs) {
 /* use C++ for handler container */
 class NvsConfig {
     nvs_handle_t handler_ = 0;
-    bool maskAddSub_(bool isAdd, const char* key, uint16_t value) ;
+    bool maskAddSub_(bool isAdd, const char* key, uint16_t value) const ;
     public:
     explicit operator bool() const {
         return handler_ != 0;

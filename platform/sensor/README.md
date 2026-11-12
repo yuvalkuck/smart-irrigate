@@ -137,16 +137,17 @@ C6 side: GPIO 9 TX, GPIO 8 RX, GPIO 2 DE and /RE, through its own MAX3485, termi
 
 ### Register map
 
-**TBD.** The slave address and register layout are not defined yet. Decide them with the C6 firmware.
-Candidate input registers, all 16-bit, big-endian on the wire:
+The map is `../../components/protocol/include/platform_modbus.h`, shared with the C6. It is not copied
+here. Slave address 1, input registers (`0x04`), 16-bit, big-endian on the wire.
 
-| Quantity | Source |
-|---|---|
-| Air temperature | SHT41 |
-| Relative humidity | SHT41 |
-| Pressure | BMP581 |
-| Solar level | ADC PA0 |
-| Status / sensor-online flags | Firmware |
+The start address of a read is a request code, not a fixed register. The count is the answer length of
+that code (`ResponseCount()` in the header). The slave behaves as follows:
+
+* A known request code with the right count: answer exactly that many registers.
+* An unknown request code or a wrong count: exception `0x02` (illegal data address).
+* A function other than `0x04`: exception `0x01` (illegal function).
+* A request for a sensor that failed: exception `0x04` (slave device failure), and its bit is set in the
+  `Status` answer. `Status` always answers.
 
 ## Build and flash
 
@@ -156,7 +157,6 @@ GCC project. Current state: the `.ioc` only has RCC, SYS and the NVIC; the perip
 
 ## Open items
 
-* Register map and slave address.
 * Peripheral configuration in the `.ioc` to match the pin map.
 * Confirm the 4.7 uF capacitor on U1 (C2) against the ST datasheet.
 * Solar shunt calibration.
