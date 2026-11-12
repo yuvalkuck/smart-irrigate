@@ -26,15 +26,17 @@ static void cbCommonEventHandler(void* handler_args, esp_event_base_t event_base
                  * - soile temperature C (Fix 1)
                  * - wind speed (Fix 1)
                  * - solar level (Fix 1)
+                 * - board temperature C (Fix 1)
                  **/
-                snprintf(send, sizeof(send), "0x%llx|%s|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f",
+                snprintf(send, sizeof(send), "0x%llx|%s|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f|%.1f",
                          time(nullptr), uniqueName.data(),
                          payload->air_temperature,
                          payload->air_humidity,
                          payload->air_pressure,
                          payload->soile_temperature,
                          payload->wind_speed,
-                         payload->solar_level
+                         payload->solar_level,
+                         payload->board_temperature
                 );
                 mqtt_publish("/client/telemetry", send);
             }

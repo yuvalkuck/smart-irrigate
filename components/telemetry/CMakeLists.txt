@@ -1,6 +1,6 @@
 idf_component_register(SRCS "telemetry.cpp"
-        "src/sensor_sht4x.cpp" "src/sensor_bmp5xx.cpp" "src/sensor_ds18b20.cpp" "src/sensor_xdb401.cpp" "src/sensor_wind.cpp" "src/sensor_platform.cpp"
-            PRIV_REQUIRES hmodbus flash protocol i2cdev esp_sht4x esp_event esp_adc esp_board_manager
+        "src/sensor_sht4x.cpp" "src/sensor_bmp5xx.cpp" "src/sensor_ds18b20.cpp" "src/sensor_xdb401.cpp" "src/sensor_wind.cpp" "src/sensor_platform.cpp" "src/sensor_board_temp.cpp"
+            PRIV_REQUIRES hmodbus flash protocol ads1115 i2cdev esp_sht4x esp_event esp_adc esp_board_manager
             REQUIRES common bmp5api ds18b20 onewire_bus
             PRIV_INCLUDE_DIRS inc
             INCLUDE_DIRS "include"
