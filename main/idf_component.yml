@@ -23,3 +23,4 @@ dependencies:
   espressif/onewire_bus: ^1.1.1
   espressif/esp-modbus: ^2.1.4
   espressif/esp_board_manager: '*'
+  esp-idf-lib/ads111x: '*'
