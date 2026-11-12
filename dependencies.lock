@@ -1,22 +1,11 @@
 dependencies:
   esp-idf-lib/esp_idf_lib_helpers:
-    component_hash: 689853bb8993434f9556af0f2816e808bf77b5d22100144b21f3519993daf237
+    component_hash: 2b46288d7500846fe9f5ca7bfa2597067de9e38d94fb0d6ff834639ab02734ba
     dependencies: []
     source:
       registry_url: https://components.espressif.com
       type: service
-    targets:
-    - esp32
-    - esp32c2
-    - esp32c3
-    - esp32c5
-    - esp32c6
-    - esp32c61
-    - esp32h2
-    - esp32p4
-    - esp32s2
-    - esp32s3
-    version: 1.4.0
+    version: 1.4.2
   esp-idf-lib/i2cdev:
     component_hash: ad8981cc64533dcaced5107d72e42bcebe79345e194e82795792af531b300ce3
     dependencies:
@@ -101,7 +90,7 @@ dependencies:
       type: service
     version: 1.1.0
   espressif/onewire_bus:
-    component_hash: a85dc1ceb71fb87af77c57d5fd4e6f48a504de1fc2b83fc302ec0cea331d05ce
+    component_hash: dcce4fb1c2fc43c3d02de1cc9abdf062127468a785578723696de3817c526f99
     dependencies:
     - name: idf
       require: private
@@ -109,7 +98,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.1.1
+    version: 1.1.2
   espressif/sensor_hub:
     component_hash: ea30db551c34aee2862482abf8b3164dd3855ecb4b4659b1e6878455c9cb9e22
     dependencies:
@@ -164,6 +153,6 @@ direct_dependencies:
 - espressif/onewire_bus
 - idf
 - k0i05/esp_sht4x
-manifest_hash: 1a8e6cf60d6b56da304fc8ea7313614a2aeaf6911896e56d2af9875813ac0874
+manifest_hash: ac72269a1f671d002bf8a67862cc089beafb0eb390aeb55950b253c001fbd53c
 target: esp32c6
 version: 3.0.0
