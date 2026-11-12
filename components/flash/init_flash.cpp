@@ -22,6 +22,9 @@ esp_err_t nvs_config(nvs_handle_t* handler) {
     return ret;
 }
 #define SET_SETUP_KEY(name, value) nvsCreateKeyStr(setup_handle, SETUP_NVS_KEY_##name, value);
+#define SET_SETUP_CFGKEY(name, value) nvsCreateKeyStr(setup_handle, SETUP_NVS_KEY_##name, #value);
+#define ENABLE "1"
+#define DISABLE "0"
 esp_err_t init_flash() {
     ESP_LOGI(TAG, "nvs flash init");
     esp_err_t ret = nvs_flash_init();
@@ -69,6 +72,19 @@ esp_err_t init_flash() {
     SET_SETUP_KEY(MQTT_PASSWORD, INITIATE_MQTT_CLIENT_PASSWORD);
     SET_SETUP_KEY(NTP_SERVER, INITIATE_NTP_SERVER);
     SET_SETUP_KEY(LOCALE_TZ, INITIATE_DEFAULT_LOCALE_TIME_ZONE);
+    //
+    SET_SETUP_CFGKEY(ENABLE_AI, CONFIG_DEVICE_PLATFORM_AI_ENABLE);
+    SET_SETUP_CFGKEY(ENABLE_LCD, CONFIG_DEVICE_PLATFORM_AI_ENABLE); // lcd is in AI device
+    //
+    SET_SETUP_KEY(PLATFORM_SENSOR, ENABLE);
+    SET_SETUP_KEY(SENSOR_BME, ENABLE);
+    SET_SETUP_KEY(SENSOR_SHT, ENABLE);
+    SET_SETUP_KEY(SENSOR_SOLAR, ENABLE);
+    //
+    SET_SETUP_KEY(SENSOR_WIND, ENABLE);
+    SET_SETUP_KEY(SENSOR_SOILE, ENABLE);
+    SET_SETUP_KEY(SENSOR_PRESHER, ENABLE);
+
 
     ret = nvs_commit(setup_handle);
     if (ret != ESP_OK) {

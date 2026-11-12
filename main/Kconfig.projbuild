@@ -12,26 +12,12 @@ menu "Device Scale Configuration"
         help
             The maximum number of setups a valve can handle.
 
-    config DEVICE_LCD_ENABLE
-        int "Is LCD available"
-        default 0
-        range 0 1
-        help
-            Is LDD available to use
-
     config DEVICE_PLATFORM_AI_ENABLE
         int "Is AI device available"
         default 1
         range 0 1
         help
-            Is AI analyzer available to use
-
-    config DEVICE_PLATFORM_SENSOR_ENABLE
-        int "Is platform sensors device available"
-        default 1
-        range 0 1
-        help
-            Is platform sensors available to use
+            Is AI analyzer device available to use
 
     menu "Main Power ON"
         config DEVICE_MAX_SIMULTANEOUS_OPEN_VALVES

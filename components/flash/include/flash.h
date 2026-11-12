@@ -10,16 +10,26 @@ typedef uint32_t nvs_handle_t;
 // TODO: need to convert SETUP_KEY to template for type verify
 #define SETUP_KEY(name) SETUP_NVS_KEY_##name
 
-#define DEC_SETUP_KEY(name, value) constexpr const char* SETUP_NVS_KEY_##name = #value
-DEC_SETUP_KEY(WIFI_SSID, wifi_ssid);
-DEC_SETUP_KEY(WIFI_PASSWORD,wifi_password);
-DEC_SETUP_KEY(DEVICE_UNIQUE,device_unique);
-DEC_SETUP_KEY(MQTT_URL,mqtt_url);
-DEC_SETUP_KEY(MQTT_USERNAME,mqtt_uname);
-DEC_SETUP_KEY(MQTT_PASSWORD,mqtt_pword);
-DEC_SETUP_KEY(NTP_SERVER,ntp_server);
-DEC_SETUP_KEY(LOCALE_TZ,locale_tz);
-#undef DEC_SETUP_KEY
+#define SETUP_KEY_NAME(name, value) constexpr const char* SETUP_NVS_KEY_##name = #value
+SETUP_KEY_NAME(WIFI_SSID, wifi_ssid);
+SETUP_KEY_NAME(WIFI_PASSWORD, wifi_password);
+SETUP_KEY_NAME(DEVICE_UNIQUE, device_unique);
+SETUP_KEY_NAME(MQTT_URL, mqtt_url);
+SETUP_KEY_NAME(MQTT_USERNAME, mqtt_uname);
+SETUP_KEY_NAME(MQTT_PASSWORD, mqtt_pword);
+SETUP_KEY_NAME(NTP_SERVER, ntp_server);
+SETUP_KEY_NAME(LOCALE_TZ, locale_tz);
+//
+SETUP_KEY_NAME(ENABLE_LCD, enable_lcd);
+SETUP_KEY_NAME(ENABLE_AI, enable_aidev);
+SETUP_KEY_NAME(PLATFORM_SENSOR, plat_sensors);
+SETUP_KEY_NAME(SENSOR_BME, plat_sensors);
+SETUP_KEY_NAME(SENSOR_SHT, sensor_sht);
+SETUP_KEY_NAME(SENSOR_SOLAR, sensor_solar);
+SETUP_KEY_NAME(SENSOR_WIND, sensor_wind);
+SETUP_KEY_NAME(SENSOR_SOILE, sensor_soile);
+SETUP_KEY_NAME(SENSOR_PRESHER, sensor_presher);
+#undef SETUP_KEY_NAME
 esp_err_t init_flash();
 
 /* use C++ for handler container */
