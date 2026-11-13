@@ -61,7 +61,7 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 |---|---|---|---|
 | FireBeetle 2 ESP32-C6 | Main controller | Yes | Yes (Wi-Fi off) |
 | ESP32-S3 DevKitC-1 | Companion AI module | Yes | **No** |
-| 8-channel 5 V relay module | Valve switching, all 8 channels used (IN1-IN8 = valves 1-8) | Yes | Yes |
+| 8-channel 5 V relay module (off-board, on mainboard header J15) | Valve switching, all 8 channels used (IN1-IN8 = valves 1-8) | Yes | Yes |
 | 2 x SN74AHCT125N quad buffer (U10, U11), 100 nF each | Buffers the 8 valve GPIOs from 3.3 V to 5 V logic for the relay inputs. Powered from the 5 V net, `/OE` tied to GND | Yes | Yes |
 | 8 x Galcon 24 VAC solenoid valves | Water valves | Yes | Yes (1 at a time) |
 | 230 V to 27.6 V, 2 A PSU | Feeds the bus, charges the battery | Yes | **No** (absent) |
@@ -73,10 +73,12 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 | RC snubber (~0.1 uF + 47-100 ohm), shared | Edge softening, relay contact protection | Yes | Yes |
 | Fuses (converter input, 24 V side) | Protection | Yes | Yes |
 | F3, 5 A fuse in a 5x20 mm panel-mount PCB holder (6 A, 250 V rated) on the 24 V DC input J1 | Protects the board and a reversed supply (the 30 V TVS conducts and blows the fuse) | Yes | **No** (absent) |
-| Mains-detect input (PSU DC-OK or optocoupler) | Selects the mode | Yes | Yes |
+| Mains detect (no extra part, firmware reads the INA226 bus voltage and applies a threshold) | Selects the mode | Yes | Yes |
 | ADS1115 (I2C, 16-bit ADC) | Reads line pressure (AIN0), wind speed (AIN1) and board temperature (AIN2) | Yes | Yes |
 | INA226 (I2C 0x40) with a 10 mohm shunt in the battery negative lead | Battery bus voltage and battery current (coulomb counting), low-battery warning | Yes | Yes |
-| TCA9555 (I2C 0x20, 16-bit I/O expander) | Status LEDs, SHOW LEDs button, 24 VAC converter enable | Yes | Yes |
+| TCA9555 (I2C 0x20, 16-bit I/O expander) | Status LEDs, battery-state LED (P07), SHOW LEDs button, 24 VAC converter enable (P12), ESP32-S3 power enable (P13), buzzer (P14) | Yes | Yes |
+| ESP32-S3 power switch: Q1 AO3401A (P-FET) driven by Q2 BSS138, R34 and R35 100k | Cuts the 5 V feed of the ESP32-S3, the LCD and the level shifter U9. On by default, off when U5 P13 is pulled low | Yes | Yes |
+| Buzzer BZ1 (active 5 V, with oscillator), driver Q3 BSS138, flyback diode D8 | Audible alarm, switched by U5 P14 | Yes | Yes |
 | BMP581, SHT41 (I2C) | Weather sensors | Yes | Yes |
 | DS18B20 (1-Wire) | Soil temperature | Yes | Yes |
 | MCP9700A U7 (TO-92, on the main board, analog) | Board temperature, 10 mV/degC output (500 mV at 0 degC) read by ADS1115 AIN2 | Yes | Yes |
@@ -104,4 +106,4 @@ Battery sizing for 12 h idle plus 3 h of one valve is about 13 Wh usable, so two
 ## Open decisions
 * **TBD:** how the 24 VAC converter regulates the valve voltage (built into the converter, or a separate stage).
 * **TBD:** select the 24 VAC converter. It must produce an acceptable waveform and voltage for the Galcon valves (run cool and quiet) and have an enable control. A square wave is acceptable if the valves tolerate it; otherwise use a sine-modulated H-bridge on a 36-42 V bus, or a 12 V sine inverter feeding a 24 V transformer.
-* **TBD:** inputs and outputs for the mains-detect input, battery sense, battery LED and the 24 VAC converter enable (the LCD has moved to the ESP32-S3, which is off on battery, so it no longer needs C6 pins). With 8 valves every safe GPIO on the FireBeetle 2 header is used (1, 4, 5, 6, 7, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, with 2 and 3 still free; 8 and 9 are boot-strapping pins, used only for the RS-485 RX and TX), so these use the TCA9555 I/O expander (U5, I2C 0x20) on the existing I2C bus. Battery sense needs no pin: the INA226 reads it over I2C. The RS-485 DE is on GPIO 15, and GPIO 2 and 3 are unused.
+* Inputs and outputs for the mains-detect, battery sense, battery LED, 24 VAC converter enable, ESP32-S3 power enable and buzzer are decided: see the TCA9555 row above (the LCD has moved to the ESP32-S3, which is off on battery, so it no longer needs C6 pins). With 8 valves every safe GPIO on the FireBeetle 2 header is used (1, 4, 5, 6, 7, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, with 2 and 3 still free; 8 and 9 are boot-strapping pins, used only for the RS-485 RX and TX), so these use the TCA9555 I/O expander (U5, I2C 0x20) on the existing I2C bus. Battery sense needs no pin: the INA226 reads it over I2C. The RS-485 DE is on GPIO 15, and GPIO 2 and 3 are unused.

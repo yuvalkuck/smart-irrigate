@@ -11,13 +11,15 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
 * No safe GPIO is left on the FireBeetle 2 header. More valves, the 24 VAC converter enable and the
   mains-detect input use the I2C expander U5.
 * The 3.3 V valve GPIOs go through two SN74AHCT125N quad buffers: U10 for valves 1-4 and U11 for
-  valves 5-8. The buffer outputs go to the relay inputs IN1..IN8, which get 5 V logic. All `/OE` pins are
-  tied to GND, and each chip has a 100 nF decoupling capacitor (C9, C10). Nets: `VALVE1`-`VALVE8` on the
-  C6 side, `RLY1`-`RLY8` on the relay side.
+  valves 5-8. The buffer outputs go to J15 pins 2-9 (relay inputs IN1..IN8), which get 5 V logic. All
+  `/OE` pins are tied to GND, and each chip has a 100 nF decoupling capacitor (C9, C10). The wires from the
+  C6 to the buffers are named `VALVE1`-`VALVE8`.
+* The 8-channel relay module is off the board. J15 (1x10, 2.54 mm) is its control header: 1 = GND,
+  2-9 = IN1-IN8, 10 = +5V.
 * The buffer outputs have no pull resistors. The state of the relay inputs while the C6 GPIOs float at
   reset is unknown. It depends on the input circuit of the relay module.
-* The relay contacts are not in the relay module symbol: J2 pin 1 goes to COM1..8, NO1..8 go to
-  valves 1..8, and J2 pin 2 goes to the valve common.
+* The relay contacts are on the relay module, not on this board: J2 pin 1 goes to COM1..8, NO1..8 go
+  to valves 1..8, and J2 pin 2 goes to the valve common.
 
 ## Power
 
@@ -27,12 +29,25 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
 * The U3 enable comes from U5 P12, with the R32 pull-down. It is assumed active-high until the
   converter is chosen.
 * U6 INA226 reads the bus voltage and the battery current through the shunt R31.
-* The ESP32-S3 (A3) runs from +5V (DevKit 5V0 pin).
+* The ESP32-S3 (A3) runs from the switched 5 V line (DevKit 5V0 pin). Q1 (AO3401A P-FET) connects
+  +5V to it, and Q2 (BSS138) drives its gate. R34 (100k) holds Q1 off when Q2 is off. The switched 5 V
+  line also feeds the LCD (J6) and the HV side of the level shifter U9.
+* U5 P13 controls Q2. R35 (100k) pulls it up to +3V3, so the S3 is on by default (also while P13
+  floats at boot). Firmware pulls P13 low to power the S3 down.
+* There is no mains-detect input in this version. Firmware derives mains or battery from the INA226 bus
+  voltage, with the threshold set in firmware.
+* The battery-state LED DS12 (with R33, 470 R) is on U5 P07 (`LED_BAT`).
+* The buzzer BZ1 is an active 5 V buzzer (it needs a built-in oscillator). Q3 (BSS138) switches it from
+  U5 P14, R36 (100k) holds the gate low, and D8 (1N4148W) is the flyback diode.
 
 ## ESP32-S3 link
 
-* IO6/IO7 are the UART1 link to A3: A3 IO17 TX goes to IO7, and IO6 goes to A3 IO18 RX. J4 taps the same
-  wires.
+* IO6/IO7 are the UART1 link to A3: A3 IO17 TX goes to IO7, and IO6 goes to A3 IO18 RX. J4 taps the C6
+  side of the same wires.
+* Q4 (BSS138) isolates the C6 TX line (`S3_RX`, C6 side) from the S3 RX pin (A3 IO18) while the S3 is
+  powered down. Its gate is on the switched 5 V line, so the line opens by itself when Q1 cuts the S3 supply. The drain is
+  on the C6 side, so the body diode cannot feed the unpowered S3. The S3 TX line (`S3_TX`) needs no
+  isolation, and R16 keeps it pulled up on the C6 side.
 
 ## RS-485 to the sensor cluster
 
@@ -54,8 +69,8 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
 
 ## LCD and keys on the ESP32-S3
 
-* J6 LCD2004 I2C: 1 = GND, 2 = VCC, 3 = SDA, 4 = SCL. On A3: IO8 is SDA, IO9 is SCL, and VCC comes from
-  the A3 3V3 pin 1.
+* J6 LCD2004 I2C: 1 = GND, 2 = VCC, 3 = SDA, 4 = SCL. On A3: IO8 is SDA and IO9 is SCL. VCC comes from the
+  switched 5 V line (Q1 drain), so the LCD is off when the S3 is powered down.
 * The key panel J7 (1 = KEYS, 2 = GND) holds SW2-SW5 and R12-R14, a resistor ladder into A3 IO4
   (ADC1 channel 3). R15 is a 10k pull-up to A3 3V3.
 
@@ -71,5 +86,4 @@ A3 IO5-IO7 are free.
 
 ## Not drawn yet
 
-* The switch that turns the ESP32-S3 (A3) off on battery.
-* The mains-detect input.
+Nothing in the power and battery part.

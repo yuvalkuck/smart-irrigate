@@ -10,7 +10,7 @@ The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time
   * *BMP581 Sensor:* Transmits targeted barometric pressure metrics and ambient temperature data.
   * *ADS1115 ADC:* Reads line pressure, wind speed and board temperature (see "Analog Interface Architecture"). Address 0x48 (ADDR pin on GND).
   * *INA226 monitor:* Reads the battery bus voltage and the battery current through a 10 mohm shunt. Address 0x40 (A0 and A1 on GND).
-  * *TCA9555 I/O expander:* Drives the status LEDs (P00 to P06), reads the SHOW LEDs button (P10) and drives the 24 VAC converter enable (P12). Address 0x20 (A0, A1 and A2 on GND).
+  * *TCA9555 I/O expander:* Drives the status LEDs (P00 to P06), the battery-state LED (P07), reads the SHOW LEDs button (P10) and drives the 24 VAC converter enable (P12), the ESP32-S3 power enable (P13, on by default, low = off) and the buzzer (P14). Address 0x20 (A0, A1 and A2 on GND).
   * *Note:* All the devices function on the exact same physical GPIO 19 and 20 paths, utilizing unique hardware address layers to prevent data line collisions.
 * **RS-485 Link to the Sensor Cluster:** **GPIO 9 (TX)**, **GPIO 8 (RX)** and **GPIO 15 (DE and /RE)**, through a MAX3485 to terminal J5 (1 = A, 2 = B, 3 = +5 V, 4 = GND).
 * **1-Wire Serial Interface:** **GPIO 4**. Configured as an open-drain bidirectional digital line with a dedicated external pull-up resistor.

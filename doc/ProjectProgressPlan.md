@@ -2,7 +2,7 @@
 
 [← Back to the main README](../README.md)
 
-**Current status:** a half-working prototype on a breadboard, built from off-the-shelf modules.
+**Current status:** the breadboard stage is finished. The work is now on the PCB design.
 
 ## How to read and update this list
 
@@ -45,8 +45,8 @@ All tasks are in one table, in the order of their progress. Read it top to botto
 | Done | Modbus link to the Platform Sensors | `hmodbus` RTU master and `SensorPlatform`. It is switched by the `PlatformSensor` bit of the hardware enable mask, read once at boot. The register map is `components/protocol/include/platform_modbus.h`. Builds, not yet run on a device. |
 | Done | Board temperature | MCP9700A on ADS1115 AIN2, through the `ads1115` component. Sent as the last field of the MQTT telemetry string. Builds, not yet run on a device. |
 | Done | More details on the GitHub project | |
-| Progress | Breadboard | Only test how it works, so the PCB can be changed if needed. Prove the sensors and the valve control. Pick and test the 24 VAC converter with a real valve (coil heat, buzz). |
-| Progress | PCB | Close the open HW issues, then order a PCB to work with. That is why more and more parts are added to the board. The steps: layout, router, send it to print, then soldering. It replaces the modules with a custom board. Version 1: a main board with ESP32 WROOM modules, relays, power conversion and connectors for the remote sensors, plus a small satellite board for the SHT41 on the mast. Keep the 230 V PSU a separate module. |
+| Done | Breadboard | Only test how it works, so the PCB can be changed if needed. Prove the sensors and the valve control. Pick and test the 24 VAC converter with a real valve (coil heat, buzz). |
+| Progress | PCB | Close the open HW issues, then order a PCB to work with. That is why more and more parts are added to the board. The steps: layout, router, send it to print, then soldering. Version 1 of both boards: the mainboard carries the FireBeetle 2 ESP32-C6 and the ESP32-S3 DevKitC-1, the power conversion, the header for the off-board relay module (J15) and the RS-485 connector for the remote sensors; the Platform Sensors board (STM32C011) is a satellite board on the sensor mast and carries an SHT41 module. Keep the 230 V PSU a separate module. |
 | Progress | System integration | Make the parts work together as one system. The board needs the power, the relays and the sensor connections, so all the PCB issues are part of it. It includes the partitioning: the split into the platform (Platform Sensors) and the board (mainboard). Last step: move into the real enclosures (main box, battery box, sensor mast, roof mast, soil probe and water-line fitting, see "Physical Placement") with fuses, an RCD on the mains side, correctly rated enclosures and a manual shutoff valve on the water line. |
 | Plan | Wind sensor: select where it connects | HW task. The wind sensor stays on the mainboard (ADS1115 AIN1). Add the option to connect it through the Platform Sensors instead, and to select which one is used. The selection is in the HW enable mask (NVS), with two options: `SensorWindBoard` (0x100) and `SensorWindPlatform` (0x200). Select none or one of them. |
 | Plan | iconnect | Android app in `platform/iconnect`, works over Wi-Fi. It can change all NVS parameters, including the HW and SW enable masks. The exception: with AI disabled in menuconfig (`DEVICE_PLATFORM_AI_ENABLE`), it cannot change it. Not yet confirmed in code. Own session. |
