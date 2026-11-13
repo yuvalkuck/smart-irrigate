@@ -62,6 +62,7 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 | FireBeetle 2 ESP32-C6 | Main controller | Yes | Yes (Wi-Fi off) |
 | ESP32-S3 DevKitC-1 | Companion AI module | Yes | **No** |
 | 8-channel 5 V relay module | Valve switching, all 8 channels used (IN1-IN8 = valves 1-8) | Yes | Yes |
+| 2 x SN74AHCT125N quad buffer (U10, U11), 100 nF each | Buffers the 8 valve GPIOs from 3.3 V to 5 V logic for the relay inputs. Powered from the 5 V net, `/OE` tied to GND | Yes | Yes |
 | 8 x Galcon 24 VAC solenoid valves | Water valves | Yes | Yes (1 at a time) |
 | 230 V to 27.6 V, 2 A PSU | Feeds the bus, charges the battery | Yes | **No** (absent) |
 | 2 x 12 V SLA battery in series | Backup (24 V) | Yes (floating) | Yes (sole source) |
