@@ -52,7 +52,7 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 | Valve switch order | Close old, wait ~1 s, open next (one-valve mode) | Same |
 | LCD2004 (driven by the ESP32-S3) | Wakes on button, off after N minutes | **Off** (the S3 is off) |
 | Status LED (`LED_Pin`) | Startup errors only | Startup errors only |
-| Battery indicator | Off | Slow-blink LED (pin **TBD**) |
+| Battery indicator | Off | Slow-blink LED (DS12 on U5 P07) |
 | 24 VAC converter | Enabled only while a valve is open | Enabled only while a valve is open |
 
 ## Parts and where they are used
@@ -79,7 +79,7 @@ The battery floats across the bus at all times, so a mains loss causes no switch
 | TCA9555 (I2C 0x20, 16-bit I/O expander) | Status LEDs, battery-state LED (P07), SHOW LEDs button, 24 VAC converter enable (P12), ESP32-S3 power enable (P13), buzzer (P14) | Yes | Yes |
 | ESP32-S3 power switch: Q1 AO3401A (P-FET) driven by Q2 BSS138, R34 and R35 100k | Cuts the 5 V feed of the ESP32-S3, the LCD and the level shifter U9. On by default, off when U5 P13 is pulled low | Yes | Yes |
 | Buzzer BZ1 (active 5 V, with oscillator), driver Q3 BSS138, flyback diode D8 | Audible alarm, switched by U5 P14 | Yes | Yes |
-| BMP581, SHT41 (I2C) | Weather sensors | Yes | Yes |
+| BMP581, SHT41 (I2C, on the Platform Sensors board) | Weather sensors | Yes | Yes |
 | DS18B20 (1-Wire) | Soil temperature | Yes | Yes |
 | MCP9700A U7 (TO-92, on the main board, analog) | Board temperature, 10 mV/degC output (500 mV at 0 degC) read by ADS1115 AIN2 | Yes | Yes |
 | XDB401 pressure transmitter | Line pressure and no-water check | Yes | Yes |
