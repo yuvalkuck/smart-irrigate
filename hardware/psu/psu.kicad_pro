@@ -243,7 +243,7 @@
       "internal_id": "",
       "mfg": "",
       "mpn": "",
-      "sch_revision": ""
+      "sch_revision": "1"
     },
     "layer_pairs": [],
     "layer_presets": [],
@@ -662,13 +662,18 @@
       {
         "filename": "psu.kicad_sch",
         "name": "psu",
-        "uuid": "00000000-0000-0000-0000-000000000000"
+        "uuid": "c06a186b-95fb-40ae-91a0-04384e9d6982"
       }
     ],
     "used_designators": "",
     "variants": []
   },
-  "sheets": [],
+  "sheets": [
+    [
+      "c06a186b-95fb-40ae-91a0-04384e9d6982",
+      "psu"
+    ]
+  ],
   "text_variables": {},
   "tuning_profiles": {
     "meta": {

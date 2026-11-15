@@ -8,8 +8,9 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
   (`gpio_valve_0` to `gpio_valve_7` = GPIO 1, 14, 18, 21, 22, 16, 17, 5), with `CONFIG_DEVICE_MAX_VALVES` = 8.
   All 8 relay channels are valves.
 * GPIO 16/17 are UART0, so the console runs on USB Serial/JTAG.
-* No safe GPIO is left on the FireBeetle 2 header. More valves, the 24 VAC converter enable and the
-  mains-detect input use the I2C expander U5.
+* No safe GPIO is left on the FireBeetle 2 header. More valves, the 24 VAC inverter enable (P12), the
+  inverter fault input (P15), the mains-detect input (P11) and the charger status inputs (P16 `STAT1`,
+  P17 `STAT2`) use the I2C expander U5.
 * The 3.3 V valve GPIOs go through two SN74AHCT125N quad buffers: U10 for valves 1-4 and U11 for
   valves 5-8. The buffer outputs go to J15 pins 2-9 (relay inputs IN1..IN8), which get 5 V logic. All
   `/OE` pins are tied to GND, and each chip has a 100 nF decoupling capacitor (C9, C10). The wires from the
@@ -23,22 +24,65 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
 
 ## Power
 
-* J1 takes +24 V DC and floats BT1+BT2 (via the J11 fuse and U2).
-* The battery connects at J14 (1 = BAT+, 2 = BAT-). BAT- passes through the shunt R31 to GND.
-* U1 makes +5V. U3 makes 24 VAC.
-* The U3 enable comes from U5 P12, with the R32 pull-down. It is assumed active-high until the
-  converter is chosen.
-* U6 INA226 reads the bus voltage and the battery current through the shunt R31.
+* J1 takes +24 V DC through the 5 A fuse F3. In V1 an external 24 V DC supply feeds J1. When the PSU
+  add-on (`hardware/psu`) is installed, its J5 (24 V DC out) feeds J1 instead; the mainboard does not change.
+* The mainboard makes its own +5V and 24 VAC from +24V. The battery, its gauge and protector (BQ40Z80),
+  the charger and the 24 V bus converter are on the PSU add-on only.
+* J16 (8-pin JST XH) is the link to the PSU add-on J4: 1 = +5V (out, if the add-on needs it), 2 = GND,
+  3 = +3V3 (out), 4 = SDA, 5 = SCL, 6 = `MAINS_OK_N` (in), 7 = `STAT1` (in), 8 = `STAT2` (in).
+  `MAINS_OK_N`, `STAT1` and `STAT2` are open-drain outputs of the add-on charger, so R64, R65 and R66
+  (100k to +3V3) pull them up. `MAINS_OK_N` goes to U5 P11, `STAT1` to P16 and `STAT2` to P17.
+  `MAINS_OK_N` high = no mains (or no add-on).
+* The battery gauge (BQ40Z80, SMBus) is on the PSU add-on and is reached through J16 SDA and SCL. It reports
+  each cell voltage, pack voltage and current, remaining capacity and state of charge, temperature and
+  protection status. Its SMBus speed is 10 to 100 kHz in slave mode, so the shared I2C bus has to run at
+  100 kHz or below when the add-on is fitted. Its slave address is not read yet.
 * The ESP32-S3 (A3) runs from the switched 5 V line (DevKit 5V0 pin). Q1 (AO3401A P-FET) connects
   +5V to it, and Q2 (BSS138) drives its gate. R34 (100k) holds Q1 off when Q2 is off. The switched 5 V
   line also feeds the LCD (J6) and the HV side of the level shifter U9.
 * U5 P13 controls Q2. R35 (100k) pulls it up to +3V3, so the S3 is on by default (also while P13
   floats at boot). Firmware pulls P13 low to power the S3 down.
-* There is no mains-detect input in this version. Firmware derives mains or battery from the INA226 bus
-  voltage, with the threshold set in firmware.
 * The battery-state LED DS12 (with R33, 470 R) is on U5 P07 (`LED_BAT`).
 * The buzzer BZ1 is an active 5 V buzzer (it needs a built-in oscillator). Q3 (BSS138) switches it from
   U5 P14, R36 (100k) holds the gate low, and D8 (1N4148W) is the flyback diode.
+
+## 5 V (U12, LMR51430)
+
+* Buck from +24V, 3 A part. R37 (100k) and R38 (13.7k) set 4.98 V. L1 6.8 uH. C15 and C16 are 2 x 22 uF
+  output, C12 to C14 the input capacitors. `EN` is tied to +24V.
+
+## 24 VAC (sine inverter)
+
+Moved from the PSU board (design values unchanged, references renumbered). It runs whenever +24V is present
+and firmware enables it.
+
+* `INV_EN` comes from U5 P12. R41 (100k) pulls it low, so the inverter is off until firmware drives it high.
+  It gates the 12 V LDO (U13 `EN`), the EG8010 `SPWMEN` and the DRV8412 `RESET_AB`. The 45 V boost enables
+  itself from the 12 V rail, so it stops too.
+* `INV_FAULT_N` is the DRV8412 `FAULT` pin (open collector, low = fault). It goes to U5 P15 with the R63
+  (100k) pull-up to +3V3.
+* 12 V (U13, TPS7A1601): R39 (1.15M) over R40 (127k) set about 12 V. C17 feed-forward, C18 input, C19 output.
+  It feeds the DRV8412 `GVDD`/`VDD` (about 30 mA) and the boost enable divider. About 0.36 W at 24 V in.
+* 45 V boost (U14, LM5155): R49 (107k) over R50 (2.43k) set 45.0 V, R47 (73.2k) about 298 kHz. L2 15 uH,
+  Q5 switch, D9 PMEG060V100EPD diode, R44 12 m sense, R45 slope. Output C28/C29 (100 uF 63 V polymer) and
+  C30 to C32 (4.7 uF 100 V). Compensation R48, C24, C25 are start values. Enable: R51/R52 divide the 12 V
+  rail. Bias from +24V through R42 (0R) with C20.
+* EG8010 (U15): bipolar mode, 50 Hz, soft start on, 12 MHz crystal Y1 with C33/C34. `SPWMOUT3` (left-high)
+  goes to `PWM_A` through R53/R54, `SPWMOUT1` (right-high) to `PWM_B` through R55/R56 (about 3.5 V from 5 V).
+* DRV8412 (U16): mode 000, only bridges A and B used. R62 (36k) sets `OC_ADJ` for about 7.4 A. R61 (1R)
+  joins GND and AGND. C39 on `VREG`, C40 to C43 on `GVDD`, C46 to C49 on `PVDD`, C50 to C53 bootstrap.
+* Feedback: 47k over 4.53k with 100 nF on each output line (R57/R58/C37, R59/R60/C38) into `VFB` and
+  `VFB2`, about 24.1 V RMS. The EG8010 shuts down above 3.15 V peak feedback (300 ms) and below 2.75 V (3 s)
+  (EG8010 datasheet, section 8.1).
+* Output filter: L3 and L4 (1 mH, one in each line) and C54 (4.7 uF film) across the output. It feeds J2
+  through the existing snubber/indicator R6, R30, C3, D7, DS11.
+
+Open points of this block:
+
+* Output common mode: each 24 VAC wire sits at about 22.5 V DC (`PVDD`/2) plus the AC, relative to GND. An
+  isolating 50 Hz transformer between C54 and J2 is the proposed fix; not decided and not drawn.
+* L3/L4: no part chosen; the footprint is a placeholder. D9: datasheet not read.
+* The 45 V boost and the DRV8412 bridge switch near the ESP32 and the sensor inputs: keep them apart on the PCB.
 
 ## ESP32-S3 link
 
@@ -60,7 +104,7 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
 ## I2C
 
 * The bus is on IO19/IO20 (header pins 28/29; pins 9/10 are the same signals).
-* U5 TCA9555 is at 0x20 and U6 INA226 is at 0x40. R17/R18 are the pull-ups.
+* U5 TCA9555 is at 0x20. R17/R18 are the pull-ups. The bus also goes to J16 for the BQ40Z80 gauge on the PSU add-on.
 
 ## Analog inputs
 
@@ -86,4 +130,5 @@ A3 IO5-IO7 are free.
 
 ## Not drawn yet
 
-Nothing in the power and battery part.
+The 24 VAC output transformer (see the open points of the 24 VAC block). The sheet is A1: the 5 V and
+24 VAC blocks sit right of the original drawing and are wired to it.
