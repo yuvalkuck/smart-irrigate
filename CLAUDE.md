@@ -63,34 +63,12 @@ DS18B20 to GPIO 4).
 
 ## Host-side test tooling (not firmware)
 
-`test/genpaylaod/` is a **separate, host-native CMake project** (not part of the ESP-IDF build) that
-compiles a small CLI11-based tool against `components/protocol/include/*` with `-DTESTER` to
-generate/inspect binary protocol payloads without a device. Build it standalone:
+`test/` and `utest/` are separate host-native CMake projects, not part of the ESP-IDF build (details
+in the `CLAUDE.md` of each directory).
 
-```bash
-cmake -S test/genpaylaod -B test/genpaylaod/build
-cmake --build test/genpaylaod/build
-```
-
-Protocol headers (`base_command.h`, `configuration.h`) `#if !defined(TESTER)` out ESP-IDF-only types
-(`esp_partition.h`, `std::unique_ptr` partition wrapper) so they compile in this host context — keep
-new protocol code TESTER-safe if it needs to be exercised from this tool.
-
-`test/mosquitto/` and `components/hmqtt/test/mosquitto/` hold docker-compose'd Mosquitto brokers
-(with TLS certs) for exercising MQTT locally; `test/mqtt_brocker.py` is an alternative pure-Python
-(`amqtt`) broker for the same purpose (deps in `test/requires.txt`). `test/mosquitto/publish.sh` /
-`monitor.sh` publish/subscribe via `docker exec` (`dexec` alias expected) against topics like
-`/client/configuration`. The `certs` symlink at repo root points at
-`test/mosquitto/config/certs` and is embedded into the firmware image via
-`EMBED_TXTFILES` in `components/hmqtt/CMakeLists.txt` (`ca.crt`, `client.crt`, `client.key`) — these
-must exist before building firmware that includes `hmqtt`.
-
-`utest/` is a second host-native CMake project that fetches GoogleTest and fff (fake functions) and
-builds a `tests` executable. It is not part of the firmware build:
-
-```bash
-cmake -S utest -B utest/build && cmake --build utest/build && ctest --test-dir utest/build
-```
+The `certs` symlink at repo root points at `test/mosquitto/config/certs` and is embedded into the
+firmware image via `EMBED_TXTFILES` in `components/hmqtt/CMakeLists.txt` (`ca.crt`, `client.crt`,
+`client.key`) — these must exist before building firmware that includes `hmqtt`.
 
 There is no on-device unit test framework in this repo; correctness is validated by building,
 flashing, and observing serial logs / MQTT traffic.
@@ -111,48 +89,6 @@ Wi-Fi credentials exist in NVS:
   starts SNTP (MQTT is only started from the SNTP time-sync callback,
   `continue_after_time_sync_cb`, so the device has a valid clock before it publishes/subscribes),
   and starts the telemetry sampling task.
-
-### Component layout (`components/`)
-
-Each component is a standalone ESP-IDF component with its own `CMakeLists.txt`; dependency direction
-generally flows `main → {flash, hwifi, hmqtt, hsntp, telemetry, protocol} → common`:
-
-- **`common`** — shared, header-only-ish: `gpio_declaraion.h` (board constants), `common_event.h`
-  (`COMMON_BASE_EVENTS` esp_event bus + `EventData`/`TelemetryData` structs), `logger.h`
-  (`METHODTRACE`/`LOGTRACE` macros, compiled to no-ops unless `_DEBUG` is defined via
-  `CMAKE_BUILD_TYPE=Debug`), generated `default_initiate.h`.
-- **`flash`** — NVS wrapper (`NvsConfig` RAII class) plus the `SETUP_KEY()` string constants for
-  Wi-Fi/MQTT/NTP/timezone/device-unique-id storage in the `setup` partition, and the `ENABLE_HW`/`ENABLE_SW`
-  bit masks (`HardwareEnable`/`SoftwareEnable`) that switch sensors and features. They are read once at boot,
-  so a change needs a restart.
-- **`hwifi`** — Wi-Fi STA (`hwifi_sta.cpp`) and SoftAP + provisioning webserver
-  (`soft_ap.cpp`, `ap_webserver.cpp`) — mutually exclusive modes selected in `entrypoint.cpp`.
-- **`hmqtt`** — MQTT client over TLS (certs embedded from `certs/`); `mqtt_publish(topic, payload)`
-  is the only outbound API; inbound commands land back on the app via `COMMON_BASE_EVENTS`.
-- **`hsntp`** — SNTP client; `init_sntp(server, cb)` fires `cb` once time sync completes.
-- **`hmodbus`** — Modbus RTU master (esp-modbus) on the RS-485 link to the sensor platform;
-  `modbus_read_registers(slave, function, address, count, out)`.
-- **`ads1115`** — ADS1115 ADC on the shared I2C master bus (single-shot, single-ended, ±2.048 V),
-  used for the board temperature.
-- **`telemetry`** — owns the shared I2C master bus, ADC unit, and 1-Wire bus handles, and drives all
-  sensors from one periodic FreeRTOS task (`cbTelemetryTask`, 10s interval) that posts
-  `COMMON_EVENT_UPDATED_SENSOR` on `COMMON_BASE_EVENTS`. Sensor drivers live under
-  `telemetry/inc/sensor_*.h` + `telemetry/src/sensor_*.cpp`, each implementing one of the
-  `SensorConcept`/`SensorI2C`/`SensorADC`/`SensorOneWire` C++20 concepts declared in
-  `telemetry/inc/sensor_concept.h` (compile-time-enforced via `AbstractSensorI2C<Derived>` etc. —
-  every sensor needs `init(bus)`, `online(bus)`, and `read(TelemetryData&)`). New sensors should
-  follow this pattern rather than being wired ad hoc into `telemetry.cpp`. The remote sensor platform
-  (SHT41, BMP581, solar) is read by `SensorPlatform` (`sensor_platform.cpp`) over Modbus when the
-  `PlatformSensor` mask bit is set. The board temperature (MCP9700A on ADS1115 AIN2) is `SensorBoardTemp`.
-- **`protocol`** — binary MQTT command/configuration payload (de)serialization
-  (`getPayloadCommand`, `setConfiguration`, `getConfiguration`). Structs are `#pragma pack`ed and
-  guarded with `#if !defined(TESTER)` so the same headers compile both on-device and in the host
-  `test/genpaylaod` tool. **The wire format here is actively evolving** — `doc/stractures.md`
-  documents the currently-implemented `Command`/`Configuration` layout; treat anything not reflected
-  there as not yet implemented. `platform_modbus.h` holds the Modbus register map shared with the
-  sensor platform (`platform/sensor`).
-- **`bmp5api`** — vendored Bosch BMP5xx sensor API (upstream driver, avoid modifying — see its own
-  `README.md`/`LICENSE` under `components/bmp5api/1.5.0/`).
 
 ### Eventing model
 
