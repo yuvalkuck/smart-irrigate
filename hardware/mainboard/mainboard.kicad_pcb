@@ -90,7 +90,7 @@
 	(footprint "TestPoint:TestPoint_THTPad_D2.0mm_Drill1.0mm"
 		(layer "F.Cu")
 		(uuid "00d88984-3717-4745-9f69-7a98a2f03c71")
-		(at 131.8825 113.28)
+		(at 217.5 142)
 		(descr "THT pad as test Point, diameter 2.0mm, hole diameter 1.0mm")
 		(tags "test point THT pad")
 		(property "Reference" "TP2"
@@ -515,7 +515,7 @@
 	(footprint "Capacitor_SMD:C_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "05bb1258-fc2f-47b2-9027-8cf78b6959ed")
-		(at 137.4025 104.68)
+		(at 240.55 89.85)
 		(descr "Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C44"
@@ -953,7 +953,7 @@
 	(footprint "Capacitor_SMD:C_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "0bd272f8-f185-44bf-b215-cb8a04ee9012")
-		(at 137.4025 100.43)
+		(at 240.55 106.1)
 		(descr "Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C32"
@@ -1537,7 +1537,7 @@
 	(footprint "TestPoint:TestPoint_THTPad_D2.0mm_Drill1.0mm"
 		(layer "F.Cu")
 		(uuid "13a86817-1648-4374-971c-8816329f0e70")
-		(at 131.8825 121.38)
+		(at 225.5 142)
 		(descr "THT pad as test Point, diameter 2.0mm, hole diameter 1.0mm")
 		(tags "test point THT pad")
 		(property "Reference" "TP4"
@@ -1940,7 +1940,7 @@
 	(footprint "Package_SON:WSON-12-1EP_3x2mm_P0.5mm_EP1x2.65"
 		(layer "F.Cu")
 		(uuid "1a6e6b49-7250-4a67-a0cf-facd1ee2d435")
-		(at 70.5 113.25)
+		(at 218.45 94)
 		(descr "WSON-12 http://www.ti.com/lit/ds/symlink/lm27762.pdf")
 		(tags "WSON-12")
 		(property "Reference" "U14"
@@ -2781,7 +2781,7 @@
 	(footprint "Capacitor_SMD:C_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "23d1dafe-b84b-4a27-80bf-36314a5982e1")
-		(at 120.4525 100.43)
+		(at 220.55 106.1)
 		(descr "Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C13"
@@ -4346,13 +4346,13 @@
 	(footprint "Capacitor_THT:C_Rect_L18.0mm_W11.0mm_P15.00mm_FKS3_FKP3"
 		(layer "F.Cu")
 		(uuid "31a9a5e3-9879-4140-abf7-f51f90e6a09e")
-		(at 196 110)
+		(at 202.5 71.25 90)
 		(descr "C, Rect series, Radial, pin pitch=15.00mm, length*width=18*11mm^2, Capacitor, http://www.wima.com/EN/WIMA_FKS_3.pdf")
 		(tags "C Rect series Radial pin pitch 15.00mm length 18mm width 11mm Capacitor")
 		(property "Reference" "C54"
-			(at 7.5 -6.75 0)
+			(at 7.5 -6.75 90)
 			(layer "F.SilkS")
-			(uuid "f5360f86-da8b-42df-9884-361b3f0ffe8f")
+			(uuid "af8ed12a-ab29-4d11-be10-9c2bd5115bc9")
 			(effects
 				(font
 					(size 1 1)
@@ -4361,9 +4361,9 @@
 			)
 		)
 		(property "Value" "4.7u 63V film"
-			(at 7.5 6.75 0)
+			(at 7.5 6.75 90)
 			(layer "F.Fab")
-			(uuid "8e0541f1-bb6f-4d7c-b832-1a63258cea4d")
+			(uuid "3a4bcb6c-56cb-4400-8050-7af445d68164")
 			(effects
 				(font
 					(size 1 1)
@@ -4372,10 +4372,10 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 0)
+			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "b700ea1d-e1e4-4587-917a-8d6861117f18")
+			(uuid "431d3eb6-e359-4880-92a9-1decf2f19d00")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4383,10 +4383,10 @@
 			)
 		)
 		(property "Description" "output filter capacitor"
-			(at 0 0 0)
+			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "d950db15-fe7f-4133-af97-d492011a3af3")
+			(uuid "16a73f7e-a5e1-418f-901b-cafb3943ea04")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4406,26 +4406,6 @@
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
-			(start -1.62 -5.62)
-			(end 16.62 -5.62)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "98500b12-da6a-4127-a9b0-6ae16b232ebd")
-		)
-		(fp_line
-			(start -1.62 5.62)
-			(end -1.62 -5.62)
-			(stroke
-				(width 0.12)
-				(type solid)
-			)
-			(layer "F.SilkS")
-			(uuid "dada9129-c612-44a2-a222-0d9f30abaab1")
-		)
-		(fp_line
 			(start 16.62 -5.62)
 			(end 16.62 5.62)
 			(stroke
@@ -4436,6 +4416,16 @@
 			(uuid "35870153-646e-4a93-8274-df2295ca9d8f")
 		)
 		(fp_line
+			(start -1.62 -5.62)
+			(end 16.62 -5.62)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "98500b12-da6a-4127-a9b0-6ae16b232ebd")
+		)
+		(fp_line
 			(start 16.62 5.62)
 			(end -1.62 5.62)
 			(stroke
@@ -4444,6 +4434,16 @@
 			)
 			(layer "F.SilkS")
 			(uuid "d5367393-b8d5-461e-bddd-d6d54a9aebc1")
+		)
+		(fp_line
+			(start -1.62 5.62)
+			(end -1.62 -5.62)
+			(stroke
+				(width 0.12)
+				(type solid)
+			)
+			(layer "F.SilkS")
+			(uuid "dada9129-c612-44a2-a222-0d9f30abaab1")
 		)
 		(fp_rect
 			(start -1.75 -5.75)
@@ -4468,7 +4468,7 @@
 			(uuid "7e7858af-4bfc-4a31-b255-a61aa6e5fefe")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 7.5 0 0)
+			(at 7.5 0 90)
 			(layer "F.Fab")
 			(uuid "673310fb-5152-4b2b-826b-3a950e4b1de1")
 			(effects
@@ -4479,7 +4479,7 @@
 			)
 		)
 		(pad "1" thru_hole circle
-			(at 0 0)
+			(at 0 0 90)
 			(size 2.4 2.4)
 			(drill 1.2)
 			(layers "*.Cu" "*.Mask")
@@ -4489,7 +4489,7 @@
 			(uuid "571a28fd-3237-42d8-9e87-7d6ef97dda9c")
 		)
 		(pad "2" thru_hole circle
-			(at 15 0)
+			(at 15 0 90)
 			(size 2.4 2.4)
 			(drill 1.2)
 			(layers "*.Cu" "*.Mask")
@@ -5191,13 +5191,13 @@
 	(footprint "libraries:FuseHolder_5x20_ELECAPITAL_PCB_Cover"
 		(layer "F.Cu")
 		(uuid "37a834b2-7cf5-4295-bbd2-a90d373c5ca9")
-		(at 200 71.5)
+		(at 200 75.75)
 		(descr "ELECAPITAL panel-mount PCB fuse holder with cover for 5x20 mm fuse, 250 V 6 A. Pins measured by the user: flat blade 1.4 x 0.2 mm, 22.4 mm between the inner pin faces. Pin thickness (0.2 mm) lies along the holder axis, so the pitch is 22.4 + 0.2 = 22.6 mm centre to centre; the 1.4 mm width runs across the holder (confirmed by the user). Slot holes 0.6 x 1.8 mm. Holder body and cover outline are not drawn: body size not measured. Fab line shows the 5x20 mm fuse.")
 		(tags "fuse holder 5x20 PCB cover ELECAPITAL")
 		(property "Reference" "F3"
 			(at 0 -4 0)
 			(layer "F.SilkS")
-			(uuid "a6ed87e2-ab60-471d-9a1d-d51a5c1d9d61")
+			(uuid "f84492da-532c-44f6-9d44-fc47627efa12")
 			(effects
 				(font
 					(size 1 1)
@@ -5208,7 +5208,7 @@
 		(property "Value" "5A"
 			(at 0 4 0)
 			(layer "F.Fab")
-			(uuid "a824a018-7a03-4cae-9761-1f10f4e52238")
+			(uuid "3389870b-fa30-477e-b8d5-9719a22ae406")
 			(effects
 				(font
 					(size 1 1)
@@ -5220,7 +5220,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "0e8503de-5d62-4f0d-bfe9-5ca3889670c7")
+			(uuid "10679520-da21-4124-9147-1823979d2888")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5231,7 +5231,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "71100eca-2a79-4389-ba34-a8c494aceb82")
+			(uuid "b22047ec-b954-4ca8-b27f-f95a1756028d")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5494,7 +5494,7 @@
 	(footprint "Package_TO_SOT_SMD:SOT-23"
 		(layer "F.Cu")
 		(uuid "3b55dac8-145a-469e-b94a-41b65a5569c2")
-		(at 57.3025 137.06)
+		(at 240.18 110.2)
 		(descr "SOT, 3 Pin (JEDEC TO-236 Var AB https://www.jedec.org/document_search?search_api_views_fulltext=TO-236)")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "Q4"
@@ -5864,7 +5864,7 @@
 	(footprint "TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-02P_1x02_P5.00mm"
 		(layer "F.Cu")
 		(uuid "3c2b1787-0e3a-4b20-bc25-1f89d2bdf747")
-		(at 179.75 108.25 -90)
+		(at 180.0325 108.25 -90)
 		(descr "terminal block MaiXu MX126-5.0-02P, 2 pins, pitch 5mm, size 10.5x7.8mm, drill diameter 1.3mm, pad diameter 2.8mm, https://www.lcsc.com/datasheet/lcsc_datasheet_2309150913_MAX-MX126-5-0-03P-GN01-Cu-S-A_C5188435.pdf")
 		(tags "THT terminal block MaiXu MX126-5.0-02P pitch 5mm size 10.5x7.8mm drill 1.3mm pad 2.8mm")
 		(property "Reference" "J2"
@@ -7019,13 +7019,13 @@
 	(footprint "Package_SO:TSSOP-10_3x3mm_P0.5mm"
 		(layer "F.Cu")
 		(uuid "4a8b8f29-c289-4f31-b33e-26900e90b044")
-		(at 150.5 124.5)
+		(at 220 110.5)
 		(descr "TSSOP, 10 Pin (https://www.ti.com/lit/ml/mpds035c/mpds035c.pdf, https://www.ti.com/lit/ds/symlink/ads1115.pdf#page=50, https://www.nxp.com/docs/en/package-information/SOT552-1.pdf)")
 		(tags "TSSOP SO Texas_DGS0010A Texas_VSSOP-10 NXP_SOT552-1 MSOP-10_3x3mm_P0.5mm VSSOP-10_3x3mm_P0.5mm")
 		(property "Reference" "U8"
 			(at 0 -2.45 0)
 			(layer "F.SilkS")
-			(uuid "e3b4a3ee-45b7-40c8-a27e-7262ae3e5a89")
+			(uuid "9f49bace-fd70-4720-88fe-d71b7ff4c5b6")
 			(effects
 				(font
 					(size 1 1)
@@ -7036,7 +7036,7 @@
 		(property "Value" "ADS1115IDGS"
 			(at 0 2.45 0)
 			(layer "F.Fab")
-			(uuid "8de947e9-6d6a-448e-8f52-66dcaa602b06")
+			(uuid "72c123eb-ae8b-4bde-a700-dcd5141734c2")
 			(effects
 				(font
 					(size 1 1)
@@ -7048,7 +7048,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "475edfbe-6cc6-4e71-894a-f2a0e67b9568")
+			(uuid "228d2795-ae41-417b-afa5-27fe1d0fcbfb")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7059,7 +7059,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "1bb47cfd-516b-49bf-a766-db08217a2972")
+			(uuid "36c30d84-aca3-48c1-9ecb-f1766661f5e8")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7606,7 +7606,7 @@
 	(footprint "Capacitor_SMD:CP_Elec_10x10"
 		(layer "F.Cu")
 		(uuid "4c44b958-b643-406e-b459-d02d116dae42")
-		(at 123.0875 113.13)
+		(at 226.5 97.9)
 		(descr "SMD capacitor, aluminum electrolytic, Nichicon, 10.0x10.0mm")
 		(tags "capacitor electrolytic")
 		(property "Reference" "C28"
@@ -9182,7 +9182,7 @@
 	(footprint "Capacitor_SMD:C_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "50680435-46c7-4264-8fa5-c6784e6088ff")
-		(at 120.4525 96.18)
+		(at 215.55 106.1)
 		(descr "Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C12"
@@ -9579,7 +9579,7 @@
 	(footprint "Capacitor_SMD:C_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "5198f355-19e5-4767-add4-c9948cad5d29")
-		(at 131.7525 96.18)
+		(at 207.3 86.1)
 		(descr "Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C26"
@@ -10256,7 +10256,7 @@
 	(footprint "Capacitor_SMD:C_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "56588c29-3698-4d78-a636-87faea3a9e1d")
-		(at 131.7525 100.43)
+		(at 230.55 109.1)
 		(descr "Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C27"
@@ -10548,7 +10548,7 @@
 	(footprint "MountingHole:MountingHole_3.2mm_M3"
 		(layer "F.Cu")
 		(uuid "57f688c0-d6a1-46df-b356-40bd5114bb72")
-		(at 179.25 135)
+		(at 180.5 136.25)
 		(descr "Mounting Hole 3.2mm, M3, no annular, generated by kicad-footprint-generator mountinghole.py")
 		(tags "mountinghole M3")
 		(property "Reference" "H3"
@@ -11141,7 +11141,7 @@
 	(footprint "Capacitor_SMD:C_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "5c874992-c7c9-44d8-a0fe-2778bf67f838")
-		(at 126.1025 100.43)
+		(at 225.55 106.1)
 		(descr "Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C18"
@@ -11841,7 +11841,7 @@
 	(footprint "Package_SON:Diodes_PowerDI3333-8"
 		(layer "F.Cu")
 		(uuid "5fc1cae1-af33-4750-ae88-6d63319675ce")
-		(at 144.52 152.185)
+		(at 229.6 88.65)
 		(descr "Diodes Incorporated PowerDI3333-8, Plastic Dual Flat No Lead Package, 3.3x3.3x0.8mm Body, https://www.diodes.com/assets/Package-Files/PowerDI3333-8.pdf")
 		(tags "PowerDI 0.65")
 		(property "Reference" "Q5"
@@ -12398,13 +12398,13 @@
 	(footprint "Package_TO_SOT_SMD:SOT-23"
 		(layer "F.Cu")
 		(uuid "5fe5819e-83cc-4730-b3cd-dbd56ee12e4d")
-		(at 52.3925 132.61)
+		(at 235.93 110.2)
 		(descr "SOT, 3 Pin (JEDEC TO-236 Var AB https://www.jedec.org/document_search?search_api_views_fulltext=TO-236)")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "Q1"
 			(at 0 -2.4 0)
 			(layer "F.SilkS")
-			(uuid "64f9819c-43bb-4b6f-98ad-8cd8ca7c4942")
+			(uuid "5beb9aa7-6c90-4244-a3a5-d733d36423b8")
 			(effects
 				(font
 					(size 1 1)
@@ -12415,7 +12415,7 @@
 		(property "Value" "AO3401A"
 			(at 0 2.4 0)
 			(layer "F.Fab")
-			(uuid "2238d732-5d25-4fda-bc55-99e9d730c6bf")
+			(uuid "86c87de4-a350-46cb-afae-54da072d974d")
 			(effects
 				(font
 					(size 1 1)
@@ -12427,7 +12427,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "4dcac0b8-92eb-462d-af98-54ca65371ab7")
+			(uuid "26afd40b-99d2-49ed-abd9-49b89caf352e")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12438,7 +12438,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "c1e56ca3-565b-450c-8d4c-90ed9361aab0")
+			(uuid "6a9ef091-28df-49a2-9be8-ac6e483ae29d")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13060,13 +13060,13 @@
 	(footprint "LED_THT:LED_D5.0mm"
 		(layer "F.Cu")
 		(uuid "650294d4-8152-4d36-b769-5a1836827ef1")
-		(at 181.71 73)
+		(at 182.73 73)
 		(descr "LED, diameter 5.0mm, 2 pins, http://cdn-reichelt.de/documents/datenblatt/A500/LL-504BC2E-009.pdf, generated by kicad-footprint-generator")
 		(tags "LED")
 		(property "Reference" "DS1"
 			(at 1.27 -3.96 0)
 			(layer "F.SilkS")
-			(uuid "41e278a1-ca01-42ed-b8ff-a61f7819bd5d")
+			(uuid "425a0044-f21a-4cdb-a7a0-c0d4a954bb23")
 			(effects
 				(font
 					(size 1 1)
@@ -13077,7 +13077,7 @@
 		(property "Value" "LED 5mm green"
 			(at 1.27 3.96 0)
 			(layer "F.Fab")
-			(uuid "d1cbca37-418c-49f3-82e0-fcaf2f14be84")
+			(uuid "b4430312-f57f-4e7c-9975-bd4ca59acedc")
 			(effects
 				(font
 					(size 1 1)
@@ -13089,7 +13089,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "192937c8-56b1-4c2f-b814-ba35ba9d3efb")
+			(uuid "a9357303-57e3-46ec-8201-14f1ab72fb75")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13100,7 +13100,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "79e43f5f-1cf2-4eff-99e0-47968b562b84")
+			(uuid "148ef028-f6bd-45ba-8784-9eb19e9693dc")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13217,7 +13217,7 @@
 			)
 		)
 		(point
-			(at 182.98 73)
+			(at 184 73)
 			(size 2)
 			(layer "F.Fab")
 			(uuid "171a2389-222e-4e2d-8e76-3e0ad5c79db2")
@@ -13696,7 +13696,7 @@
 	(footprint "TestPoint:TestPoint_THTPad_D2.0mm_Drill1.0mm"
 		(layer "F.Cu")
 		(uuid "6bdd8b1b-8b21-407e-a7f3-315569200c28")
-		(at 131.8825 125.43)
+		(at 229.5 142)
 		(descr "THT pad as test Point, diameter 2.0mm, hole diameter 1.0mm")
 		(tags "test point THT pad")
 		(property "Reference" "TP5"
@@ -14347,13 +14347,13 @@
 	(footprint "Resistor_SMD:R_0805_2012Metric"
 		(layer "F.Cu")
 		(uuid "6ffa3f89-37f9-4df0-b8d0-f6495aab66c3")
-		(at 254.0875 40.017866)
+		(at 179.18 77.7)
 		(descr "Resistor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(property "Reference" "R26"
-			(at 0 -1.65 0)
+			(at 1.02 -1.65 0)
 			(layer "F.SilkS")
-			(uuid "5c18859a-2975-4a4d-aaaf-ab431243d46c")
+			(uuid "3aa709fb-fcee-4540-a90f-709042404433")
 			(effects
 				(font
 					(size 1 1)
@@ -14364,7 +14364,7 @@
 		(property "Value" "470"
 			(at 0 1.65 0)
 			(layer "F.Fab")
-			(uuid "b3e580ee-be82-4890-8b94-c7870f82ee04")
+			(uuid "af19b483-c47e-4b46-b4a4-f0b58fbf1cb5")
 			(effects
 				(font
 					(size 1 1)
@@ -14376,7 +14376,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "53f5deb3-4f3c-4a5d-85a1-5f4454c1669b")
+			(uuid "fd37405a-d167-4978-bb73-e1f7c2c6e41b")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14387,7 +14387,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "69ebf766-1e71-428a-bc0e-19742416b9bc")
+			(uuid "dc4dbbbc-7181-40ec-a831-47295785fcf3")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14639,7 +14639,7 @@
 	(footprint "Capacitor_SMD:C_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "7210461e-34a8-47b9-b18b-27a690835b0b")
-		(at 126.1025 96.18)
+		(at 230.55 105.35)
 		(descr "Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C16"
@@ -15193,7 +15193,7 @@
 	(footprint "Package_TO_SOT_SMD:SOT-23-6"
 		(layer "F.Cu")
 		(uuid "740cb18d-17bf-4bb7-a46d-ab971c62703a")
-		(at 85.5 84.5)
+		(at 211.05 89.95)
 		(descr "SOT, 6 Pin (JEDEC MO-178 Var AB https://www.jedec.org/document_search?search_api_views_fulltext=MO-178)")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "U12"
@@ -15715,7 +15715,7 @@
 	(footprint "libraries:XAL1010"
 		(layer "F.Cu")
 		(uuid "76e130b5-206e-4a64-a008-d344e8e1292d")
-		(at 99.5525 100.63)
+		(at 221 85.8)
 		(descr "Coilcraft XAL1010 shielded power inductor, 10.0 x 11.3 mm body. Land pattern from Coilcraft Doc 804-4: two pads 2.38 x 9.0 mm, 6.65 mm centre to centre.")
 		(tags "inductor coilcraft xal1010 smd")
 		(property "Reference" "L1"
@@ -17379,7 +17379,7 @@
 		(property "Reference" "D6"
 			(at 0 -2.5 0)
 			(layer "F.SilkS")
-			(uuid "d0a908bd-9e4b-46fc-a169-b1704d1b4886")
+			(uuid "2eedb1cc-e811-4464-b76c-477396879394")
 			(effects
 				(font
 					(size 1 1)
@@ -17390,7 +17390,7 @@
 		(property "Value" "SMAJ30A"
 			(at 0 2.6 0)
 			(layer "F.Fab")
-			(uuid "53f458e8-73d2-4822-ac4e-f03d51bab313")
+			(uuid "f0e3c274-9dd7-4a25-a089-8c2e304f72b1")
 			(effects
 				(font
 					(size 1 1)
@@ -17403,7 +17403,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "17c42a91-9bf1-4a67-8e26-cbbf9ddf8535")
+			(uuid "5596559a-ef52-4228-9f66-2261b500050c")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17416,7 +17416,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "6741bba3-e146-4d6f-9d9c-b17c0c678355")
+			(uuid "c583ec29-c6f3-48b5-b55e-dda54f8b3a8b")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18049,7 +18049,7 @@
 	(footprint "Package_TO_SOT_SMD:SOT-23"
 		(layer "F.Cu")
 		(uuid "8416e222-063f-4da2-a40b-0f5922aa0b9f")
-		(at 42.5725 132.61)
+		(at 258.93 120.7)
 		(descr "SOT, 3 Pin (JEDEC TO-236 Var AB https://www.jedec.org/document_search?search_api_views_fulltext=TO-236)")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "D1"
@@ -18616,7 +18616,7 @@
 	(footprint "TestPoint:TestPoint_THTPad_D2.0mm_Drill1.0mm"
 		(layer "F.Cu")
 		(uuid "842b3840-7075-406c-add7-c834a3046ded")
-		(at 131.8825 109.23)
+		(at 213.5 142)
 		(descr "THT pad as test Point, diameter 2.0mm, hole diameter 1.0mm")
 		(tags "test point THT pad")
 		(property "Reference" "TP1"
@@ -21033,13 +21033,13 @@
 	(footprint "libraries:SW_Tactile_6x6x5_2pin"
 		(layer "F.Cu")
 		(uuid "9a5bed1a-3a76-432a-9b62-759d061d18d3")
-		(at 194.5 59.25)
+		(at 191 67)
 		(descr "Tactile push button 6 x 6 x 5 mm, 2 straight legs 0.6 mm, 4.5 mm between the legs (measured by the user with calipers). Body assumed centered between the legs: verify on a 1:1 print.")
 		(tags "tactile switch 6x6x5 THT 2pin")
 		(property "Reference" "SW6"
 			(at 2.25 -4.5 0)
 			(layer "F.SilkS")
-			(uuid "72faf0c2-919a-4737-b299-af914e2d4452")
+			(uuid "552b87f3-c58f-4c33-b8b1-b13e956bb4db")
 			(effects
 				(font
 					(size 1 1)
@@ -21050,7 +21050,7 @@
 		(property "Value" "SHOW LEDs"
 			(at 2.25 4.5 0)
 			(layer "F.Fab")
-			(uuid "1a438d71-bcf6-4c6a-945f-df263c76c65b")
+			(uuid "c3aa0dcd-e704-4cf6-be2f-4f4efba67647")
 			(effects
 				(font
 					(size 1 1)
@@ -21062,7 +21062,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "d705a691-3196-4cbd-897a-b5f9b92d830e")
+			(uuid "e66754c2-2f4a-4d1b-b56b-5d05b1e9759c")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21073,7 +21073,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "ad45e6d8-d4da-43bf-8d23-65dbcda0c765")
+			(uuid "cc115c54-9f75-41ee-af4c-c21ae4fd8ce3")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21724,7 +21724,7 @@
 	(footprint "Package_TO_SOT_SMD:SOT-23"
 		(layer "F.Cu")
 		(uuid "9f5527f3-c8eb-44b9-b378-c8f04edf8a71")
-		(at 42.5725 137.06)
+		(at 265.93 80.95)
 		(descr "SOT, 3 Pin (JEDEC TO-236 Var AB https://www.jedec.org/document_search?search_api_views_fulltext=TO-236)")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "D3"
@@ -22436,7 +22436,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x08_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "a6ac4c5a-49e2-41e3-a904-969607a9dada")
-		(at 177.5 84.21)
+		(at 178.75 84.21)
 		(descr "Through hole straight pin header, 1x08, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x08 2.54mm single row")
 		(property "Reference" "J16"
@@ -23220,7 +23220,7 @@
 	(footprint "Package_TO_SOT_SMD:SOT-23"
 		(layer "F.Cu")
 		(uuid "abe10578-4644-4de9-8abe-01f20dd24520")
-		(at 47.4825 132.61)
+		(at 265.93 84.7)
 		(descr "SOT, 3 Pin (JEDEC TO-236 Var AB https://www.jedec.org/document_search?search_api_views_fulltext=TO-236)")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "D4"
@@ -24171,11 +24171,11 @@
 	(footprint "Buzzer_Beeper:Buzzer_12x9.5RM7.6"
 		(layer "F.Cu")
 		(uuid "ad054cc7-c175-45a3-ac8c-045c58f64ee1")
-		(at 177.95 123.75)
+		(at 201.13 114.35 90)
 		(descr "Generic Buzzer, D12mm height 9.5mm with RM7.6mm")
 		(tags "buzzer")
 		(property "Reference" "BZ1"
-			(at 158.0975 -78.71 90)
+			(at 158.0975 -78.71 0)
 			(layer "F.SilkS")
 			(uuid "6a00e4c4-6d72-41a6-9401-1264003fad8b")
 			(effects
@@ -24186,7 +24186,7 @@
 			)
 		)
 		(property "Value" "Buzzer 5V active"
-			(at 3.8 7.4 0)
+			(at 3.8 7.4 90)
 			(layer "F.Fab")
 			(uuid "44dd2c66-d025-4840-b73d-043e29699ea2")
 			(effects
@@ -24197,7 +24197,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 0)
+			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24210,7 +24210,7 @@
 			)
 		)
 		(property "Description" "Active 5 V buzzer (self-oscillating)"
-			(at 0 0 0)
+			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
@@ -24258,17 +24258,6 @@
 		)
 		(fp_circle
 			(center 3.8 0)
-			(end 4.8 0)
-			(stroke
-				(width 0.1)
-				(type solid)
-			)
-			(fill no)
-			(layer "F.Fab")
-			(uuid "617a1ae5-bd02-4195-9745-2767f3f7de23")
-		)
-		(fp_circle
-			(center 3.8 0)
 			(end 9.8 0)
 			(stroke
 				(width 0.1)
@@ -24278,8 +24267,19 @@
 			(layer "F.Fab")
 			(uuid "ffae73c5-6ddd-4f47-9f04-141824a2296b")
 		)
+		(fp_circle
+			(center 3.8 0)
+			(end 4.8 0)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill no)
+			(layer "F.Fab")
+			(uuid "617a1ae5-bd02-4195-9745-2767f3f7de23")
+		)
 		(fp_text user "+"
-			(at -0.01 -2.54 0)
+			(at -0.01 -2.54 90)
 			(layer "F.SilkS")
 			(uuid "53c46178-8717-4724-9b09-83d2417ad326")
 			(effects
@@ -24289,19 +24289,8 @@
 				)
 			)
 		)
-		(fp_text user "+"
-			(at -0.01 -2.54 0)
-			(layer "F.Fab")
-			(uuid "fcf0d30c-9e50-444b-a800-3412615cb07d")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(fp_text user "${REFERENCE}"
-			(at 3.8 -4 0)
+			(at 3.8 -4 90)
 			(layer "F.Fab")
 			(uuid "5d2ff6b7-fba9-44e8-bebf-87b15d204851")
 			(effects
@@ -24311,8 +24300,19 @@
 				)
 			)
 		)
+		(fp_text user "+"
+			(at -0.01 -2.54 90)
+			(layer "F.Fab")
+			(uuid "fcf0d30c-9e50-444b-a800-3412615cb07d")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(pad "1" thru_hole rect
-			(at 0 0)
+			(at 0 0 90)
 			(size 2 2)
 			(drill 1)
 			(layers "*.Cu" "*.Mask")
@@ -24323,7 +24323,7 @@
 			(uuid "bc2c7bb5-215a-48c2-b0fd-56a71ccace4c")
 		)
 		(pad "2" thru_hole circle
-			(at 7.6 0)
+			(at 7.6 0 90)
 			(size 2 2)
 			(drill 1)
 			(layers "*.Cu" "*.Mask")
@@ -24641,7 +24641,7 @@
 	(footprint "Package_TO_SOT_SMD:Nexperia_CFP15_SOT-1289"
 		(layer "F.Cu")
 		(uuid "b1836570-e6f8-499c-9625-9d9573b1c4f7")
-		(at 146.23 146.25)
+		(at 237 94.4)
 		(descr "Nexperia CFP15 (SOT-1289), https://assets.nexperia.com/documents/outline-drawing/SOT1289.pdf")
 		(tags "SOT-1289 CFP15")
 		(property "Reference" "D9"
@@ -26023,7 +26023,7 @@
 	(footprint "Capacitor_SMD:C_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "b50417a0-4a8b-4aa4-865a-dff5c6e97b60")
-		(at 131.7525 104.68)
+		(at 235.55 106.1)
 		(descr "Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C30"
@@ -26461,7 +26461,7 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "bd743168-5bce-4513-96d0-a66c9fb006fd")
-		(at 239.04 84.25 -90)
+		(at 258.35 84.02 -90)
 		(descr "Through hole straight pin header, 1x03, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x03 2.54mm single row")
 		(property "Reference" "J4"
@@ -27044,7 +27044,7 @@
 	(footprint "libraries:XAL1010"
 		(layer "F.Cu")
 		(uuid "c2662f88-5baf-4a1e-aa77-558c2ee383f0")
-		(at 111.6025 100.63)
+		(at 232.5 80.3)
 		(descr "Coilcraft XAL1010 shielded power inductor, 10.0 x 11.3 mm body. Land pattern from Coilcraft Doc 804-4: two pads 2.38 x 9.0 mm, 6.65 mm centre to centre.")
 		(tags "inductor coilcraft xal1010 smd")
 		(property "Reference" "L2"
@@ -29500,7 +29500,7 @@
 		(property "Reference" "Q3"
 			(at 0 -2.4 0)
 			(layer "F.SilkS")
-			(uuid "84e7a0df-a9f6-42da-8a56-1063c20d8e4e")
+			(uuid "05cf3c1c-1a8c-474c-a262-2e09a8c2af5d")
 			(effects
 				(font
 					(size 1 1)
@@ -29509,9 +29509,9 @@
 			)
 		)
 		(property "Value" "BSS138"
-			(at 0 2.4 0)
+			(at 0.0125 2.35 0)
 			(layer "F.Fab")
-			(uuid "1d186ec0-27c3-4b5a-9f2d-9a2e832e8421")
+			(uuid "7ab7c86d-74cc-4a11-97a2-3fb4c15d6b8d")
 			(effects
 				(font
 					(size 1 1)
@@ -29523,7 +29523,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "873238de-03b8-4eef-97d0-e5bf2ceaad0d")
+			(uuid "700b08a2-11bf-4249-b3e1-1214a5913346")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -29534,7 +29534,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "63b0d25b-0635-45e4-b73a-a24bd73cfa19")
+			(uuid "9a73966d-a698-4a09-89c9-be6045d9adf8")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -30156,7 +30156,7 @@
 	(footprint "Resistor_SMD:R_1206_3216Metric"
 		(layer "F.Cu")
 		(uuid "c94734d2-3ca5-43e8-bb78-e66eefcdca9e")
-		(at 60 147.25)
+		(at 215.75 77)
 		(descr "Resistor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(property "Reference" "R44"
@@ -31205,7 +31205,7 @@
 	(footprint "TestPoint:TestPoint_THTPad_D2.0mm_Drill1.0mm"
 		(layer "F.Cu")
 		(uuid "ce37516f-0dae-4049-ade9-1bb8b2706163")
-		(at 131.8825 117.33)
+		(at 221.5 142)
 		(descr "THT pad as test Point, diameter 2.0mm, hole diameter 1.0mm")
 		(tags "test point THT pad")
 		(property "Reference" "TP3"
@@ -33444,7 +33444,7 @@
 	(footprint "Capacitor_SMD:C_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "df3b0d82-0fd3-44af-a00c-1c770fe7e6f6")
-		(at 137.4025 96.18)
+		(at 235.55 102.35)
 		(descr "Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C31"
@@ -34946,7 +34946,7 @@
 	(footprint "Package_TO_SOT_SMD:SOT-23"
 		(layer "F.Cu")
 		(uuid "efa9d2df-edf4-41cc-b6f7-cdc3607fae90")
-		(at 47.4825 137.06)
+		(at 211.1875 56.2)
 		(descr "SOT, 3 Pin (JEDEC TO-236 Var AB https://www.jedec.org/document_search?search_api_views_fulltext=TO-236)")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "D5"
@@ -35753,7 +35753,7 @@
 	(footprint "Capacitor_SMD:C_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "f1d7e990-06a8-4348-8bfa-3d646fa60923")
-		(at 126.1025 104.68)
+		(at 212.8 85.1)
 		(descr "Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C19"
@@ -36200,7 +36200,7 @@
 	(footprint "Package_TO_SOT_SMD:SOT-23"
 		(layer "F.Cu")
 		(uuid "f36a0bbf-b12c-4ada-8b63-8ebaea55d3b1")
-		(at 52.3925 137.06)
+		(at 258.75 126.25)
 		(descr "SOT, 3 Pin (JEDEC TO-236 Var AB https://www.jedec.org/document_search?search_api_views_fulltext=TO-236)")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "Q2"
@@ -36570,13 +36570,13 @@
 	(footprint "Package_SO:HVSSOP-8-1EP_3x3mm_P0.65mm_EP1.57x1.89mm"
 		(layer "F.Cu")
 		(uuid "f69838b7-fa28-48c4-a9ed-13e28c43e2cd")
-		(at 214.79 77.63)
+		(at 244.11 74.53)
 		(descr "HVSSOP, 8 Pin (https://www.ti.com/lit/ds/symlink/tpa6110a2.pdf)")
 		(tags "HVSSOP SO")
 		(property "Reference" "U13"
 			(at 0 -2.45 0)
 			(layer "F.SilkS")
-			(uuid "c153e245-89c1-46f9-831b-c884615b7127")
+			(uuid "d067bb09-53f6-45d6-be77-162610ab277c")
 			(effects
 				(font
 					(size 1 1)
@@ -36587,7 +36587,7 @@
 		(property "Value" "TPS7A1601DGNR"
 			(at 0 2.45 0)
 			(layer "F.Fab")
-			(uuid "f97ecc3c-67f9-49cf-b682-b8d5e807496e")
+			(uuid "a89d4343-5c79-466d-837e-58586b0c3c2f")
 			(effects
 				(font
 					(size 1 1)
@@ -36599,7 +36599,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "fa9be70b-a426-47ff-9b40-755cbe0abd04")
+			(uuid "ada93e70-4991-4741-9f4d-e4f9e91a57d4")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -36610,7 +36610,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "0909af3b-4626-497e-92f7-fdc5edfdbf40")
+			(uuid "57ef2691-0161-440d-83f3-091bab7bd451")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -37004,13 +37004,13 @@
 	(footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
 		(layer "F.Cu")
 		(uuid "f73481ac-d0f6-4668-8814-c7743e1f2a91")
-		(at 177.5 71.75)
+		(at 178.52 71.75)
 		(descr "Through hole straight pin header, 1x02, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J12"
 			(at 0 -2.38 0)
 			(layer "F.SilkS")
-			(uuid "c62e248b-158e-4ac5-9410-21446fd1deea")
+			(uuid "1a1ca805-7e40-4443-ab21-b956a97ac021")
 			(effects
 				(font
 					(size 1 1)
@@ -37021,7 +37021,7 @@
 		(property "Value" "Ext status LED"
 			(at 0 4.92 0)
 			(layer "F.Fab")
-			(uuid "08ed78d1-40c8-4621-bde2-681397fd61cf")
+			(uuid "4e399ef5-2491-48ad-a961-ba62be44efba")
 			(effects
 				(font
 					(size 1 1)
@@ -37033,7 +37033,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "3a8b30ef-96e1-43be-85a9-7817743d6482")
+			(uuid "6cfbda22-b225-4e7e-b570-cc63c48afbdd")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -37044,7 +37044,7 @@
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "5d84f4f3-4ba3-4663-bf3c-57e20aafebc0")
+			(uuid "2e874422-61a8-421b-9d88-2fd4c6902088")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -38023,7 +38023,7 @@
 	(footprint "Capacitor_SMD:C_1210_3225Metric"
 		(layer "F.Cu")
 		(uuid "fa953082-0724-42f9-aa93-2966627ab7bb")
-		(at 120.4525 104.68)
+		(at 212.8 81.35)
 		(descr "Capacitor SMD 1210 (3225 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C15"
@@ -38607,7 +38607,7 @@
 	(footprint "Capacitor_SMD:CP_Elec_10x10"
 		(layer "F.Cu")
 		(uuid "ff199b83-8be8-4b00-a5b7-326fa213f3bb")
-		(at 123.0875 124.98)
+		(at 244.75 82.4)
 		(descr "SMD capacitor, aluminum electrolytic, Nichicon, 10.0x10.0mm")
 		(tags "capacitor electrolytic")
 		(property "Reference" "C29"
@@ -39040,8 +39040,8 @@
 		)
 	)
 	(gr_rect
-		(start 174.5 44.5)
-		(end 274.5 144.5)
+		(start 176.75 44.5)
+		(end 276.75 144.5)
 		(stroke
 			(width 0.2)
 			(type default)
@@ -39053,10 +39053,6 @@
 	(group ""
 		(uuid "0247d7fc-2c7d-4e9f-948e-50713aab000c")
 		(members "4c101d33-c452-413f-a1af-fd4451ecb9de" "6d39e476-b4dc-4a51-a3e0-465c093180fc")
-	)
-	(group ""
-		(uuid "1934be77-8515-468e-ac02-360b7147e642")
-		(members "80de73c6-fdf0-49cc-b833-17c875f21122" "f69838b7-fa28-48c4-a9ed-13e28c43e2cd")
 	)
 	(group ""
 		(uuid "1ad9772b-eda9-4241-87c0-cba5fef6600a")
