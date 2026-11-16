@@ -156,6 +156,32 @@ A3 IO5-IO7 are free.
   1 = `CFG_SW`, 2 = GND.
 * DS8, DS9 and DS10 (red) show the +24V, +5V and +3V3 rails through R27 (47k), R28 (4.7k) and R29 (2.2k).
 
+## Test points
+
+2.0 mm through-hole pads (`TestPoint_THTPad_D2.0mm_Drill1.0mm`), in a row along the bottom edge of the PCB.
+
+| Ref | Net |
+|---|---|
+| TP1 | +24V |
+| TP2 | +5V |
+| TP3 | +3V3 |
+| TP4 | GND |
+| TP5 | `VAC24_A` (24 VAC output, line A) |
+| TP6 | +12V (U13 output) |
+| TP7 | `VAC24_B` (24 VAC output, line B) |
+
+* The 24 VAC output is the voltage between `VAC24_A` and `VAC24_B`. Each line sits at about 22.5 V DC above GND
+  (see the open points of the 24 VAC block), so TP5 alone does not show the 24 VAC. Both lines are also on J2.
+* No test point yet for the 45 V boost output (`Net-(D9-K)`, no label in the schematic) or for `INV_EN`.
+
+## Assembly
+
+All Dupont parts are not assembled by the FAB, so they are marked do-not-populate (`dnp yes`) in the schematic:
+the pin headers J4-J9, J12, J13, J15, J16 and the female socket rows of the two modules (A1, the ESP32-C6, and
+A3, the ESP32-S3). The screw terminals J1, J2 and J10 are not marked. The PCB footprints do not have the
+do-not-populate attribute yet; KiCad shows a `footprint_symbol_mismatch` warning for these 12 parts until the PCB
+is updated from the schematic.
+
 ## Not drawn yet
 
 The 24 VAC output transformer (see the open points of the 24 VAC block). The sheet is A1: the 5 V and

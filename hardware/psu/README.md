@@ -100,6 +100,24 @@ Source tags: D = value or part taken from the datasheet. C = computed with that 
 * Under-voltage lock-out: R34 249 k over R35 29.4 k turns it on at about 11.55 V (1.22 V typical `EN/UVLO` threshold). R38 (93.1 k) sets the hiccup mode.
 * Q6 to Q9 are the four DMT6007LFG switches, D2 and D3 with C45 and C46 are the two bootstraps.
 
+### Test points, LEDs and mounting holes
+* Test points (2.0 mm through-hole pads, as on the mainboard): TP1 GND, TP2 `PSU_IN`, TP3 `BUS`, TP4 `PACKP` (pack +), TP5 `VSS` (pack minus, so the drop across R69 can be read against GND), TP6 `+24V` (output to the mainboard).
+* Power-on LED DS7 (5 mm green): `BUS` through R88 (10 k) to GND, about 2 mA. `BUS` is live from either the PSU or the pack, so it shows that the board is powered. It stays on, and on battery it draws about 2 mA.
+* SW1 "SHOW LEDs" lights all the rail LEDs while it is pressed. The cathodes of DS1 to DS6 are joined, and SW1 connects that node to GND. Nothing is drawn while the button is up. Each LED has a series resistor from its rail:
+
+| LED (0805 red) | Rail | Resistor |
+|---|---|---|
+| DS1 | `PSU_IN` | R82, 10 k |
+| DS2 | `BUS` | R83, 10 k |
+| DS3 | `PACKP` | R84, 10 k |
+| DS4 | `+24V` | R85, 10 k |
+| DS5 | `+5V` (from the mainboard, J4) | R86, 1 k |
+| DS6 | `+3V3` (from the mainboard, J4) | R87, 470 R |
+
+* The resistor values are start values (T). I did not check the LED brightness on the bench.
+* H1 to H4 are four M3 mounting holes (`MountingHole_3.2mm_M3`), with no net. The schematic has no PCB yet, so their positions are not set.
+* The rails reach this block through net labels (`PSU_IN`, `BUS`, `PACKP`, `VSS`, `+24V`); `+5V` and `+3V3` are power symbols.
+
 ## Bill of materials (grouped by value)
 
 Counts come from the schematic. Resistors and capacitors are 0805 unless the footprint says otherwise.
@@ -120,6 +138,11 @@ Reference numbers have gaps: the 5 V, 12 V, 45 V boost and inverter parts moved 
 | J1, J2, J5 | 2-pin screw terminal | 5.00 mm |
 | J3 | 1x9 pin header | 2.54 mm |
 | J4 | 1x8 pin header | 2.54 mm |
+| TP1 to TP6 | test point pad | 2.0 mm THT, 1.0 mm drill |
+| DS1 to DS6 | LED, red | 0805 |
+| DS7 | LED, green | 5 mm THT |
+| SW1 | push button "SHOW LEDs" | 6 mm THT |
+| H1 to H4 | M3 mounting hole | 3.2 mm |
 
 Capacitors:
 
@@ -150,9 +173,11 @@ Resistors:
 | R18 | 100 m 1 % 0.5 W, 1206 |
 | R17, R39 | 10 R |
 | R30 R31 R64 R65 R66 R67 R68 R70 R71 R72 R73 R74 | 100 R (12) |
+| R87 | 470 R |
+| R86 | 1 k |
 | R33 | 5.76 k |
 | R25 | 9.31 k |
-| R75, R77 | 10 k |
+| R75, R77, R82, R83, R84, R85, R88 | 10 k |
 | R37 | 10.7 k |
 | R24 | 17.8 k |
 | R79 R80 R81 | 20 k |
@@ -168,7 +193,7 @@ Resistors:
 | R19 | 909 k, 0.1 % |
 | R20 | 102 k, 0.1 % |
 
-The tolerance is the one written in the schematic value field. These resistors have no tolerance written yet: R17, R30, R31, R39, R64 to R68, R70 to R81. The off-board parts are the 5 cells (5S1P) and the two 10 k NTCs (103AT).
+The tolerance is the one written in the schematic value field. These resistors have no tolerance written yet: R17, R30, R31, R39, R64 to R68, R70 to R88. The off-board parts are the 5 cells (5S1P) and the two 10 k NTCs (103AT).
 
 ## Checks done
 
