@@ -92,8 +92,8 @@ Open points of this block:
 
 ## ESP32-S3 link
 
-* IO6/IO7 are the UART1 link to A3: A3 IO17 TX goes to IO7, and IO6 goes to A3 IO18 RX. J4 taps the C6
-  side of the same wires.
+* IO6/IO7 are the UART1 link to A3: A3 IO17 TX goes to IO7, and IO6 goes to A3 IO18 RX. J4 (1x3 pin header,
+  2.54 mm) is a logic-analyzer tap on the C6 side of the same wires: 1 = `S3_TX`, 2 = `S3_RX`, 3 = GND.
 * Q4 (BSS138) isolates the C6 TX line (`S3_RX`, C6 side) from the S3 RX pin (A3 IO18) while the S3 is
   powered down. Its gate is on the switched 5 V line, so the line opens by itself when Q1 cuts the S3 supply. The drain is
   on the C6 side, so the body diode cannot feed the unpowered S3. The S3 TX line (`S3_TX`) needs no
@@ -106,7 +106,8 @@ Open points of this block:
   and D1 (SM712) is on A and B.
 * U4 is on the UART: IO9 TX goes to DI, and IO8 takes RO.
 * DE and /RE are on IO15, the on-board LED, which also shows TX. R7 holds DE low at boot.
-* JP1 fits the 120R terminator. R8/R9 are the 390R bias, which sits at this end only.
+* R10 (120R) is the terminator, always connected across A and B (no jumper) because this board is the start of
+  the bus. R8/R9 are the 390R bias, which sits at this end only.
 * SHT41, BMP581 and the solar panel are on the sensor cluster and are read over RS-485 (J5).
 
 ## I2C
@@ -129,15 +130,17 @@ Open points of this block:
 
 * J6 LCD2004 I2C: 1 = GND, 2 = VCC, 3 = SDA, 4 = SCL. On A3: IO8 is SDA and IO9 is SCL. VCC comes from the
   switched 5 V line (Q1 drain), so the LCD is off when the S3 is powered down.
-* The key panel J7 (1 = KEYS, 2 = GND) holds SW2-SW5 and R12-R14, a resistor ladder into A3 IO4
+* J7 (1x5 pin header, 2.54 mm) takes the 4 keys: 1 = GND, 2 = OK, 3 = UP, 4 = DOWN, 5 = BACK. A key
+  connects its wire to GND. The resistor ladder is on the board: OK goes straight to the `KEYS` node,
+  UP through R12 (2.2k), DOWN through R13 (5.6k), BACK through R14 (15k). `KEYS` goes to A3 IO4
   (ADC1 channel 3). R15 is a 10k pull-up to A3 3V3.
 
 | Key | Voltage |
 |---|---|
-| SW2 WAKE/OK | 0 V |
-| SW3 UP | 0.60 V |
-| SW4 DOWN | 1.18 V |
-| SW5 BACK | 1.98 V |
+| OK | 0 V |
+| UP | 0.60 V |
+| DOWN | 1.18 V |
+| BACK | 1.98 V |
 | No key | 3.30 V |
 
 A3 IO5-IO7 are free.
