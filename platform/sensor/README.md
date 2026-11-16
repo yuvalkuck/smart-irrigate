@@ -2,7 +2,7 @@
 
 Firmware project for the **sensor cluster**, the outdoor node on the sensor mast. It is a separate
 STM32CubeMX project (`sensor_platform.ioc`), not part of the ESP-IDF build. The board is in
-`../../hardware/sensor-cluster/`.
+`hardware/kicad/`.
 
 The node reads the local sensors and answers the ESP32-C6 over RS-485. The C6 is the Modbus master
 and polls the cluster; the cluster never sends on its own.
@@ -43,7 +43,7 @@ the same I2C1 bus. I2C pull-ups (R1, R2, 4.7 k) go to 3.3 V, so both sensors run
 
 ## Pin map
 
-From the netlist of `../../hardware/sensor-cluster/sensor-cluster.kicad_sch`.
+From the netlist of `hardware/kicad/sensor-cluster.kicad_sch`.
 
 | U1 pin | Function | Net |
 |---|---|---|
@@ -132,7 +132,7 @@ Modbus exception.
 Bus end rules: 120 ohm terminator at both ends, 390 ohm bias (A to 3.3 V, B to GND) at the C6 end only.
 The cluster end fits only the terminator, through JP1.
 
-C6 side: GPIO 9 TX, GPIO 8 RX, GPIO 2 DE and /RE, through its own MAX3485, terminal J5
+C6 side: GPIO 9 TX, GPIO 8 RX, GPIO 15 DE and /RE, through its own MAX3485, terminal J5
 (1 = A, 2 = B, 3 = +5 V, 4 = GND).
 
 ### Register map

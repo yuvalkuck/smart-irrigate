@@ -31,24 +31,26 @@ UART between the two chips:
 
 | C6 | S3 |
 |---|---|
-| GPIO 6 (TX) | RX pin |
-| GPIO 7 (RX) | TX pin |
+| GPIO 6 (TX) | GPIO 18 (RX) |
+| GPIO 7 (RX) | GPIO 17 (TX) |
 
-The S3 pin numbers for this UART are **TBD**. The wire protocol is **TBD**. Keep the payload layout
+The pins are as wired on the mainboard (`../../hardware/mainboard/README.md`). The wire protocol is **TBD**. Keep the payload layout
 independent of the transport, as the C6 `protocol` component does (see `../../doc/stractures.md`).
 
 ## LCD2004
 
-I2C backpack on the S3's own I2C bus, not the C6 sensor bus. Proposed S3 pins, to be confirmed:
+I2C backpack on the S3's own I2C bus, not the C6 sensor bus. S3 pins, as wired on the mainboard:
 
 | Function | S3 GPIO |
 |---|---|
 | I2C SDA | 8 |
 | I2C SCL | 9 |
-| Wake button | 4 |
-| LCD power switch | 5 |
+| Key panel (4 keys on a resistor ladder, ADC1 channel 3) | 4 |
 
-The display wakes on the button and switches off after N minutes. The pins avoid the S3 strapping pins
+The LCD has no power switch of its own: it is fed from the switched 5 V line, together with the S3.
+GPIO 5 to 7 are free.
+
+The display wakes on the WAKE/OK key and switches off after N minutes. The pins avoid the S3 strapping pins
 0/3/45/46, the USB pins 19/20 and the octal-PSRAM pins 35-37 on N16R8 boards.
 
 ## Project setup
@@ -67,7 +69,6 @@ The CLion project is not created yet; this directory only holds the design notes
 
 ## Open items
 
-* S3 pins for the UART to the C6.
 * C6 to S3 data protocol.
 * Model format, size and update path (flash partition for the model, push from the server).
 * Which weather data and telemetry fields the model takes as input.
