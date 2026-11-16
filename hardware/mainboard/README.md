@@ -8,7 +8,8 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
   (`gpio_valve_0` to `gpio_valve_7` = GPIO 1, 14, 18, 21, 22, 16, 17, 5), with `CONFIG_DEVICE_MAX_VALVES` = 8.
   All 8 relay channels are valves.
 * GPIO 16/17 are UART0, so the console runs on USB Serial/JTAG.
-* No safe GPIO is left on the FireBeetle 2 header. More valves, the 24 VAC inverter enable (P12), the
+* IO2 and IO3 (header A1, A2) are the only C6 GPIOs on the FireBeetle 2 header that are not connected.
+  More valves, the 24 VAC inverter enable (P12), the
   inverter fault input (P15), the mains-detect input (P11) and the charger status inputs (P16 `STAT1`,
   P17 `STAT2`) use the I2C expander U5.
 * The 3.3 V valve GPIOs go through two SN74AHCT125N quad buffers: U10 for valves 1-4 and U11 for
@@ -26,8 +27,10 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
 
 * J1 takes +24 V DC through the 5 A fuse F3. In V1 an external 24 V DC supply feeds J1. When the PSU
   add-on (`hardware/psu`) is installed, its J5 (24 V DC out) feeds J1 instead; the mainboard does not change.
-* The mainboard makes its own +5V and 24 VAC from +24V. The battery, its gauge and protector (BQ40Z80),
+* The mainboard makes its own +5V and 24 VAC from +24V. The 5S pack, its gauge and protector (BQ40Z80),
   the charger and the 24 V bus converter are on the PSU add-on only.
+* BT3 (one 3.7 V 18650 cell) is on J3, the on-board JST PH2.0 battery socket of A1. J3 is part of A1,
+  so BT3 and J3 have no footprint. The FireBeetle 2 on-board charger charges BT3.
 * J16 (8-pin JST XH) is the link to the PSU add-on J4: 1 = +5V (out, if the add-on needs it), 2 = GND,
   3 = +3V3 (out), 4 = SDA, 5 = SCL, 6 = `MAINS_OK_N` (in), 7 = `STAT1` (in), 8 = `STAT2` (in).
   `MAINS_OK_N`, `STAT1` and `STAT2` are open-drain outputs of the add-on charger, so R64, R65 and R66
@@ -44,7 +47,10 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
   floats at boot). Firmware pulls P13 low to power the S3 down.
 * The battery-state LED DS12 (with R33, 470 R) is on U5 P07 (`LED_BAT`).
 * The buzzer BZ1 is an active 5 V buzzer (it needs a built-in oscillator). Q3 (BSS138) switches it from
-  U5 P14, R36 (100k) holds the gate low, and D8 (1N4148W) is the flyback diode.
+  U5 P14, R36 (2.2k) holds the gate low, and D8 (1N4148W) is the flyback diode.
+* R36 and R41 are 2.2k because the U5 (TCA9555) ports power up as inputs with an internal pull-up. The
+  datasheet gives 100 uA maximum for that pull-up, so the pin stays at 0.22 V or less. That is below the
+  BSS138 threshold (0.5 V minimum) and below the TPS7A1601 `EN` off level (0.3 V).
 
 ## 5 V (U12, LMR51430)
 
@@ -56,7 +62,7 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
 Moved from the PSU board (design values unchanged, references renumbered). It runs whenever +24V is present
 and firmware enables it.
 
-* `INV_EN` comes from U5 P12. R41 (100k) pulls it low, so the inverter is off until firmware drives it high.
+* `INV_EN` comes from U5 P12. R41 (2.2k) pulls it low, so the inverter is off until firmware drives it high.
   It gates the 12 V LDO (U13 `EN`), the EG8010 `SPWMEN` and the DRV8412 `RESET_AB`. The 45 V boost enables
   itself from the 12 V rail, so it stops too.
 * `INV_FAULT_N` is the DRV8412 `FAULT` pin (open collector, low = fault). It goes to U5 P15 with the R63
@@ -96,6 +102,8 @@ Open points of this block:
 ## RS-485 to the sensor cluster
 
 * J5: 1 = A, 2 = B, 3 = +5V out, 4 = GND.
+* The +5V out goes through F2 (MF-RHT050, 0.5 A resettable fuse). D2 (SMAJ5.0A) is on the J5 side of F2,
+  and D1 (SM712) is on A and B.
 * U4 is on the UART: IO9 TX goes to DI, and IO8 takes RO.
 * DE and /RE are on IO15, the on-board LED, which also shows TX. R7 holds DE low at boot.
 * JP1 fits the 120R terminator. R8/R9 are the 390R bias, which sits at this end only.
@@ -104,11 +112,17 @@ Open points of this block:
 ## I2C
 
 * The bus is on IO19/IO20 (header pins 28/29; pins 9/10 are the same signals).
-* U5 TCA9555 is at 0x20. R17/R18 are the pull-ups. The bus also goes to J16 for the BQ40Z80 gauge on the PSU add-on.
+* U5 TCA9555 is at 0x20 and U8 ADS1115 is at 0x48 (`ADDR` to GND). R17/R18 are the pull-ups. The bus also
+  goes to J16 for the BQ40Z80 gauge on the PSU add-on.
 
 ## Analog inputs
 
-* The 1.8k/3.3k dividers scale the 0-5 V sensor outputs to 0-3.24 V.
+* U8 (ADS1115) reads all the analog inputs: AIN0 = XDB401 pressure (J9), AIN1 = wind speed (J10),
+  AIN2 = board temperature U7 (MCP9700A). AIN3 is free.
+* The 1.8k/3.3k dividers (R2/R1 on AIN0, R4/R3 on AIN1) scale the 0-5 V sensor outputs to 0-3.24 V.
+* J8 (DS18B20): 1 = +3V3, 2 = GND, 3 = DATA. R5 (4.7k) is the 1-Wire pull-up.
+* J9 (XDB401): 1 = +5V, 2 = GND, 3 = OUT.
+* J10 (wind sensor): 1 = +24V, 2 = GND, 3 = OUT. The footprint has 4 terminals and terminal 4 has no net.
 * Sensor cable TVS: D3 DS18B20, D4 XDB401, D5 wind OUT, D6 wind +24V. R11 limits the IO4 current.
 
 ## LCD and keys on the ESP32-S3
@@ -127,6 +141,17 @@ Open points of this block:
 | No key | 3.30 V |
 
 A3 IO5-IO7 are free.
+
+## LEDs and buttons on the ESP32-C6 side
+
+* DS1 (main status, 5 mm) is on U5 P00 and DS2-DS7 are on P01-P06. Each LED has its cathode on the port
+  and a 470 R resistor (R19-R25) to +3V3, so a low output lights it.
+* J12 is the external main LED, in parallel with DS1: 1 = anode (from +3V3 through R26, 470 R),
+  2 = cathode (P00).
+* SW6 ("SHOW LEDs") is between U5 P10 and GND. It uses the U5 internal pull-up.
+* SW1 (CONFIG) is between IO23 and GND. J13 is the external CONFIG button in parallel with it:
+  1 = `CFG_SW`, 2 = GND.
+* DS8, DS9 and DS10 (red) show the +24V, +5V and +3V3 rails through R27 (47k), R28 (4.7k) and R29 (2.2k).
 
 ## Not drawn yet
 

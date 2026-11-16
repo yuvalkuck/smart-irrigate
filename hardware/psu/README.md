@@ -80,7 +80,7 @@ Source tags: D = value or part taken from the datasheet. C = computed with that 
 * Supply: `BAT` from `BP` through D5 and R72 (100 R); `VCC` from the middle of the FETs through D6 and R73 (100 R); `PACK` from the pack side through R74 (100 R). C102 (2.2 uF) on `PBI` (D). The two diodes and the series values are start values (T).
 * FETs: Q3 (charge) and Q4 (discharge) are DMT6007LFG, 60 V. Gate resistors R75 and R77 (10 k) and gate-source resistors R76 and R78 (10 M), as in the datasheet (D). C103 and C104 (100 nF in series) across the pack terminals are the datasheet ESD pair.
 * Temperature: the pack NTC (J3 pin 7) is on `TS1`. The BQ40Z80 has an internal 18 k pull-up for a 10 k 103 NTC (D), so no bias resistor is fitted.
-* Unused pins: `TS2`, `TS3`, `TS4`, `DISP`, `PDSG`, `PRES`, `FUSE` are tied to `VSS` ("connect directly to VSS and configure data flash accordingly", D). `LEDCNTLA/B/C` and `PCHG` are left open. The pre-charge FET and the chemical fuse are not used.
+* Unused pins: `TS2`, `TS3`, `TS4`, `DISP`, `PDSG`, `PRES`, `FUSE` are tied to `VSS` ("connect directly to VSS and configure data flash accordingly", D). `LEDCNTLA/B/C` go to `VSS` through R79, R80 and R81, 20 k each ("if not used, connect to VSS with a 20-kΩ resistor", D). `PCHG` is left open ("leave floating if not used", D). The pre-charge FET and the chemical fuse are not used.
 * F2 is the 10 A fuse in the pack plus lead, between `BP` and the charge FET.
 * One-time setup: the chip must be configured with TI bqStudio (cell count, chemistry, calibration; datasheet section 7.3.1) before the gauge readings are valid.
 
@@ -97,7 +97,7 @@ Source tags: D = value or part taken from the datasheet. C = computed with that 
 * Input 14 V to 25 V, output 23.9 V (R36 309 k over R37 10.7 k), switching about 297 kHz (R32 27.4 k). L3 15 uH. (C)
 * R29 is the 15 m sense resistor. The minimum boost current limit is about 6.7 A against a peak need of about 4.6 A at 2 A load. (C)
 * Compensation R33 5.76 k, C40 82 nF, C41 680 pF, slope C38 390 pF, soft start C39 100 nF are start values. (T)
-* Under-voltage lock-out: R34 249 k over R35 29.4 k turns it on at about 12.0 V. R38 (93.1 k) sets the hiccup mode.
+* Under-voltage lock-out: R34 249 k over R35 29.4 k turns it on at about 11.55 V (1.22 V typical `EN/UVLO` threshold). R38 (93.1 k) sets the hiccup mode.
 * Q6 to Q9 are the four DMT6007LFG switches, D2 and D3 with C45 and C46 are the two bootstraps.
 
 ## Bill of materials (grouped by value)
@@ -114,7 +114,7 @@ Reference numbers have gaps: the 5 V, 12 V, 45 V boost and inverter parts moved 
 | Q1, Q2, Q3, Q4, Q6, Q7, Q8, Q9 | DMT6007LFG | PowerDI3333-8 |
 | Q5 | DMN6040SSD-13 (dual) | SOIC-8 |
 | D1, D2, D3, D5, D6 | MBR0540 | SOD-123 |
-| L1 | 6.8 uH Coilcraft XAL1010-682MEB | XAL1010 |
+| L1 | 6.8 uH Coilcraft XAL1010-682ME | XAL1010 |
 | L3 | 15 uH Coilcraft XAL1010-153ME | XAL1010 |
 | F1, F2 | 10 A fuse, 5x20 holder | fuse holder |
 | J1, J2, J5 | 2-pin screw terminal | 5.00 mm |
@@ -155,6 +155,7 @@ Resistors:
 | R75, R77 | 10 k |
 | R37 | 10.7 k |
 | R24 | 17.8 k |
+| R79 R80 R81 | 20 k |
 | R32 | 27.4 k |
 | R35 | 29.4 k |
 | R22 | 43.2 k |
@@ -167,7 +168,7 @@ Resistors:
 | R19 | 909 k, 0.1 % |
 | R20 | 102 k, 0.1 % |
 
-The tolerance is the one written in the schematic value field. These resistors have no tolerance written yet: R17, R30, R31, R39, R64 to R68, R70 to R78. The off-board parts are the 5 cells (5S1P) and the two 10 k NTCs (103AT).
+The tolerance is the one written in the schematic value field. These resistors have no tolerance written yet: R17, R30, R31, R39, R64 to R68, R70 to R81. The off-board parts are the 5 cells (5S1P) and the two 10 k NTCs (103AT).
 
 ## Checks done
 
