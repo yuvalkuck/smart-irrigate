@@ -31,7 +31,7 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
   the charger and the 24 V bus converter are on the PSU add-on only.
 * BT3 (one 3.7 V 18650 cell) is on J3, the on-board JST PH2.0 battery socket of A1. J3 is part of A1,
   so BT3 and J3 have no footprint. The FireBeetle 2 on-board charger charges BT3.
-* J16 (8-pin JST XH) is the link to the PSU add-on J4: 1 = +5V (out, if the add-on needs it), 2 = GND,
+* J16 (1x8 pin header, 2.54 mm) is the link to the PSU add-on J4: 1 = +5V (out, if the add-on needs it), 2 = GND,
   3 = +3V3 (out), 4 = SDA, 5 = SCL, 6 = `MAINS_OK_N` (in), 7 = `STAT1` (in), 8 = `STAT2` (in).
   `MAINS_OK_N`, `STAT1` and `STAT2` are open-drain outputs of the add-on charger, so R64, R65 and R66
   (100k to +3V3) pull them up. `MAINS_OK_N` goes to U5 P11, `STAT1` to P16 and `STAT2` to P17.

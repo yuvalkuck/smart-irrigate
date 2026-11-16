@@ -29449,7 +29449,7 @@
 (symbol (lib_id "Connector_Generic:Conn_01x08") (at 593.09 195.58 0) (unit 1) (body_style 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (in_pos_files yes) (dnp no) (uuid "b4c59c71-20eb-490e-8a66-969b969d9ea7")
   (property "Reference" "J16" (at 593.09 184.89 0) (effects (font (size 1.27 1.27))))
   (property "Value" "PSU link" (at 593.09 208.81 0) (effects (font (size 1.27 1.27))))
-  (property "Footprint" "Connector_JST:JST_XH_B8B-XH-A_1x08_P2.50mm_Vertical" (at 593.09 195.58 0) (hide yes) (effects (font (size 1.27 1.27))))
+  (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x08_P2.54mm_Vertical" (at 593.09 195.58 0) (hide yes) (effects (font (size 1.27 1.27))))
   (property "Datasheet" "" (at 593.09 195.58 0) (hide yes) (effects (font (size 1.27 1.27))))
   (property "Description" "link to the PSU add-on J4 (1 +5V out, 2 GND, 3 +3V3, 4 SDA, 5 SCL, 6 MAINS_OK_N, 7 STAT1, 8 STAT2 in)" (at 593.09 195.58 0) (hide yes) (effects (font (size 1.27 1.27))))
   (instances (project "mainboard" (path "/c0872c10-a613-4030-a61b-41049bff9947" (reference "J16") (unit 1))))

@@ -41,8 +41,8 @@ BUS --+-- U4 charger (21 V, 0.5 A) ----------> PACKP -> pack
 |---|---|---|
 | J1 | 1 = 24 V in, 2 = GND | external 24 V DC supply |
 | J2 | 1 = pack B+ (`BP`), 2 = pack B- (`VSS`) | pack power |
-| J3 | 1 = B-, 2 to 5 = cell taps 1 to 4, 6 = B+, 7 = gauge `TS1`, 8 = charger `TS`, 9 = GND | pack sense (9-pin JST XH): balance taps and the two 10 k NTCs (103AT) |
-| J4 | 1 = +5V (from the mainboard, not used yet), 2 = GND, 3 = +3V3 (from the mainboard, not used yet), 4 = SDA, 5 = SCL, 6 = `MAINS_OK_N`, 7 = `STAT1`, 8 = `STAT2` | link to mainboard J16 (8-pin JST XH, same pin order) |
+| J3 | 1 = B-, 2 to 5 = cell taps 1 to 4, 6 = B+, 7 = gauge `TS1`, 8 = charger `TS`, 9 = GND | pack sense (1x9 pin header, 2.54 mm): balance taps and the two 10 k NTCs (103AT) |
+| J4 | 1 = +5V (from the mainboard), 2 = GND, 3 = +3V3 (from the mainboard), 4 = SDA, 5 = SCL, 6 = `MAINS_OK_N`, 7 = `STAT1`, 8 = `STAT2` | link to mainboard J16 (1x8 pin header, 2.54 mm, same pin order) |
 | J5 | 1 = +24V, 2 = GND | 24 V DC out to mainboard J1 |
 
 Pack B- (`VSS`) is not the same net as GND: the 2 mohm sense resistor R69 sits between them.
@@ -118,8 +118,8 @@ Reference numbers have gaps: the 5 V, 12 V, 45 V boost and inverter parts moved 
 | L3 | 15 uH Coilcraft XAL1010-153ME | XAL1010 |
 | F1, F2 | 10 A fuse, 5x20 holder | fuse holder |
 | J1, J2, J5 | 2-pin screw terminal | 5.00 mm |
-| J3 | 9-pin JST XH | 2.50 mm |
-| J4 | 8-pin JST XH | 2.50 mm |
+| J3 | 1x9 pin header | 2.54 mm |
+| J4 | 1x8 pin header | 2.54 mm |
 
 Capacitors:
 
