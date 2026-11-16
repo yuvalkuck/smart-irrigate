@@ -13020,7 +13020,7 @@
 	
 	(wire
 		(pts
-			(xy 204.47 217.17) (xy 204.47 219.71)
+			(xy 199.39 219.71) (xy 204.47 219.71)
 		)
 		(stroke
 			(width 0)
@@ -13028,6 +13028,50 @@
 			(color 0 0 0 1)
 		)
 		(uuid "4634a525-c141-4f04-9768-f4ffbe92b0e4")
+	)
+	(label "VAC24_A"
+		(at 199.39 219.71 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "a7c3e5d1-4b2f-4e86-9d1a-6c0f8b3e2a57")
+	)
+	(wire (pts (xy 176.53 219.71) (xy 176.53 222.25)) (stroke (width 0) (type default) (color 0 0 0 1)) (uuid "5e1b7c20-93a4-4d68-8f0e-2b6a41c9d7f3"))
+	(label "VAC24_B"
+		(at 176.53 222.25 270)
+		(effects (font (size 1.27 1.27)) (justify right bottom))
+		(uuid "c92d4a6e-18b5-4f37-a0d3-7e5b2f81a496")
+	)
+	(symbol (lib_id "Connector:TestPoint") (at 176.53 219.71 0) (unit 1) (body_style 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (in_pos_files yes) (dnp no) (uuid "d4f7a1b3-6c28-4e95-b0a7-3f1e8c52d9a6")
+		(property "Reference" "TP7" (at 178.13 216.66 0) (hide yes) (effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "24VAC B" (at 178.13 216.66 0) (effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "TestPoint:TestPoint_THTPad_D2.0mm_Drill1.0mm" (at 176.53 219.71 0) (hide yes) (effects (font (size 1.27 1.27))))
+		(property "Datasheet" "" (at 176.53 219.71 0) (hide yes) (effects (font (size 1.27 1.27))))
+		(property "Description" "Test point" (at 176.53 219.71 0) (hide yes) (effects (font (size 1.27 1.27))))
+		(pin "1" (uuid "8b3e6d52-a1c7-4f09-9e24-d05a7c1f3b68"))
+		(instances (project "mainboard" (path "/c0872c10-a613-4030-a61b-41049bff9947" (reference "TP7") (unit 1))))
+	)
+	(wire (pts (xy 186.69 219.71) (xy 186.69 222.25)) (stroke (width 0) (type default) (color 0 0 0 1)) (uuid "1a6f9c34-e7d2-4b85-a3c0-52d8f4e7b196"))
+	(symbol (lib_id "power:+12V") (at 186.69 222.25 180) (unit 1) (body_style 1) (exclude_from_sim no) (in_bom no) (on_board no) (in_pos_files no) (dnp no) (uuid "f0b8d2c5-3a79-4e16-8c4d-9b1e7a6d5032")
+		(property "Reference" "#PWR902" (at 186.69 222.25 0) (hide yes) (effects (font (size 1.27 1.27))))
+		(property "Value" "+12V" (at 186.69 220.75 0) (hide yes) (effects (font (size 1.27 1.27))))
+		(property "Footprint" "" (at 186.69 222.25 0) (hide yes) (effects (font (size 1.27 1.27))))
+		(property "Datasheet" "" (at 186.69 222.25 0) (hide yes) (effects (font (size 1.27 1.27))))
+		(property "Description" "power symbol" (at 186.69 222.25 0) (hide yes) (effects (font (size 1.27 1.27))))
+		(pin "1" (uuid "2c9a5e71-d8f3-4b60-a147-6e0b3d9f8c25"))
+		(instances (project "mainboard" (path "/c0872c10-a613-4030-a61b-41049bff9947" (reference "#PWR902") (unit 1))))
+	)
+	(symbol (lib_id "Connector:TestPoint") (at 186.69 219.71 0) (unit 1) (body_style 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (in_pos_files yes) (dnp no) (uuid "7e2d9b04-5f81-4a3c-b6e7-c1a4d8f03e59")
+		(property "Reference" "TP6" (at 188.29 216.66 0) (hide yes) (effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "+12V" (at 188.29 216.66 0) (effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "TestPoint:TestPoint_THTPad_D2.0mm_Drill1.0mm" (at 186.69 219.71 0) (hide yes) (effects (font (size 1.27 1.27))))
+		(property "Datasheet" "" (at 186.69 219.71 0) (hide yes) (effects (font (size 1.27 1.27))))
+		(property "Description" "Test point" (at 186.69 219.71 0) (hide yes) (effects (font (size 1.27 1.27))))
+		(pin "1" (uuid "b6d01f83-9a4e-4c27-85b3-e2f7a9c04d16"))
+		(instances (project "mainboard" (path "/c0872c10-a613-4030-a61b-41049bff9947" (reference "TP6") (unit 1))))
 	)
 	(wire
 		(pts
@@ -18083,7 +18127,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "1adba1b8-1265-4abd-9f1a-ca60701e9be5")
 		(property "Reference" "A3"
 			(at 330.2 24.13 0)
@@ -18290,7 +18334,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(fields_autoplaced yes)
 		(uuid "1fb5fe68-fc30-4b24-b5d6-43502edeaacb")
 		(property "Reference" "A1"
@@ -19090,7 +19134,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(fields_autoplaced yes)
 		(uuid "2c825fba-6a83-40d3-a982-f264d4a8eb16")
 		(property "Reference" "J8"
@@ -19645,7 +19689,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "3cdc49dc-9baa-43bd-aa34-36a1f252328b")
 		(property "Reference" "J12"
 			(at 384.81 97.79 0)
@@ -20777,7 +20821,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "631e4f70-2e97-4618-ba5d-1e6e66b24bc4")
 		(property "Reference" "J4"
 			(at 236.22 97.79 0)
@@ -21029,7 +21073,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "GND"
+		(property "Value" "24VAC"
 			(at 206.07 222.76 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -21870,7 +21914,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(fields_autoplaced yes)
 		(uuid "80e6c303-3a81-4157-a851-f107a78b145c")
 		(property "Reference" "J9"
@@ -22363,7 +22407,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "8d1189c3-23c7-4440-8aae-497821b45f2a")
 		(property "Reference" "J6"
 			(at 273.05 22.86 0)
@@ -22999,7 +23043,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "a066ad1c-cd8b-4459-afab-39b682453daa")
 		(property "Reference" "J13"
 			(at 204.47 144.78 0)
@@ -23266,7 +23310,7 @@
 			)
 		)
 	)
-	(symbol (lib_id "Connector_Generic:Conn_01x10") (at 123.19 158.75 0) (mirror y) (unit 1) (body_style 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (in_pos_files yes) (dnp no) (uuid "e2b9dd40-87fe-40b2-8ece-ab46e9f9a4ef")
+	(symbol (lib_id "Connector_Generic:Conn_01x10") (at 123.19 158.75 0) (mirror y) (unit 1) (body_style 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (in_pos_files yes) (dnp yes) (uuid "e2b9dd40-87fe-40b2-8ece-ab46e9f9a4ef")
 		(property "Reference" "J15" (at 120.65 144.78 0) (effects (font (size 1.27 1.27))))
 		(property "Value" "Relay module header" (at 115.57 158.75 90) (effects (font (size 1.27 1.27))))
 		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x10_P2.54mm_Vertical" (at 123.19 158.75 0) (hide yes) (effects (font (size 1.27 1.27))))
@@ -24070,7 +24114,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "b3f77535-1832-441c-a33f-d96d8f675094")
 		(property "Reference" "J5"
 			(at 228.6 182.88 0)
@@ -24638,7 +24682,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "c1a7f3d2-4e86-4b19-9d07-3a52e8c6b10f")
 		(property "Reference" "J7"
 			(at 280.67 41.91 0)
@@ -29156,7 +29200,7 @@
   (property "Description" "MAINS_OK_N pull-up (BQ24610 PG is open drain)" (at 605.79 195.58 0) (hide yes) (effects (font (size 1.27 1.27))))
   (instances (project "mainboard" (path "/c0872c10-a613-4030-a61b-41049bff9947" (reference "R64") (unit 1))))
 )
-(symbol (lib_id "Connector_Generic:Conn_01x08") (at 593.09 195.58 0) (unit 1) (body_style 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (in_pos_files yes) (dnp no) (uuid "b4c59c71-20eb-490e-8a66-969b969d9ea7")
+(symbol (lib_id "Connector_Generic:Conn_01x08") (at 593.09 195.58 0) (unit 1) (body_style 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (in_pos_files yes) (dnp yes) (uuid "b4c59c71-20eb-490e-8a66-969b969d9ea7")
   (property "Reference" "J16" (at 593.09 184.89 0) (effects (font (size 1.27 1.27))))
   (property "Value" "PSU link" (at 593.09 208.81 0) (effects (font (size 1.27 1.27))))
   (property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x08_P2.54mm_Vertical" (at 593.09 195.58 0) (hide yes) (effects (font (size 1.27 1.27))))
