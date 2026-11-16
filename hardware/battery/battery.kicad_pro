@@ -492,7 +492,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "psu.kicad_pro",
+    "filename": "battery.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -529,7 +529,7 @@
       "idf": "",
       "netlist": "",
       "plot": "",
-      "specctra_dsn": "",
+      "specctra_dsn": "battery.dsn",
       "step": "",
       "vrml": ""
     },
@@ -660,8 +660,8 @@
     "subpart_id_separator": 0,
     "top_level_sheets": [
       {
-        "filename": "psu.kicad_sch",
-        "name": "psu",
+        "filename": "battery.kicad_sch",
+        "name": "battery",
         "uuid": "c06a186b-95fb-40ae-91a0-04384e9d6982"
       }
     ],

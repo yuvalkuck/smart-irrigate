@@ -48,6 +48,25 @@ BUS --+-- U4 charger (21 V, 0.5 A) ----------> PACKP -> pack
 Pack B- (`VSS`) is not the same net as GND: the 2 mohm sense resistor R69 sits between them.
 The gauge NTC returns to J3 pin 1 (B-), the charger NTC to J3 pin 9 (GND).
 
+### Wiring the pack to J3
+
+The pack is 5 cells in series (5S), cell 1 at the negative end. J3 only senses; the charge and discharge current goes through J2 (pin 1 = B+, pin 2 = B-).
+
+| J3 pin | Connect to | Net, and where it goes |
+|---|---|---|
+| 1 | pack negative (cell 1 minus) | `VSS`, the same net as J2 pin 2; BQ40Z80 `VSS` |
+| 2 | cell 1 plus (= cell 2 minus) | R64 to `VC1` |
+| 3 | cell 2 plus (= cell 3 minus) | R65 to `VC2` |
+| 4 | cell 3 plus (= cell 4 minus) | R66 to `VC3` |
+| 5 | cell 4 plus (= cell 5 minus) | R67 to `VC4` |
+| 6 | pack positive (cell 5 plus) | `BP`, the same net as J2 pin 1; R68 to `VC5` |
+| 7 | one lead of the gauge NTC (10 k, 103AT); the other lead goes to pin 1 | BQ40Z80 `TS1` |
+| 8 | one lead of the charger NTC (10 k, 103AT); the other lead goes to pin 9 | BQ24610 `TS`, with R25 and R26 |
+| 9 | the other lead of the charger NTC | GND |
+
+* Both NTCs sit on the pack.
+* `VC6` of the BQ40Z80 is tied to `VC5`, so only the taps above are used.
+
 ## What the hardware reports to the mainboard
 
 | Metric | Source | Reaches the mainboard on |
