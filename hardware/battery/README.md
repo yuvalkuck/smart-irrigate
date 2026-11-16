@@ -1,9 +1,9 @@
-# PSU add-on board
+# Battery add-on board
 
-Schematic: `psu.kicad_sch` (one sheet, all blocks wired pin to pin). The sheet carries only the wire-colour legend and the block titles.
+Schematic: `battery.kicad_sch` (one sheet, all blocks wired pin to pin). The sheet carries only the wire-colour legend and the block titles.
 All the notes are here. This folder has no PCB yet.
 
-The PSU board is an add-on for the battery stage. V1 of the system runs without it: the mainboard takes 24 V DC from an
+The battery board is an add-on for the battery stage. V1 of the system runs without it: the mainboard takes 24 V DC from an
 external supply at its J1 and makes its own +5V and 24 VAC (`hardware/mainboard/README.md`). When the add-on is
 installed, the external 24 V DC supply moves to the add-on J1, and the add-on J5 feeds the mainboard J1.
 Nothing is on both boards: the add-on holds the battery, its gauge and protector, its charger and the 24 V DC bus that
@@ -197,7 +197,7 @@ The tolerance is the one written in the schematic value field. These resistors h
 
 ## Checks done
 
-* ERC on a copy of this schematic with `fp-lib-table` and `psu.kicad_pro`: 0 violations.
+* ERC on a copy of this schematic with `fp-lib-table` and `battery.kicad_pro`: 0 violations.
 * Netlist compared with the previous version: every kept part has the same connections; the changes are the BQ40Z80 block, the 8-pin J4 and the STAT nets.
 * Layout of the schematic is auto-routed and not tidy; some text overlaps wires. It is electrically correct.
 

@@ -1,6 +1,6 @@
 (kicad_sch (version 20260306) (generator "eeschema") (generator_version "10.0")
  (uuid "af575e56-91ca-48a4-bff8-eb8dc1822a10") (paper "A1")
- (title_block (title "PSU add-on: 24 V in, 5S battery, 24 V DC out") (date "2026-11-15") (rev "1") (company "smart-irrigate"))
+ (title_block (title "Battery add-on: 24 V in, 5S battery, 24 V DC out") (date "2026-11-15") (rev "1") (company "smart-irrigate"))
  (lib_symbols
   (symbol "Battery_Management:BQ24610"
 		(exclude_from_sim no)

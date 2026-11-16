@@ -25,18 +25,18 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
 
 ## Power
 
-* J1 takes +24 V DC through the 5 A fuse F3. In V1 an external 24 V DC supply feeds J1. When the PSU
-  add-on (`hardware/psu`) is installed, its J5 (24 V DC out) feeds J1 instead; the mainboard does not change.
+* J1 takes +24 V DC through the 5 A fuse F3. In V1 an external 24 V DC supply feeds J1. When the battery
+  add-on (`hardware/battery`) is installed, its J5 (24 V DC out) feeds J1 instead; the mainboard does not change.
 * The mainboard makes its own +5V and 24 VAC from +24V. The 5S pack, its gauge and protector (BQ40Z80),
-  the charger and the 24 V bus converter are on the PSU add-on only.
+  the charger and the 24 V bus converter are on the battery add-on only.
 * BT3 (one 3.7 V 18650 cell) is on J3, the on-board JST PH2.0 battery socket of A1. J3 is part of A1,
   so BT3 and J3 have no footprint. The FireBeetle 2 on-board charger charges BT3.
-* J16 (1x8 pin header, 2.54 mm) is the link to the PSU add-on J4: 1 = +5V (out, if the add-on needs it), 2 = GND,
+* J16 (1x8 pin header, 2.54 mm) is the link to the battery add-on J4: 1 = +5V (out, if the add-on needs it), 2 = GND,
   3 = +3V3 (out), 4 = SDA, 5 = SCL, 6 = `MAINS_OK_N` (in), 7 = `STAT1` (in), 8 = `STAT2` (in).
   `MAINS_OK_N`, `STAT1` and `STAT2` are open-drain outputs of the add-on charger, so R64, R65 and R66
   (100k to +3V3) pull them up. `MAINS_OK_N` goes to U5 P11, `STAT1` to P16 and `STAT2` to P17.
   `MAINS_OK_N` high = no mains (or no add-on).
-* The battery gauge (BQ40Z80, SMBus) is on the PSU add-on and is reached through J16 SDA and SCL. It reports
+* The battery gauge (BQ40Z80, SMBus) is on the battery add-on and is reached through J16 SDA and SCL. It reports
   each cell voltage, pack voltage and current, remaining capacity and state of charge, temperature and
   protection status. Its SMBus speed is 10 to 100 kHz in slave mode, so the shared I2C bus has to run at
   100 kHz or below when the add-on is fitted. Its slave address is not read yet.
@@ -59,7 +59,7 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
 
 ## 24 VAC (sine inverter)
 
-Moved from the PSU board (design values unchanged, references renumbered). It runs whenever +24V is present
+Moved from the battery board (design values unchanged, references renumbered). It runs whenever +24V is present
 and firmware enables it.
 
 * `INV_EN` comes from U5 P12. R41 (2.2k) pulls it low, so the inverter is off until firmware drives it high.
@@ -114,7 +114,7 @@ Open points of this block:
 
 * The bus is on IO19/IO20 (header pins 28/29; pins 9/10 are the same signals).
 * U5 TCA9555 is at 0x20 and U8 ADS1115 is at 0x48 (`ADDR` to GND). R17/R18 are the pull-ups. The bus also
-  goes to J16 for the BQ40Z80 gauge on the PSU add-on.
+  goes to J16 for the BQ40Z80 gauge on the battery add-on.
 
 ## Analog inputs
 
