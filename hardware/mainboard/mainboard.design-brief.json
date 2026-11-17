@@ -1,0 +1,25 @@
+{
+  "schema": 1, "kind": "design-brief", "units": "mm",
+
+  "covers": [
+    { "connector": "A1", "side": "F", "axis_deg": 0,
+      "start_mm": -34.32, "length_mm": 25.68, "width_mm": 25.4,
+      "underside_mm": 8.5, "removable": true,
+      "source": "A1 FireBeetle 2 plugged into 2.54 mm female headers, 8.5 mm (user, 2026-11-17); outline from FireBeetle2_ESP32C6.kicad_mod F.Fab" },
+    { "connector": "A3", "side": "F", "axis_deg": 90,
+      "start_mm": -28.24, "length_mm": 34.63, "width_mm": 25.4,
+      "underside_mm": 8.5, "removable": true,
+      "source": "A3 ESP32-S3 DevKitC-1 plugged into 2.54 mm female headers, 8.5 mm (user, 2026-11-17); outline from ESP32S3_DevKitC1.kicad_mod F.Fab" }
+  ],
+
+  "keepouts": [
+    { "name": "A1-antenna", "rect": [160.23, 45.8675, 169.55, 71.2675], "sides": ["F", "B"], "allow": ["A1"],
+      "kind": "rf_keepout", "why": "FireBeetle2_ESP32C6 ANT KEEP-OUT zone (footprint Dwgs.User, approx), A1 at 194.55 58.5675 rot 0" },
+    { "name": "A1-pwr-reg", "rect": [193.25, 50.2675, 207.25, 62.3675], "sides": ["F"], "allow": ["A1", "H1"],
+      "why": "FireBeetle2_ESP32C6 PWR/REG zone (footprint Dwgs.User, approx), A1 at 194.55 58.5675 rot 0" },
+    { "name": "A3-antenna", "rect": [146.54, 116.3, 152.52, 134.7], "sides": ["F", "B"], "allow": ["A3"],
+      "kind": "rf_keepout", "why": "ESP32S3_DevKitC1 ANT KEEP-OUT zone (footprint Dwgs.User), A3 at 181.68 125.5 rot 90" },
+    { "name": "A3-ldo-hot", "rect": [177.48, 118.5, 182.48, 132.0], "sides": ["F"], "allow": ["A3"],
+      "why": "ESP32S3_DevKitC1 LDO 3V3 (HOT) zone (footprint Dwgs.User), A3 at 181.68 125.5 rot 90" }
+  ]
+}
