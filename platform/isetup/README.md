@@ -166,7 +166,5 @@ app/src/main/java/org/magicat/irrigate/connect/
 
 ## Open items
 
-* The app has not been compiled since the setup JSON change: the dev machine has no Android SDK.
-  Build it in Android Studio first.
 * `[number]` values are not sent or stored yet.
 * `toIniString()` in `ConfigValue.kt` is the old flat format and is no longer used.
