@@ -29,8 +29,9 @@ Schematic: `mainboard.kicad_sch`. The sheet carries only the wire-colour legend.
   add-on (`hardware/battery`) is installed, its J5 (24 V DC out) feeds J1 instead; the mainboard does not change.
 * The mainboard makes its own +5V and 24 VAC from +24V. The 5S pack, its gauge and protector (BQ40Z80),
   the charger and the 24 V bus converter are on the battery add-on only.
-* BT3 (one 3.7 V 18650 cell) is on J3, the on-board JST PH2.0 battery socket of A1. J3 is part of A1,
-  so BT3 and J3 have no footprint. The FireBeetle 2 on-board charger charges BT3.
+* Optional addon: one 3.7 V 18650 cell (BT3) plugs into the on-board JST PH2.0 battery socket (J3) of A1, the
+  FireBeetle 2 module. The cell and the socket are not on this board's schematic or PCB. The FireBeetle 2
+  on-board charger charges the cell.
 * J16 (1x8 pin header, 2.54 mm) is the link to the battery add-on J4: 1 = +5V (out, if the add-on needs it), 2 = GND,
   3 = +3V3 (out), 4 = SDA, 5 = SCL, 6 = `MAINS_OK_N` (in), 7 = `STAT1` (in), 8 = `STAT2` (in).
   `MAINS_OK_N`, `STAT1` and `STAT2` are open-drain outputs of the add-on charger, so R64, R65 and R66
