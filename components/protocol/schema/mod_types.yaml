@@ -1,0 +1,57 @@
+# Extra data for the iSetup JSON (see mod_types.schema.json).
+# Everything that can be read from flash.h is not repeated here:
+#   - NVS key strings:  SETUP_KEY_NAME(NAME, value)
+#   - bit shift/width:  the HardwareEnable / SoftwareEnable enum entries
+# components/protocol/script/gen_mod_types.py fails the build when flash.h and this
+# file disagree, so a new key or enum entry must be added in both.
+format: 1
+
+sections:
+  # return: key (default) - every property is stored under its own NVS key.
+  # Property names are the SETUP_KEY names of flash.h.
+  wifi:
+    title: Wifi Setup
+    properties:
+      WIFI_SSID: {title: SSID, range: [0, 64]}
+      WIFI_PASSWORD: {title: Password, mask: true, range: [0, 64]}
+  mqtt:
+    title: MQTT Setup
+    properties:
+      MQTT_URL: {title: Broker URL, range: [0, 64]}
+      MQTT_USERNAME: {title: Username, range: [0, 64]}
+      MQTT_PASSWORD: {title: Password, mask: true, range: [0, 64]}
+  device:
+    title: Device Setup
+    properties:
+      DEVICE_UNIQUE: {title: Unique name, range: [0, 64]}
+      NTP_SERVER: {title: NTP server, range: [0, 64]}
+      LOCALE_TZ: {title: Time zone, range: [0, 64]}
+
+  # return: mask - the enum entries are combined into one value stored under the
+  # section key (a SETUP_KEY name). Property names are the enum entry names.
+  setup_sw:
+    title: Setup software
+    return: mask
+    key: ENABLE_SW
+    enum: SoftwareEnable
+    default: true
+    properties:
+      Mqtt: {title: MQTT}
+  setup_hw:
+    title: Setup hardware
+    return: mask
+    key: ENABLE_HW
+    enum: HardwareEnable
+    default: true
+    properties:
+      Display: {title: Display}
+      DeviceAI: {title: Device AI}
+      PlatformSensor: {title: Platform Sensor}
+      SensorBME: {title: Sensor BME}
+      SensorSHT: {title: Sensor SHT}
+      SensorSolar: {title: Sensor Solar}
+      SensorSoile: {title: Sensor Soil}
+      SensorPresher: {title: Sensor Pressure}
+      SensorWindBoard: {title: Sensor Wind Board}
+      SensorWindPlatform: {title: Sensor Wind Platform}
+      Battery: {title: Battery}

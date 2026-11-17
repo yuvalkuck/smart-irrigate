@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mod_types.schema.json",
+  "title": "iSetup modifiable data (GET /api/status reply)",
+  "description": "Declares the data the iSetup may modify. Every top-level key except 'format' is a section. The type of a property is the type of its 'default'.",
+  "type": "object",
+  "required": ["format"],
+  "minProperties": 2,
+  "properties": {
+    "format": {
+      "description": "Format revision, used by the iSetup to handle differences between revisions.",
+      "type": "object",
+      "required": ["ver"],
+      "properties": {
+        "ver": { "const": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": { "$ref": "#/$defs/section" },
+  "$defs": {
+    "bits": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "scalar": {
+      "type": ["string", "integer", "boolean"]
+    },
+    "section": {
+      "description": "'return' selects how the iSetup sends the data back to the C6 (binary in both modes). 'key': every property is sent under its own 'key'. 'mask': the 'shift' bits of the properties are combined into one value sent under the section 'key'.",
+      "type": "object",
+      "required": ["title", "properties"],
+      "properties": {
+        "title": { "type": "string" },
+        "return": { "enum": ["key", "mask"], "default": "key" },
+        "key": {
+          "description": "NVS key of the combined value. Only in 'mask' mode.",
+          "type": "string",
+          "minLength": 1
+        },
+        "bits": {
+          "description": "Bits needed by the combined value; it is returned in the next fitting width (12 is returned as 16). Only in 'mask' mode. A 'shift' must be lower than 'bits'; the schema cannot check it.",
+          "$ref": "#/$defs/bits"
+        },
+        "properties": {
+          "description": "Property name (unique inside the section) to property.",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/property" }
+        }
+      },
+      "additionalProperties": false,
+      "if": {
+        "properties": { "return": { "const": "mask" } },
+        "required": ["return"]
+      },
+      "then": {
+        "required": ["key", "bits"],
+        "properties": {
+          "properties": {
+            "additionalProperties": {
+              "required": ["shift"],
+              "properties": {
+                "default": { "type": "boolean" },
+                "value": { "type": "boolean" }
+              },
+              "not": { "required": ["key"] }
+            }
+          }
+        }
+      },
+      "else": {
+        "not": {
+          "anyOf": [
+            { "required": ["key"] },
+            { "required": ["bits"] }
+          ]
+        },
+        "properties": {
+          "properties": {
+            "additionalProperties": {
+              "required": ["key"],
+              "not": { "required": ["shift"] }
+            }
+          }
+        }
+      }
+    },
+    "property": {
+      "description": "'value' is omitted when the NVS key does not exist yet; the iSetup then shows 'default'.",
+      "type": "object",
+      "required": ["title", "default"],
+      "properties": {
+        "title": { "type": "string" },
+        "key": {
+          "description": "NVS key. Only in 'key' mode.",
+          "type": "string",
+          "minLength": 1
+        },
+        "default": { "$ref": "#/$defs/scalar" },
+        "value": { "$ref": "#/$defs/scalar" },
+        "mask": {
+          "description": "The iSetup shows dots instead of text.",
+          "type": "boolean"
+        },
+        "range": {
+          "description": "string: [minLen, maxLen]; integer: [min, max]. Omitted for boolean.",
+          "type": "array",
+          "items": { "type": "integer" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "bits": {
+          "description": "Bits of the returned value. Only in 'key' mode, optional; ignored in this version.",
+          "$ref": "#/$defs/bits"
+        },
+        "shift": {
+          "description": "Bit index in the section value, lower than the section 'bits'. Only in 'mask' mode.",
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "default": { "type": "string" } } },
+          "then": { "properties": { "value": { "type": "string" } } }
+        },
+        {
+          "if": { "properties": { "default": { "type": "integer" } } },
+          "then": { "properties": { "value": { "type": "integer" } } }
+        },
+        {
+          "if": { "properties": { "default": { "type": "boolean" } } },
+          "then": { "properties": { "value": { "type": "boolean" } } }
+        }
+      ]
+    }
+  }
+}

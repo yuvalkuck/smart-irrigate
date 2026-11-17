@@ -47,13 +47,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.magicat.irrigate.connect.model.ConfigField
 import org.magicat.irrigate.connect.model.ConfigValue
+import org.magicat.irrigate.connect.model.Section
+import org.magicat.irrigate.connect.model.toBody
 import org.magicat.irrigate.connect.model.toConfigFields
-import org.magicat.irrigate.connect.model.toIniString
+import org.magicat.irrigate.connect.model.toSections
 import org.magicat.irrigate.connect.network.DeviceApi
 import org.magicat.irrigate.connect.ui.theme.IrrigateConnectTheme
 
@@ -65,6 +69,10 @@ private val UnmodifiedTextColor = Color.White
 
 /** Text color when the value no longer matches what the device last reported. */
 private val ModifiedTextColor = Color.Yellow
+
+/** Every property value keyed "section.property". */
+private fun List<Section>.valuesByName(): Map<String, ConfigValue> =
+    flatMap { section -> section.properties.map { "${section.name}.${it.name}" to it.value } }.toMap()
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,8 +91,8 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(modifier: Modifier = Modifier) {
     val host = BuildConfig.DEVICE_HOST
     val port = BuildConfig.DEVICE_PORT.toString()
-    var fields by remember { mutableStateOf<List<ConfigField>>(emptyList()) }
-    // Baseline snapshot from the device, used to detect which fields the user has edited.
+    var sections by remember { mutableStateOf<List<Section>>(emptyList()) }
+    // Baseline snapshot from the device (keyed "section.property"), used to detect which fields the user has edited.
     var baseline by remember { mutableStateOf<Map<String, ConfigValue>>(emptyMap()) }
     // Static device details from /api (firmware/esp-idf version, ...), shown read-only.
     var deviceInfo by remember { mutableStateOf<List<ConfigField>>(emptyList()) }
@@ -108,10 +116,10 @@ fun MainScreen(modifier: Modifier = Modifier) {
         scope.launch {
             try {
                 val json = DeviceApi.fetchStatus(baseUrl())
-                val loaded = json.toConfigFields()
-                fields = loaded
-                baseline = loaded.associate { it.key to it.value }
-                statusMessage = "Loaded ${loaded.size} setting(s)"
+                val loaded = json.toSections()
+                sections = loaded
+                baseline = loaded.valuesByName()
+                statusMessage = "Loaded ${loaded.sumOf { it.properties.size }} setting(s)"
                 isError = false
             } catch (e: Exception) {
                 // On the silent startup probe, just fall back to the "connect to device" button
@@ -130,20 +138,20 @@ fun MainScreen(modifier: Modifier = Modifier) {
         statusMessage = null
         isError = false
         isLoading = true
-        val requested = fields
+        val requested = sections
         scope.launch {
             try {
-                DeviceApi.pushStatus(baseUrl(), requested.toIniString())
-                val refreshed = DeviceApi.fetchStatus(baseUrl()).toConfigFields()
-                fields = refreshed
-                baseline = refreshed.associate { it.key to it.value }
-                val refreshedByKey = refreshed.associate { it.key to it.value }
-                val mismatched = requested.filter { refreshedByKey[it.key] != it.value }
+                DeviceApi.pushStatus(baseUrl(), requested.toBody())
+                val refreshed = DeviceApi.fetchStatus(baseUrl()).toSections()
+                sections = refreshed
+                baseline = refreshed.valuesByName()
+                val refreshedByName = baseline
+                val mismatched = requested.valuesByName().filter { refreshedByName[it.key] != it.value }
                 if (mismatched.isEmpty()) {
                     statusMessage = "Settings applied and verified"
                 } else {
                     isError = true
-                    statusMessage = "Applied, but device did not accept: ${mismatched.joinToString { it.key }}"
+                    statusMessage = "Applied, but device did not accept: ${mismatched.keys.joinToString()}"
                 }
                 if (restartOnApply) {
                     try {
@@ -162,8 +170,18 @@ fun MainScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    fun updateField(key: String, newValue: ConfigValue) {
-        fields = fields.map { if (it.key == key) it.copy(value = newValue) else it }
+    fun updateField(sectionName: String, propertyName: String, newValue: ConfigValue) {
+        sections = sections.map { section ->
+            if (section.name != sectionName) {
+                section
+            } else {
+                section.copy(
+                    properties = section.properties.map {
+                        if (it.name == propertyName) it.copy(value = newValue) else it
+                    },
+                )
+            }
+        }
     }
 
     fun fetchDeviceInfo() {
@@ -186,7 +204,7 @@ fun MainScreen(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("IrrigateConnect") },
+                title = { Text("Irrigate iSetup") },
                 actions = {
                     Box {
                         IconButton(onClick = { menuExpanded = true }) {
@@ -225,19 +243,24 @@ fun MainScreen(modifier: Modifier = Modifier) {
             }
             item {
                 Button(onClick = { connect() }, enabled = !isLoading) {
-                    Text(if (fields.isEmpty()) "connect to device" else "Refresh")
+                    Text(if (sections.isEmpty()) "connect to device" else "Refresh")
                 }
             }
 
-            if (fields.isNotEmpty()) {
+            if (sections.isNotEmpty()) {
                 item { HorizontalDivider() }
                 item { Text("Settings", style = MaterialTheme.typography.titleMedium) }
-                items(fields, key = { it.key }) { field ->
-                    ConfigFieldRow(
-                        field = field,
-                        isModified = baseline[field.key] != field.value,
-                        onValueChange = { updateField(field.key, it) },
-                    )
+                sections.forEach { section ->
+                    item(key = section.name) { Text(section.title, style = MaterialTheme.typography.titleSmall) }
+                    items(section.properties, key = { "${section.name}.${it.name}" }) { property ->
+                        ConfigFieldRow(
+                            field = ConfigField(property.title, property.value),
+                            isModified = baseline["${section.name}.${property.name}"] != property.value,
+                            isMasked = property.isMasked,
+                            maxLength = property.maxLength,
+                            onValueChange = { updateField(section.name, property.name, it) },
+                        )
+                    }
                 }
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -319,6 +342,8 @@ private fun DeviceInfoRow(field: ConfigField) {
 private fun ConfigFieldRow(
     field: ConfigField,
     isModified: Boolean,
+    isMasked: Boolean,
+    maxLength: Int?,
     onValueChange: (ConfigValue) -> Unit,
 ) {
     val backgroundColor = FieldBackgroundColor
@@ -354,9 +379,10 @@ private fun ConfigFieldRow(
         is ConfigValue.Text -> {
             TextField(
                 value = value.value,
-                onValueChange = { onValueChange(ConfigValue.Text(it)) },
+                onValueChange = { onValueChange(ConfigValue.Text(if (maxLength != null) it.take(maxLength) else it)) },
                 label = { Text(field.key) },
                 singleLine = true,
+                visualTransformation = if (isMasked) PasswordVisualTransformation() else VisualTransformation.None,
                 colors = fieldColors(backgroundColor, contentColor),
                 modifier = Modifier.fillMaxWidth(),
             )

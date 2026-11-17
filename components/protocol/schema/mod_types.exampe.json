@@ -1,0 +1,78 @@
+{
+  "format": { "ver": 1 },
+  "wifi": {
+    "title": "Wifi Setup",
+    "return": "key",
+    "properties": {
+      "WIFI_SSID": {
+        "title": "SSID",
+        "key": "wifi_ssid",
+        "default": "",
+        "range": [0, 64],
+        "value": "home"
+      },
+      "WIFI_PASSWORD": {
+        "title": "Password",
+        "key": "wifi_password",
+        "default": "",
+        "range": [0, 64],
+        "mask": true,
+        "value": "ddjhdfsjhk"
+      }
+    }
+  },
+  "mqtt": {
+    "title": "MQTT Setup",
+    "return": "key",
+    "properties": {
+      "MQTT_URL": {
+        "title": "Broker URL",
+        "key": "mqtt_url",
+        "default": "",
+        "range": [0, 64],
+        "value": "mqtts://broker.local:8883"
+      },
+      "MQTT_USERNAME": {
+        "title": "Username",
+        "key": "mqtt_uname",
+        "default": "",
+        "range": [0, 64]
+      },
+      "MQTT_PASSWORD": {
+        "title": "Password",
+        "key": "mqtt_pword",
+        "default": "",
+        "range": [0, 64],
+        "mask": true
+      }
+    }
+  },
+  "setup_sw": {
+    "title": "Setup software",
+    "return": "mask",
+    "key": "enable_softw",
+    "bits": 16,
+    "properties": {
+      "Mqtt": { "title": "MQTT", "default": true, "shift": 0, "value": true }
+    }
+  },
+  "setup_hw": {
+    "title": "Setup hardware",
+    "return": "mask",
+    "key": "enable_hardw",
+    "bits": 32,
+    "properties": {
+      "Display": { "title": "Display", "default": true, "shift": 0, "value": false },
+      "DeviceAI": { "title": "Device AI", "default": true, "shift": 1, "value": false },
+      "PlatformSensor": { "title": "Platform Sensor", "default": true, "shift": 2, "value": true },
+      "SensorBME": { "title": "Sensor BME", "default": true, "shift": 3, "value": false },
+      "SensorSHT": { "title": "Sensor SHT", "default": true, "shift": 4, "value": false },
+      "SensorSolar": { "title": "Sensor Solar", "default": true, "shift": 5, "value": true },
+      "SensorSoile": { "title": "Sensor Soil", "default": true, "shift": 6, "value": true },
+      "SensorPresher": { "title": "Sensor Pressure", "default": true, "shift": 7, "value": false },
+      "SensorWindBoard": { "title": "Sensor Wind Board", "default": true, "shift": 8, "value": false },
+      "SensorWindPlatform": { "title": "Sensor Wind Platform", "default": true, "shift": 9, "value": true },
+      "Battery": { "title": "Battery", "default": true, "shift": 10, "value": true }
+    }
+  }
+}
