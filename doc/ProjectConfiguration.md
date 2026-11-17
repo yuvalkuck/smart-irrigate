@@ -9,7 +9,6 @@ The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time
   * *SHT41 Sensor:* Provides precision ambient temperature and relative humidity parameters via fixed I2C signaling.
   * *BMP581 Sensor:* Transmits targeted barometric pressure metrics and ambient temperature data.
   * *ADS1115 ADC:* Reads line pressure, wind speed and board temperature (see "Analog Interface Architecture"). Address 0x48 (ADDR pin on GND).
-  * *INA226 monitor:* Reads the battery bus voltage and the battery current through a 10 mohm shunt. Address 0x40 (A0 and A1 on GND).
   * *TCA9555 I/O expander:* Drives the status LEDs (P00 to P06), the battery-state LED (P07), reads the SHOW LEDs button (P10) and drives the 24 VAC converter enable (P12), the ESP32-S3 power enable (P13, on by default, low = off) and the buzzer (P14). Address 0x20 (A0, A1 and A2 on GND).
   * *Note:* All the devices function on the exact same physical GPIO 19 and 20 paths, utilizing unique hardware address layers to prevent data line collisions.
 * **RS-485 Link to the Sensor Cluster:** **GPIO 9 (TX)**, **GPIO 8 (RX)** and **GPIO 15 (DE and /RE)**, through a MAX3485 to terminal J5 (1 = A, 2 = B, 3 = +5 V, 4 = GND).
@@ -17,7 +16,7 @@ The physical hardware mapping on the ESP32-C6 micro-controller uses compile-time
   * *DS18B20 Sensor:* Provides high-accuracy underground soil thermal parameters using the precision timing 1-Wire protocol.
   * *Board temperature (U7):* An MCP9700A analog sensor on ADS1115 AIN2, not on the 1-Wire bus. Output is 500 mV at 0 degC plus 10 mV per degC. **TBD:** the firmware does not read it yet.
 * **Analog Interface Architecture:** All analog inputs are read by one **ADS1115** 16-bit ADC on the shared I2C bus (GPIO 19 and 20), not by the ESP32-C6 internal ADC, which is noisy and non-linear. No C6 GPIO is used for analog signals. Channel order (as in the schematic): AIN0 XDB401 pressure, AIN1 wind speed, AIN2 board temperature (MCP9700A), AIN3 unused. Battery voltage is read by the INA226, not the ADS1115.
-  * *Battery voltage and current:* Read by the INA226 over I2C (bus voltage from the 24 V bus, current from the 10 mohm shunt R31 in the battery negative lead), so no divider into the ADS1115 is needed.
+  * *Battery status and charge:* Read from the BQ40Z80 gauge on the battery add-on over SMBus (J16 SDA/SCL). The mainboard only senses whether `+24V` is present, through an optocoupler.
   * *XDB401 Pressure Transmitter:* Records real-time water line pressure, with hardware conditioning to scale the output signal to fit within the ADS1115 input limits.
   * *Analog Wind Speed Sensor:* Because the sensor outputs a 0–5V range, an external voltage divider circuit steps the incoming voltage down to a safe, readable level. The software maps this reading back to the true 0.0–30.0 meters per second wind speed curve.
   * *Input protection (each channel):* A divider so a pin never exceeds 3.3 V, a 1 to 10 kohm series resistor, a clamp to 3.3 V and GND at the pin, and a 10 to 100 nF capacitor to GND. The ADS1115 is powered from the 3.3 V rail only, with 100 nF at VDD.
