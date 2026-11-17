@@ -21,13 +21,17 @@ and polls the cluster; the cluster never sends on its own.
 | Input fuse | F1, 5x20 mm fuse (500 mA) in the ELECAPITAL PCB holder (footprint `libraries:FuseHolder_5x20_ELECAPITAL_PCB_Cover`), between the raw 5 V input and D2/FB1. J1.3 and J4.3 are before the fuse, so a daisy-chained node is not fused by this one. |
 | Input filter | FB1 470 ohm ferrite on the 5 V, C8 47 uF bulk |
 | Indicators | D3 green on 3.3 V (R10 1 k), D4 yellow on TX and D5 yellow on RX (R8, R9 1 k, lit when the line is low) |
+| Wind input | J8 (library `WindSensor_0_5V`: 1 = +24V, 2 = GND, 3 = OUT). OUT goes through R14 (1.8 k) and R15 (3.3 k) to PA4, so 0-5 V becomes 0-3.24 V. D9 SMAJ30A on +24V, D10 SMAJ5.0A on OUT. The same wind sensor can instead connect to the mainboard. |
+| Mode switch | SW1, 2-position DIP switch. Switch 1 fits the 120 ohm terminator R6 across A and B. Switch 2 pulls PA5 to GND to show that the wind sensor is fitted here. |
 | Test points | TP1 +5V, TP2 +3V3, TP3 GND, TP4 A, TP5 B |
 | Mounting | H1-H4, M3 holes (3.2 mm) |
 
 Protection is for ESD and small induced surges only. A direct or very near lightning strike is not
 covered: that needs a grounded mast with a lightning rod and the cable shield earthed at one end.
 
-Power arrives from the main box on its own twisted pair. There is no 24 V on this board.
+Power arrives from the main box on its own twisted pair. The board does not use 24 V itself. J1 and J4
+pin 6 carry an optional +24V pass-through, for the wind sensor on J8 or for the next node. It is not
+fused on this board, and it is left empty when no wind sensor is connected.
 
 ### Sensors
 
@@ -36,6 +40,7 @@ Power arrives from the main box on its own twisted pair. There is no 24 V on thi
 | SHT41 | I2C1 (J2, own connector) | Air temperature and relative humidity, for vapor pressure deficit |
 | BMP581 | I2C1 (J7, own connector) | Barometric pressure and temperature, for rain-front prediction |
 | Solar panel (0.3 W, 5 V polysilicon epoxy module) | ADC, PA0 (J6, own connector) | Sunlight level, for solar load |
+| Wind sensor (3-cup, 0-30 m/s, 10-30 V supply, 0-5 V output) | ADC, PA4 (J8, own connector) | Wind speed. Optional: it can connect here or to the mainboard, selected by the hardware enable mask (`SensorWindPlatform`) |
 
 The TSL2591 is dropped from the design. SHT41 and BMP581 sit in a ventilated radiation shield and
 each connect over a short I2C cable, SHT41 to J2 and BMP581 to J7. The two connectors are in parallel on
@@ -56,7 +61,9 @@ From the netlist of `hardware/kicad/sensor-cluster.kicad_sch`.
 | 18 | SWDIO | J5 pin 2 |
 | 19 | SWCLK | J5 pin 3 |
 | 6 | NRST | J5 pin 4, C3 100 nF |
-| 11-17, 2, 3 | unused | J3 breakout (net labels PA4-PA10, PC14, PC15) |
+| 11 (PA4) | ADC input | Wind divider R14/R15 on J8 OUT, also on J3 pin 3 |
+| 12 (PA5) | Input with pull-up | SW1 switch 2 to GND (ON = wind fitted), also on J3 pin 4 |
+| 13-17, 2, 3 | unused | J3 breakout (PA6-PA10, PC14, PC15) |
 
 DE and /RE are tied together and driven by the USART2 DE output (hardware driver-enable).
 
@@ -64,14 +71,15 @@ DE and /RE are tied together and driven by the USART2 DE output (hardware driver
 
 | Ref | Pins |
 |---|---|
-| J1 (5-pin terminal) | 1 = A, 2 = B, 3 = +5 V, 4 = GND, 5 = SHLD (cable shield) |
-| J4 (5-pin terminal) | Same pins as J1, wired in parallel with it, to daisy-chain the bus to another node. The +5 V pin is the raw input, before D2 and FB1. |
+| J1 (6-pin terminal, 5.00 mm) | 1 = A, 2 = B, 3 = +5 V, 4 = GND, 5 = SHLD (cable shield), 6 = +24V (optional, wind sensor only) |
+| J4 (6-pin terminal, 5.00 mm) | Same pins as J1, wired in parallel with it, to daisy-chain the bus to another node. The +5 V pin is the raw input, before D2 and FB1. |
+| J8 (wind sensor terminal) | 1 = +24V, 2 = GND, 3 = OUT. The library footprint has 4 terminals, and terminal 4 has no net. |
 | J2 (4-pin 2.54 mm row) | SHT41: 1 = GND, 2 = SDA, 3 = SCL, 4 = 3.3 V out |
 | J7 (4-pin 2.54 mm row) | BMP581: same pinout as J2 (1 = GND, 2 = SDA, 3 = SCL, 4 = 3.3 V out) |
 | J6 (2-pin 2.54 mm row) | Solar panel, two wires: 1 = + (AIN), 2 = - (GND) |
 | J5 (5-pin 2.54 mm row) | SWD programming: 1 = 3.3 V, 2 = SWDIO, 3 = SWCLK, 4 = NRST, 5 = GND |
 | J3 (10-pin 2.54 mm row) | Breakout of the unused MCU pins: 1 = PC14, 2 = PC15, 3 = PA4, 4 = PA5, 5 = PA6, 6 = PA7, 7 = PA8, 8 = PA9, 9 = PA10, 10 = GND. 3.3 V only. |
-| JP1 | Fits the 120 ohm terminator R6 across A and B. Fit at the bus end only. |
+| SW1 (2-position DIP switch) | Switch 1 (pins 1 and 4) fits the 120 ohm terminator R6 across A and B. Turn it on at the bus end only. Switch 2 (pins 2 and 3) pulls PA5 to GND when the wind sensor is fitted. |
 
 Only AIN tolerates 5 V. SDA, SCL and the SWD pins are 3.3 V only.
 
@@ -130,7 +138,7 @@ Modbus RTU, 9600 baud, 8N1, matching `../../components/hmodbus/include/hmodbus.h
 Modbus exception.
 
 Bus end rules: 120 ohm terminator at both ends, 390 ohm bias (A to 3.3 V, B to GND) at the C6 end only.
-The cluster end fits only the terminator, through JP1.
+The cluster end fits only the terminator, through SW1 switch 1.
 
 C6 side: GPIO 9 TX, GPIO 8 RX, GPIO 15 DE and /RE, through its own MAX3485, terminal J5
 (1 = A, 2 = B, 3 = +5 V, 4 = GND).
@@ -160,3 +168,5 @@ GCC project. Current state: the `.ioc` only has RCC, SYS and the NVIC; the perip
 * Peripheral configuration in the `.ioc` to match the pin map.
 * Confirm the 4.7 uF capacitor on U1 (C2) against the ST datasheet.
 * Solar shunt calibration.
+* Wind input in the `.ioc`: PA4 as ADC input, PA5 as input with pull-up. The firmware does not read either yet.
+* The supply current of the wind sensor is not known, and the 24 V pass-through has no fuse on this board.
