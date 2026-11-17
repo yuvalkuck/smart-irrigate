@@ -109,7 +109,8 @@ private fun JSONObject.toProperty(name: String): Property {
  * "[binary]" section of key=value lines where the value is the little-endian hex of the combined bits.
  */
 fun List<Section>.toBody(): String = buildString {
-    val keySections = filter { !it.isMask }
+    // this@toBody: inside buildString a bare filter would be the StringBuilder's
+    val keySections = this@toBody.filter { !it.isMask }
     if (keySections.isNotEmpty()) {
         append("[string]\n")
         for (property in keySections.flatMap { it.properties }) {
@@ -121,7 +122,7 @@ fun List<Section>.toBody(): String = buildString {
             append(property.key).append('=').append(raw).append('\n')
         }
     }
-    val maskSections = filter { it.isMask }
+    val maskSections = this@toBody.filter { it.isMask }
     if (maskSections.isNotEmpty()) {
         append("[binary]\n")
         for (section in maskSections) {
