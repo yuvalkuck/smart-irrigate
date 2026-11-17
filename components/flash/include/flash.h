@@ -2,6 +2,7 @@
 #define FLASH_H
 
 #include <array>
+#include <concepts>
 
 #include "esp_err.h"
 #if !defined(nvs_handle_t)
@@ -23,13 +24,13 @@ SETUP_KEY_NAME(LOCALE_TZ, locale_tz);
 SETUP_KEY_NAME(ENABLE_SW, enable_softw);
 SETUP_KEY_NAME(ENABLE_HW, enable_hardw);
 
-enum class SoftwareEnable : uint8_t {
+enum class SoftwareEnable : uint16_t {
     Disable = 0x00,
     Mqtt    = 0x01,
-    Enable  = 0xFF
+    Enable  = 0xFFFF
 };
 
-enum class HardwareEnable : uint16_t {
+enum class HardwareEnable : uint32_t {
     Disable            = 0x00,
     Display            = 0x01,
     DeviceAI           = 0x02,
@@ -41,25 +42,37 @@ enum class HardwareEnable : uint16_t {
     SensorPresher      = 0x80,
     SensorWindBoard    = 0x100,
     SensorWindPlatform = 0x200,
-    Enable             = 0xFFFF
+    Battery            = 0x400,
+    Enable             = 0xFFFFFFFF
 };
 
 // HW enable
 #undef SETUP_KEY_NAME
 esp_err_t init_flash();
-
-inline uint16_t operator|(HardwareEnable lhs, HardwareEnable rhs) {
-    return lhs | rhs;
+// the following set, we do not use all - fo row it staties
+inline uint32_t operator|(HardwareEnable lhs, HardwareEnable rhs) {
+    return static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs);
 }
 
-inline uint16_t operator&(HardwareEnable lhs, HardwareEnable rhs) {
-    return lhs & rhs;
+inline uint32_t operator&(HardwareEnable lhs, HardwareEnable rhs) {
+    return static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs);
 }
+
+inline uint16_t operator|(SoftwareEnable lhs, SoftwareEnable rhs) {
+    return static_cast<uint16_t>(lhs) | static_cast<uint16_t>(rhs);
+}
+
+inline uint16_t operator&(SoftwareEnable lhs, SoftwareEnable rhs) {
+    return static_cast<uint16_t>(lhs) & static_cast<uint16_t>(rhs);
+}
+
 
 /* use C++ for handler container */
 class NvsConfig {
     nvs_handle_t handler_ = 0;
-    bool maskAddSub_(bool isAdd, const char* key, uint16_t value) const;
+    template<typename TY>
+    requires std::unsigned_integral<TY>
+    bool maskAddSub_(bool isAdd, const char* key, TY value) const;
 
     public:
     explicit operator bool() const {
@@ -87,13 +100,18 @@ class NvsConfig {
 
     bool isStrEmpty(const char* key) const;
     // mask
-    bool getMask(const char* key, uint16_t& value) const;
+    template<typename TY>
+    requires std::unsigned_integral<TY>
+    bool getMask(const char* key, TY& value) const;
 
-    bool addMask(const char* key, uint16_t value) {
+    template<typename TY>
+    requires std::unsigned_integral<TY>
+    bool addMask(const char* key, TY value) {
         return maskAddSub_(true, key, value);
     }
-
-    bool subMask(const char* key, uint16_t value) {
+    template<typename TY>
+    requires std::unsigned_integral<TY>
+    bool subMask(const char* key, TY value) {
         return maskAddSub_(false, key, value);
     }
 };

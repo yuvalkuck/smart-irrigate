@@ -78,19 +78,22 @@ bool NvsConfig::setStr(const char* key, const char* value) const {
     return err == ESP_OK;
 }
 
-bool NvsConfig::getMask(const char* key, uint16_t& value) const {
+template<typename TY>
+requires std::unsigned_integral<TY>
+bool NvsConfig::getMask(const char* key, TY& value) const {
     size_t required_size = sizeof(value); // in: buffer size, out: stored size
     esp_err_t err = nvs_get_blob(handler_, key, &value, &required_size);
     // it does not change handler so it can be const
-    if (err != ESP_OK || required_size != sizeof(uint16_t)) {
+    if (err != ESP_OK || required_size != sizeof(TY)) {
         ESP_LOGE(TAG, "Error (%s) get NVS mask key '%s'", esp_err_to_name(err), key);
         return false;
     }
     return err == ESP_OK;
 }
-
-bool NvsConfig::maskAddSub_(bool isAdd, const char* key, uint16_t value) const {
-    uint16_t nvs_value, compare_with;
+template<typename TY>
+requires std::unsigned_integral<TY>
+bool NvsConfig::maskAddSub_(bool isAdd, const char* key, TY value) const {
+    TY nvs_value, compare_with;
     if (!getMask(key, nvs_value)) {
         return false;
     }
@@ -112,3 +115,8 @@ bool NvsConfig::maskAddSub_(bool isAdd, const char* key, uint16_t value) const {
     err = nvs_commit(handler_);
     return err == ESP_OK;
 }
+
+template bool NvsConfig::getMask<uint16_t>(const char*, uint16_t&) const;
+template bool NvsConfig::getMask<uint32_t>(const char*, uint32_t&) const;
+template bool NvsConfig::maskAddSub_<uint16_t>(bool, const char*, uint16_t) const;
+template bool NvsConfig::maskAddSub_<uint32_t>(bool, const char*, uint32_t) const;

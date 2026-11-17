@@ -37,18 +37,19 @@ esp_err_t SensorPlatform::init() {
     METHODTRACE
     count_ = 0;
     NvsConfig cfg;
-    uint16_t mask = 0;
-    if (!cfg || !cfg.getMask(SETUP_KEY(ENABLE_HW), mask)) {
-        ESP_LOGE(TAG, "failed to read the hardware enable mask");
+    uint32_t hwMask = 0;
+    if (!cfg || !cfg.getMask(SETUP_KEY(ENABLE_HW), hwMask)) {
+        ESP_LOGE(TAG, "failed to read the hardware enable hwMask");
         return ESP_FAIL;
     }
-    if (!(mask & static_cast<uint16_t>(HardwareEnable::PlatformSensor))) {
+
+    if (!(hwMask & static_cast<uint32_t>(HardwareEnable::PlatformSensor))) {
         ESP_LOGI(TAG, "sensor platform disabled");
         return ESP_OK;
     }
-    if (mask & static_cast<uint16_t>(HardwareEnable::SensorSHT)) requests_[count_++] = HumidityTemp;
-    if (mask & static_cast<uint16_t>(HardwareEnable::SensorBME)) requests_[count_++] = Pressure;
-    if (mask & static_cast<uint16_t>(HardwareEnable::SensorSolar)) requests_[count_++] = Solar;
+    if (hwMask & static_cast<uint32_t>(HardwareEnable::SensorSHT)) requests_[count_++] = HumidityTemp;
+    if (hwMask & static_cast<uint32_t>(HardwareEnable::SensorBME)) requests_[count_++] = Pressure;
+    if (hwMask & static_cast<uint32_t>(HardwareEnable::SensorSolar)) requests_[count_++] = Solar;
     ESP_LOGI(TAG, "sensor platform enabled, %d requests", count_);
     return ESP_OK;
 }
