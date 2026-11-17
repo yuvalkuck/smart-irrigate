@@ -704,5 +704,28 @@
       "version": 0
     },
     "tuning_profiles_impedance_geometric": []
+  },
+  "kicad_routing_tools": {
+    "fab_floor_origin": {
+      "min_hole_clearance": 0.15,
+      "min_through_hole_diameter": 0.15,
+      "min_track_width": 0.1,
+      "min_via_annular_width": 0.05,
+      "min_via_diameter": 0.25
+    },
+    "records_rev": 4,
+    "repo_rules": {
+      "min_via_drill": 0.15
+    },
+    "power_widths": {
+      "+5V": 0.3,
+      "GND": 0.3,
+      "+12V": 0.3,
+      "+3V3": 0.3,
+      "+24V": 0.3,
+      "Net-(A3-5V0)": 0.3,
+      "Net-(U9-LV)": 0.3,
+      "Net-(U16-AGND)": 0.3
+    }
   }
 }
