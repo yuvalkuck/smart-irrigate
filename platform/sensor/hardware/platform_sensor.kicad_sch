@@ -4263,6 +4263,167 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "FullModules:SHT41_I2C_Module"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "A"
+				(at -7.62 8.89 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "SHT41_I2C_Module"
+				(at -7.62 -8.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://sensirion.com/media/documents/9F289B95/6355A1DA/Datasheet_SHT4x.pdf"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Generic Sensirion SHT41 I2C temperature/humidity breakout, 4-pin (VCC/GND/SDA/SCL), fixed I2C address 0x44. Some breakouts (e.g. Adafruit) add extra pins (regulated 3V out, STEMMA QT) not modelled here."
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "SHT41 SHT40 SHT45 Sensirion temperature humidity I2C module"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "SHT41_I2C_Module_0_1"
+				(rectangle
+					(start -7.62 7.62)
+					(end 7.62 -2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "SHT41_I2C_Module_1_1"
+				(pin power_in line
+					(at -3.81 -5.08 90)
+					(length 2.54)
+					(name "VCC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at -1.27 -5.08 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 1.27 -5.08 90)
+					(length 2.54)
+					(name "SCL"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at 3.81 -5.08 90)
+					(length 2.54)
+					(name "SDA"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "FullModules:WindSensor_0_5V"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -6683,12 +6844,6 @@
 		(uuid "01c0ac7c-47b3-4660-a100-1cfb196c316d")
 	)
 	(junction
-		(at 41.91 101.6)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "0f063075-0077-461f-bc9b-614905809a95")
-	)
-	(junction
 		(at 162.56 139.7)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6767,12 +6922,6 @@
 		(uuid "5b56e522-ad15-42ec-9a82-5abd2155a5ab")
 	)
 	(junction
-		(at 38.1 104.14)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "6281900d-5308-480a-8e6b-e1bc598e8564")
-	)
-	(junction
 		(at 278.13 120.65)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6837,6 +6986,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "a0820073-238d-4419-bc81-8bf1fb78a6a4")
+	)
+	(junction
+		(at 41.91 99.06)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "ab49adf7-e7cf-466c-b1a6-8de9648fb6bc")
 	)
 	(junction
 		(at 238.76 119.38)
@@ -7096,16 +7251,6 @@
 	)
 	(wire
 		(pts
-			(xy 36.83 104.14) (xy 38.1 104.14)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0c2808c2-ca08-4953-bd4b-0e116b1d61b2")
-	)
-	(wire
-		(pts
 			(xy 127 189.23) (xy 127 191.77)
 		)
 		(stroke
@@ -7186,7 +7331,7 @@
 	)
 	(wire
 		(pts
-			(xy 36.83 43.18) (xy 36.83 104.14)
+			(xy 36.83 43.18) (xy 36.83 101.6)
 		)
 		(stroke
 			(width 0)
@@ -7346,7 +7491,7 @@
 	)
 	(wire
 		(pts
-			(xy 58.42 104.14) (xy 38.1 104.14)
+			(xy 58.42 104.14) (xy 43.18 104.14)
 		)
 		(stroke
 			(width 0)
@@ -7443,6 +7588,16 @@
 			(type default)
 		)
 		(uuid "2eefe669-92a4-4cf4-a766-5b141aec67da")
+	)
+	(wire
+		(pts
+			(xy 43.18 104.14) (xy 43.18 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3080fae1-4108-4884-9ac9-c9f769d5d877")
 	)
 	(wire
 		(pts
@@ -7676,6 +7831,16 @@
 	)
 	(wire
 		(pts
+			(xy 43.18 101.6) (xy 38.1 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "43bde49d-ad4c-480f-9936-8d80bb144896")
+	)
+	(wire
+		(pts
 			(xy 238.76 132.08) (xy 246.38 132.08)
 		)
 		(stroke
@@ -7723,6 +7888,16 @@
 			(type default)
 		)
 		(uuid "4a79ff8e-f622-4b81-887c-7c142e175980")
+	)
+	(wire
+		(pts
+			(xy 46.99 99.06) (xy 46.99 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4e28bdcc-6e9c-4af2-954d-0057558a6f5e")
 	)
 	(wire
 		(pts
@@ -7953,6 +8128,16 @@
 			(type default)
 		)
 		(uuid "6e3bb7df-bea2-43f7-b96c-01f1801f8d3f")
+	)
+	(wire
+		(pts
+			(xy 36.83 101.6) (xy 38.1 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6ec62c0a-5b14-459e-a707-972753fdc2bb")
 	)
 	(wire
 		(pts
@@ -8676,7 +8861,7 @@
 	)
 	(wire
 		(pts
-			(xy 38.1 101.6) (xy 63.5 101.6)
+			(xy 46.99 101.6) (xy 63.5 101.6)
 		)
 		(stroke
 			(width 0)
@@ -8746,7 +8931,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 40.64) (xy 41.91 101.6)
+			(xy 41.91 40.64) (xy 41.91 99.06)
 		)
 		(stroke
 			(width 0)
@@ -8916,6 +9101,16 @@
 	)
 	(wire
 		(pts
+			(xy 38.1 104.14) (xy 40.64 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d38186d5-2298-4767-9d72-f40e5a5cde64")
+	)
+	(wire
+		(pts
 			(xy 269.24 38.1) (xy 233.68 38.1)
 		)
 		(stroke
@@ -9016,7 +9211,7 @@
 	)
 	(wire
 		(pts
-			(xy 40.64 99.06) (xy 40.64 124.46)
+			(xy 40.64 104.14) (xy 40.64 124.46)
 		)
 		(stroke
 			(width 0)
@@ -9146,16 +9341,6 @@
 	)
 	(wire
 		(pts
-			(xy 40.64 99.06) (xy 38.1 99.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f3bfccd7-4bf4-48c2-a2a5-fb9efa0d7c55")
-	)
-	(wire
-		(pts
 			(xy 231.14 128.27) (xy 231.14 133.35)
 		)
 		(stroke
@@ -9243,6 +9428,16 @@
 			(type default)
 		)
 		(uuid "fcee2ddd-f00a-482c-ace7-57b033cd0839")
+	)
+	(wire
+		(pts
+			(xy 38.1 99.06) (xy 46.99 99.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fd3e8209-5ee9-4a54-ac51-7d177e0b812b")
 	)
 	(wire
 		(pts
@@ -9943,6 +10138,83 @@
 			(project "platform_sensor"
 				(path "/a7faaf86-8cdf-435d-bb62-3cd5933d6713"
 					(reference "R9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole")
+		(at 66.04 166.37 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1bfafdc6-2941-4274-add8-b03080633800")
+		(property "Reference" "MH1"
+			(at 68.58 165.0999 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "SP-"
+			(at 68.58 167.6399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_2.2mm_M2_DIN965_Pad"
+			(at 68.58 168.9099 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 66.04 166.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 66.04 166.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "platform_sensor"
+				(path "/a7faaf86-8cdf-435d-bb62-3cd5933d6713"
+					(reference "MH1")
 					(unit 1)
 				)
 			)
@@ -14646,6 +14918,83 @@
 		)
 	)
 	(symbol
+		(lib_id "Mechanical:MountingHole")
+		(at 66.04 172.72 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "98d06a21-4f7f-4920-b784-0020d12aa457")
+		(property "Reference" "MH2"
+			(at 68.58 171.4499 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "SP+"
+			(at 68.58 173.9899 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_2.2mm_M2_DIN965_Pad"
+			(at 68.58 175.2599 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 66.04 172.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 66.04 172.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "platform_sensor"
+				(path "/a7faaf86-8cdf-435d-bb62-3cd5933d6713"
+					(reference "MH2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 274.32 120.65 90)
 		(unit 1)
@@ -16876,9 +17225,8 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x04")
-		(at 33.02 101.6 0)
-		(mirror y)
+		(lib_id "FullModules:SHT41_I2C_Module")
+		(at 33.02 102.87 90)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -16929,7 +17277,7 @@
 				)
 			)
 		)
-		(property "Description" "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
+		(property "Description" ""
 			(at 33.02 101.6 0)
 			(hide yes)
 			(show_name no)
