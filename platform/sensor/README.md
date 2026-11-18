@@ -52,7 +52,7 @@ From the netlist of `hardware/kicad/sensor-cluster.kicad_sch`.
 
 | U1 pin | Function | Net |
 |---|---|---|
-| 1 | I2C1_SDA | J2 pin 2, J7 pin 2, R1 pull-up |
+| 1 | I2C1_SDA | J2 pin 4, J7 pin 2, R1 pull-up |
 | 20 | I2C1_SCL | J2 pin 3, J7 pin 3, R2 pull-up |
 | 7 (PA0) | ADC1_IN0 | Solar divider |
 | 8 (PA1) | USART2_DE | U2 DE and /RE, R7 10 k to GND |
@@ -74,8 +74,8 @@ DE and /RE are tied together and driven by the USART2 DE output (hardware driver
 | J1 (6-pin terminal, 5.00 mm) | 1 = A, 2 = B, 3 = +5 V, 4 = GND, 5 = SHLD (cable shield), 6 = +24V (optional, wind sensor only) |
 | J4 (6-pin terminal, 5.00 mm) | Same pins as J1, wired in parallel with it, to daisy-chain the bus to another node. The +5 V pin is the raw input, before D2 and FB1. |
 | J8 (wind sensor terminal) | 1 = +24V, 2 = GND, 3 = OUT. The library footprint has 4 terminals, and terminal 4 has no net. |
-| J2 (4-pin 2.54 mm row) | SHT41: 1 = GND, 2 = SDA, 3 = SCL, 4 = 3.3 V out |
-| J7 (4-pin 2.54 mm row) | BMP581: same pinout as J2 (1 = GND, 2 = SDA, 3 = SCL, 4 = 3.3 V out) |
+| J2 (SHT41 module, library `SHT41_I2C_Module`) | 1 = VCC (3.3 V), 2 = GND, 3 = SCL, 4 = SDA |
+| J7 (4-pin 2.54 mm row) | BMP581: 1 = GND, 2 = SDA, 3 = SCL, 4 = 3.3 V out |
 | J6 (2-pin 2.54 mm row) | Solar panel, two wires: 1 = + (AIN), 2 = - (GND) |
 | J5 (5-pin 2.54 mm row) | SWD programming: 1 = 3.3 V, 2 = SWDIO, 3 = SWCLK, 4 = NRST, 5 = GND |
 | J3 (10-pin 2.54 mm row) | Breakout of the unused MCU pins: 1 = PC14, 2 = PC15, 3 = PA4, 4 = PA5, 5 = PA6, 6 = PA7, 7 = PA8, 8 = PA9, 9 = PA10, 10 = GND. 3.3 V only. |
@@ -160,13 +160,12 @@ that code (`ResponseCount()` in the header). The slave behaves as follows:
 ## Build and flash
 
 Open `sensor_platform.ioc` in STM32CubeMX (6.18.1, package STM32Cube FW_C0 V1.4.1) and generate the
-GCC project. Current state: the `.ioc` only has RCC, SYS and the NVIC; the peripherals above
-(I2C1, ADC1, USART2) are not configured yet. Program through J5 (3.3 V, SWDIO, SWCLK, NRST, GND).
+GCC project. Current state: the `.ioc` has RCC, SYS, the NVIC, I2C1, ADC1, USART2 and IWDG, matching
+the pin map above. Program through J5 (3.3 V, SWDIO, SWCLK, NRST, GND).
 
 ## Open items
 
-* Peripheral configuration in the `.ioc` to match the pin map.
 * Confirm the 4.7 uF capacitor on U1 (C2) against the ST datasheet.
 * Solar shunt calibration.
-* Wind input in the `.ioc`: PA4 as ADC input, PA5 as input with pull-up. The firmware does not read either yet.
+* Wind input: PA4 (ADC input) and PA5 (input with pull-up) are set in the `.ioc`. The firmware does not read either yet.
 * The supply current of the wind sensor is not known, and the 24 V pass-through has no fuse on this board.
